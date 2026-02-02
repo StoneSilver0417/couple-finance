@@ -22,7 +22,7 @@ export function BottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 px-6 pb-6 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pointer-events-none" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
       <div className="max-w-md mx-auto relative h-20">
         {/* Floating Plus Button */}
         <div className="absolute left-1/2 -top-7 -translate-x-1/2 z-20 pointer-events-auto">
