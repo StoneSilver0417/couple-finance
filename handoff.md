@@ -1,31 +1,38 @@
 # Couple Finance - Handoff
 
 ## 현재 상태
-- **버전**: v0.3.1
+- **버전**: v0.3.2
 - **빌드 상태**: 성공 ✅
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: 823567b
+- **최신 커밋**: 31af39e
 
-## 최근 작업
-- 카테고리 모달 크기 축소 (모바일 대응)
-- 카테고리 수정 시 기존 데이터 표시 버그 수정
-- 드롭다운 메뉴 투명도 문제 수정
-- 자산 페이지 스냅샷 자동 생성 로직
+## Supabase 환경
+| 환경 | URL | 용도 |
+|------|-----|------|
+| 개발 | `tsqrohamnjtqocmnokmo.supabase.co` | 로컬 개발/테스트 |
+| 운영 | `bgevpihfcvraxososcll.supabase.co` | 프로덕션 (스키마 적용 완료) |
 
-## 완료된 PRD 정합성 항목
-- [x] `asset_history` 테이블 + 스냅샷 로직
-- [x] `payment_methods` 테이블 + UI
-- [x] `profiles.role` 컬럼 (OWNER/MEMBER)
-- [x] `transactions` 확장 (payment_method_id, last_modified_by)
-- [x] 자산 타입 대문자 표준화
+## 배포 대기 상태
+- Vercel CLI 설치 완료
+- 운영 DB 스키마 적용 완료
+- **다음 단계**: `vercel login` → 환경변수 설정 → 배포
+
+### Vercel 환경변수 (배포 시 설정 필요)
+```
+NEXT_PUBLIC_SUPABASE_URL=https://bgevpihfcvraxososcll.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_OjsCMvo6Asnt3ES3-2Q1Yg_Tz6ssdY_
+```
+
+## 완료된 작업
+- [x] PRD v2.0 정합성 (asset_history, payment_methods, role 등)
 - [x] Framer Motion 애니메이션
-- [x] themeColor viewport 분리
-
-## 알려진 이슈
-- middleware → proxy 전환 권장 (Next.js 16 deprecation, 낮은 우선순위)
+- [x] 카테고리 모달 UI 개선
+- [x] 드롭다운 메뉴 투명도 수정
+- [x] 모바일 하단 네비게이션 safe-area 적용
+- [x] 운영 DB 스키마 적용
 
 ## 다음 TODO
-1. [ ] 거래 입력 시 결제 수단 선택 UI 추가
-2. [ ] 거래 목록에서 결제 수단 표시
-3. [ ] 자산 추이 차트 테스트 (데이터 축적 필요)
+1. [ ] Vercel 로그인 및 배포
+2. [ ] 거래 입력 시 결제 수단 선택 UI
+3. [ ] 거래 목록에서 결제 수단 표시
