@@ -1,0 +1,225 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* --- 1. Custom Theme Configuration (Tailwind v4) --- */
+@theme inline {
+  /* Colors from Stitch Design */
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-accent-coral: var(--accent-coral);
+  --color-accent-peach: var(--accent-peach);
+  --color-accent-violet: var(--accent-violet);
+
+  --color-text-main: var(--text-main);
+  --color-text-secondary: var(--text-secondary);
+
+  --color-bg-light: var(--bg-light);
+  --color-bg-dark: var(--bg-dark);
+
+  /* Fonts */
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-nunito);
+
+  /* Shadows */
+  --shadow-glass: var(--shadow-glass);
+  --shadow-glow: var(--shadow-glow);
+  --shadow-candy: var(--shadow-candy);
+  --shadow-soft: var(--shadow-soft);
+
+  /* Border Radius */
+  --radius-xl: 2rem;
+  --radius-2xl: 2.5rem;
+  --radius-3xl: 3rem;
+}
+
+/* --- 2. CSS Variables Definition --- */
+:root {
+  /* Color Palette */
+  --primary: #ff8fab; /* Pinkish Primary */
+  --primary-dark: #fb6f92; /* Darker Pink */
+  --primary-soft: #ffc2d1; /* Soft Pink */
+
+  --accent-coral: #ffb3c6;
+  --accent-peach: #ffe5ec;
+  --accent-violet: #e0c3fc;
+
+  --text-main: #2d2d5f; /* Dark Blue-Violet Text */
+  --text-secondary: #6b6b99;
+
+  --bg-light: #fdfdfd;
+  --bg-dark: #2d1b2e;
+
+  /* Shadows */
+  --shadow-glass: 0 8px 32px 0 rgba(220, 220, 240, 0.35);
+  --shadow-glow: 0 0 25px rgba(255, 143, 171, 0.4);
+  --shadow-soft: 0 10px 40px -10px rgba(100, 100, 150, 0.08);
+  --shadow-candy:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.7),
+    0 4px 20px rgba(251, 111, 146, 0.1);
+
+  /* Compat variables for existing shadcn components */
+  --background: var(--bg-light);
+  --foreground: var(--text-main);
+  --card: #ffffff;
+  --card-foreground: var(--text-main);
+  --popover: #ffffff;
+  --popover-foreground: var(--text-main);
+  --primary-foreground: #ffffff;
+  --secondary: var(--accent-peach);
+  --secondary-foreground: var(--primary-dark);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--accent-violet);
+  --accent-foreground: var(--text-main);
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.6); /* Glass border */
+  --input: rgba(255, 255, 255, 0.6);
+  --ring: var(--primary);
+  --radius: 1rem;
+}
+
+.dark {
+  --background: var(--bg-dark);
+  --foreground: #fdfdfd;
+}
+
+/* --- 3. Base Styles & Utilities --- */
+@layer base {
+  body {
+    @apply font-sans text-text-main bg-bg-light transition-colors duration-300;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  /* Mesh Background */
+  .bg-mesh {
+    background-color: #fdfdfd;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(330, 80%, 95%, 0.6) 0px, transparent 50%),
+      radial-gradient(
+        at 100% 0%,
+        hsla(260, 80%, 95%, 0.6) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 100%,
+        hsla(340, 60%, 96%, 0.6) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 0% 100%, hsla(280, 50%, 95%, 0.6) 0px, transparent 50%);
+  }
+
+  /* Glass Panel */
+  .glass-panel {
+    @apply bg-white/65 backdrop-blur-xl border border-white/70 shadow-glass;
+  }
+
+  /* 3D Float Animation */
+  @keyframes float {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(2deg);
+    }
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Text Gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-primary-dark to-accent-violet;
+  }
+
+  /* Bubbly Shadow */
+  .dakku-shadow {
+    filter: drop-shadow(0 4px 8px rgba(255, 143, 171, 0.3));
+  }
+
+  /* Soft Bubbly Border */
+  .dakku-card {
+    @apply bg-white/70 backdrop-blur-md border-[3px] border-white/80 rounded-[2.5rem] shadow-glass;
+  }
+
+  /* Custom Floating Animation */
+  @keyframes bounce-subtle {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  .animate-bounce-subtle {
+    animation: bounce-subtle 3s ease-in-out infinite;
+  }
+
+  /* Slide Up Animation */
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out forwards;
+  }
+
+  /* Sparkle Effect */
+  .sparkle-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  .sparkle-bg::after {
+    content: "✨";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 1.2rem;
+    opacity: 0.6;
+    animation: sparkle-spin 4s linear infinite;
+  }
+  @keyframes sparkle-spin {
+    0% {
+      transform: rotate(0deg) scale(0.8);
+      opacity: 0.4;
+    }
+    50% {
+      transform: rotate(180deg) scale(1.2);
+      opacity: 0.8;
+    }
+    100% {
+      transform: rotate(360deg) scale(0.8);
+      opacity: 0.4;
+    }
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
