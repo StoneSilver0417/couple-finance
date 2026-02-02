@@ -23,6 +23,7 @@ import {
   Smartphone,
   ArrowLeft,
   Loader2,
+  CreditCard,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { toast } from "sonner";
@@ -207,6 +208,14 @@ export default function SettingsPage() {
                   icon: Sparkles,
                   color: "text-pink-500",
                   bg: "bg-pink-50",
+                },
+                {
+                  href: "/settings/payment-methods",
+                  title: "결제 수단",
+                  desc: "카드/현금 관리",
+                  icon: CreditCard,
+                  color: "text-blue-500",
+                  bg: "bg-blue-50",
                 },
                 {
                   href: "/assets",

@@ -4,11 +4,12 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Wallet, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart } from "lucide-react";
 import AssetsListClient from "./assets-list-client";
 import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
+import AssetTrendChart from "@/components/charts/asset-trend-chart";
 import AssetFilterTabs from "@/components/assets/asset-filter-tabs";
-import { Asset } from "@/types";
+import { Asset, AssetHistory } from "@/types";
 
 interface Member {
   id: string;
@@ -19,6 +20,7 @@ interface AssetsPageClientProps {
   assets: Asset[];
   members: Member[];
   currentUserId: string;
+  assetHistory: AssetHistory[];
 }
 
 // PRD 표준: 대문자 자산 타입
@@ -42,8 +44,16 @@ export default function AssetsPageClient({
   assets,
   members,
   currentUserId,
+  assetHistory,
 }: AssetsPageClientProps) {
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>(assets);
+  const [activeFilterId, setActiveFilterId] = useState("ALL");
+
+  // 필터 변경 핸들러
+  const handleFilterChange = (filtered: Asset[], filterId?: string) => {
+    setFilteredAssets(filtered);
+    if (filterId) setActiveFilterId(filterId);
+  };
 
   // Calculate totals for filtered assets
   const totalAssets = useMemo(
@@ -85,6 +95,29 @@ export default function AssetsPageClient({
     }));
   }, [filteredAssets]);
 
+  // 자산 추이 차트 데이터 (필터별)
+  const trendData = useMemo(() => {
+    return assetHistory.map((h) => {
+      let value = h.total_net_worth;
+
+      // 필터가 ALL이 아닌 경우 breakdown_data에서 해당 값 사용
+      if (activeFilterId !== "ALL" && h.breakdown_data) {
+        const breakdown = h.breakdown_data as Record<string, number>;
+        value = breakdown[activeFilterId] ?? 0;
+      }
+
+      // 날짜 포맷 (MM/DD)
+      const date = new Date(h.record_date);
+      const label = `${date.getMonth() + 1}/${date.getDate()}`;
+
+      return {
+        date: h.record_date,
+        label,
+        value: Number(value),
+      };
+    });
+  }, [assetHistory, activeFilterId]);
+
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
       {/* Header */}
@@ -116,7 +149,7 @@ export default function AssetsPageClient({
           assets={assets}
           members={members}
           currentUserId={currentUserId}
-          onFilterChange={setFilteredAssets}
+          onFilterChange={handleFilterChange}
         />
 
         {/* Net Worth Card */}
@@ -169,6 +202,26 @@ export default function AssetsPageClient({
                 포트폴리오
               </h3>
               <AssetPortfolioChart data={chartData} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Asset Trend Chart - 자산 추이 */}
+        <AnimatePresence mode="wait">
+          {trendData.length > 0 && (
+            <motion.div
+              key={`trend-${activeFilterId}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="glass-panel p-5 rounded-[2rem] border border-white/60"
+            >
+              <h3 className="text-lg font-bold text-text-main mb-4 px-2 flex items-center gap-2">
+                <LineChart className="h-5 w-5 text-primary" />
+                자산 추이
+              </h3>
+              <AssetTrendChart data={trendData} />
             </motion.div>
           )}
         </AnimatePresence>

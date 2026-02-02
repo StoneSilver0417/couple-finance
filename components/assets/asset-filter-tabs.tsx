@@ -13,7 +13,7 @@ interface AssetFilterTabsProps {
   assets: Asset[];
   members: Member[];
   currentUserId: string;
-  onFilterChange: (filteredAssets: Asset[]) => void;
+  onFilterChange: (filteredAssets: Asset[], filterId?: string) => void;
 }
 
 export default function AssetFilterTabs({
@@ -70,7 +70,7 @@ export default function AssetFilterTabs({
       );
     }
 
-    onFilterChange(filtered);
+    onFilterChange(filtered, tabId);
   };
 
   return (

@@ -36,11 +36,23 @@ export default async function AssetsPage() {
     .select("id, full_name")
     .eq("household_id", profile.household_id);
 
+  // Fetch asset history (최근 6개월)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const { data: assetHistory } = await supabase
+    .from("asset_history")
+    .select("*")
+    .eq("household_id", profile.household_id)
+    .gte("record_date", sixMonthsAgo.toISOString().split("T")[0])
+    .order("record_date", { ascending: true });
+
   return (
     <AssetsPageClient
       assets={(assets || []) as any}
       members={members || []}
       currentUserId={user.id}
+      assetHistory={assetHistory || []}
     />
   );
 }
