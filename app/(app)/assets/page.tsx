@@ -36,6 +36,42 @@ export default async function AssetsPage() {
     .select("id, full_name")
     .eq("household_id", profile.household_id);
 
+  // 오늘 날짜 스냅샷 확인 및 생성
+  const today = new Date().toISOString().split("T")[0];
+  const { data: todaySnapshot } = await supabase
+    .from("asset_history")
+    .select("id")
+    .eq("household_id", profile.household_id)
+    .eq("record_date", today)
+    .single();
+
+  // 오늘 스냅샷이 없고 자산이 있으면 생성
+  if (!todaySnapshot && assets && assets.length > 0) {
+    let totalNetWorth = 0;
+    const breakdown: Record<string, number> = {};
+
+    assets.forEach((asset: any) => {
+      const amount = asset.is_liability
+        ? -Number(asset.current_amount)
+        : Number(asset.current_amount);
+      totalNetWorth += amount;
+
+      const key =
+        asset.owner_type === "INDIVIDUAL"
+          ? asset.owner_profile_id || "JOINT"
+          : asset.owner_type;
+
+      breakdown[key] = (breakdown[key] || 0) + amount;
+    });
+
+    await supabase.from("asset_history").insert({
+      household_id: profile.household_id,
+      record_date: today,
+      total_net_worth: totalNetWorth,
+      breakdown_data: breakdown,
+    });
+  }
+
   // Fetch asset history (최근 6개월)
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);

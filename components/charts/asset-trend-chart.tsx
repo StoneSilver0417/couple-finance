@@ -31,10 +31,26 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
     }));
   }, [data]);
 
-  if (data.length < 2) {
+  if (data.length === 0) {
     return (
       <div className="h-[200px] flex items-center justify-center text-text-secondary text-sm">
-        추세를 보려면 2개 이상의 데이터가 필요합니다
+        자산 데이터가 없습니다
+      </div>
+    );
+  }
+
+  // 데이터가 1개일 때 현재 상태만 표시
+  if (data.length === 1) {
+    const current = data[0];
+    return (
+      <div className="h-[200px] flex flex-col items-center justify-center">
+        <p className="text-xs text-text-secondary mb-2">현재 순자산</p>
+        <p className="text-3xl font-black text-text-main">
+          ₩{current.value.toLocaleString()}
+        </p>
+        <p className="text-xs text-text-secondary mt-2">
+          {current.label} 기준 • 추이를 보려면 시간이 더 필요합니다
+        </p>
       </div>
     );
   }

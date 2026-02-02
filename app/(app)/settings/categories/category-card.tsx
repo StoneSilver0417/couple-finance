@@ -117,7 +117,7 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="rounded-2xl p-2 min-w-[120px] shadow-glass border-white/60"
+            className="rounded-2xl p-2 min-w-[120px] bg-white shadow-lg border border-gray-100"
           >
             <DropdownMenuItem
               onClick={() => onEdit(category)}

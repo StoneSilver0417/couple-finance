@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createCategory, updateCategory } from "@/lib/category-actions";
 import {
   Dialog,
@@ -36,15 +36,24 @@ export function CategoryDialog({
   category,
 }: CategoryDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState(category?.name || "");
-  const [selectedIcon, setSelectedIcon] = useState(
-    category?.icon || CATEGORY_ICONS[0],
-  );
-  const [selectedColor, setSelectedColor] = useState(
-    category?.color || CATEGORY_COLORS[0].value,
-  );
+  const [name, setName] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
+  const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0].value);
 
   const isEditing = !!category;
+
+  // category prop 변경 시 state 동기화
+  useEffect(() => {
+    if (category) {
+      setName(category.name || "");
+      setSelectedIcon(category.icon || CATEGORY_ICONS[0]);
+      setSelectedColor(category.color || CATEGORY_COLORS[0].value);
+    } else {
+      setName("");
+      setSelectedIcon(CATEGORY_ICONS[0]);
+      setSelectedColor(CATEGORY_COLORS[0].value);
+    }
+  }, [category]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,22 +91,22 @@ export function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] bg-white shadow-2xl border-none p-0 overflow-hidden rounded-3xl">
-        <div className="px-6 pt-6">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Sparkles className="h-5 w-5 text-primary" />
-            {isEditing ? "카테고리 수정" : "새 카테고리 만들기"}
+      <DialogContent className="sm:max-w-[420px] max-h-[85vh] !bg-white shadow-2xl border-none p-0 overflow-hidden rounded-3xl backdrop-blur-none">
+        <div className="px-5 pt-5">
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="h-4 w-4 text-primary" />
+            {isEditing ? "카테고리 수정" : "새 카테고리"}
           </DialogTitle>
-          <DialogDescription className="mt-1">
+          <DialogDescription className="mt-0.5 text-xs">
             {isEditing
               ? "카테고리 정보를 수정하세요"
               : "나만의 카테고리를 만들어보세요"}
           </DialogDescription>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-semibold">
+        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3 space-y-4 overflow-y-auto max-h-[calc(85vh-80px)]">
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-xs font-semibold">
               카테고리 이름
             </Label>
             <Input
@@ -106,24 +115,24 @@ export function CategoryDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="예: 카페 & 디저트"
               required
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">아이콘 선택</Label>
-            <div className="grid grid-cols-5 gap-3 p-4 bg-muted/30 rounded-2xl max-h-[180px] overflow-y-auto hide-scrollbar">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">아이콘 선택</Label>
+            <div className="grid grid-cols-6 gap-2 p-3 bg-muted/30 rounded-xl max-h-[120px] overflow-y-auto hide-scrollbar">
               {CATEGORY_ICONS.map((icon, idx) => (
                 <button
                   key={`${icon}-${idx}`}
                   type="button"
                   onClick={() => setSelectedIcon(icon)}
                   className={`
-                    h-12 w-12 rounded-xl text-2xl transition-all duration-150
+                    h-10 w-10 rounded-lg text-xl transition-all duration-150
                     hover:bg-white active:scale-90
                     ${
                       selectedIcon === icon
-                        ? "bg-primary/20 ring-2 ring-primary shadow-sm scale-105"
+                        ? "bg-primary/20 ring-2 ring-primary shadow-sm"
                         : "bg-white/50"
                     }
                   `}
@@ -134,28 +143,27 @@ export function CategoryDialog({
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">색상 선택</Label>
-            <div className="grid grid-cols-4 gap-3">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">색상 선택</Label>
+            <div className="grid grid-cols-4 gap-2">
               {CATEGORY_COLORS.map((color) => (
                 <button
                   key={color.value}
                   type="button"
                   onClick={() => setSelectedColor(color.value)}
                   className={`
-                    h-16 rounded-2xl transition-all duration-200
-                    hover:scale-105 hover:shadow-lg
+                    h-12 rounded-xl transition-all duration-200
                     ${
                       selectedColor === color.value
-                        ? "ring-4 ring-primary ring-offset-2 scale-105 shadow-lg"
-                        : "hover:ring-2 hover:ring-gray-300"
+                        ? "ring-2 ring-primary ring-offset-1 shadow-md"
+                        : ""
                     }
                   `}
                   style={{
                     background: `linear-gradient(135deg, ${color.light} 0%, ${color.value} 100%)`,
                   }}
                 >
-                  <span className="text-xs font-medium text-white drop-shadow-md">
+                  <span className="text-[10px] font-medium text-white drop-shadow-md">
                     {color.name}
                   </span>
                 </button>
@@ -163,18 +171,18 @@ export function CategoryDialog({
             </div>
           </div>
 
-          <div className="p-4 bg-muted/30 rounded-2xl">
-            <p className="text-sm text-muted-foreground mb-2">미리보기</p>
-            <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm">
+          <div className="p-3 bg-muted/30 rounded-xl">
+            <p className="text-xs text-muted-foreground mb-1.5">미리보기</p>
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
               <div
-                className="h-12 w-12 rounded-xl flex items-center justify-center text-2xl shadow-sm"
+                className="h-10 w-10 rounded-lg flex items-center justify-center text-xl shadow-sm"
                 style={{ backgroundColor: selectedColor + "20" }}
               >
                 {selectedIcon}
               </div>
               <div>
-                <p className="font-semibold">{name || "카테고리 이름"}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-semibold text-sm">{name || "카테고리 이름"}</p>
+                <p className="text-[10px] text-muted-foreground">
                   {type === "income" ? "수입" : "지출"} •{" "}
                   {expenseCategory === "fixed"
                     ? "고정"
@@ -186,25 +194,25 @@ export function CategoryDialog({
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
-              className="h-11"
+              className="h-9 text-sm"
             >
               취소
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !name}
-              className="h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              className="h-9 text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : isEditing ? (
-                "수정하기"
+                "수정"
               ) : (
                 "만들기"
               )}
