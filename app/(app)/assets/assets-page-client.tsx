@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import AssetsListClient from "./assets-list-client";
@@ -20,7 +21,16 @@ interface AssetsPageClientProps {
   currentUserId: string;
 }
 
+// PRD 표준: 대문자 자산 타입
 const ASSET_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  CASH: { label: "현금", color: "#8B5CF6" },
+  SAVINGS: { label: "저금 자산", color: "#10B981" },
+  INVESTMENT: { label: "투자 자산", color: "#3B82F6" },
+  REAL_ESTATE: { label: "부동산", color: "#F97316" },
+  DEBT: { label: "부채", color: "#EF4444" },
+  CHILD_SAVINGS: { label: "자녀 자산", color: "#F59E0B" },
+  OTHER: { label: "기타", color: "#6B7280" },
+  // 하위 호환성 (기존 소문자 데이터)
   savings: { label: "저금 자산", color: "#10B981" },
   child: { label: "자녀 자산", color: "#F59E0B" },
   investment: { label: "투자 자산", color: "#3B82F6" },
@@ -144,45 +154,70 @@ export default function AssetsPageClient({
           </div>
         </div>
 
-        {/* Portfolio Chart Section */}
-        {chartData.length > 0 && (
-          <div className="glass-panel p-5 rounded-[2rem] border border-white/60">
-            <h3 className="text-lg font-bold text-text-main mb-4 px-2">
-              포트폴리오
-            </h3>
-            <AssetPortfolioChart data={chartData} />
-          </div>
-        )}
+        {/* Portfolio Chart Section - 애니메이션 적용 */}
+        <AnimatePresence mode="wait">
+          {chartData.length > 0 && (
+            <motion.div
+              key={`chart-${filteredAssets.map(a => a.id).join('-')}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="glass-panel p-5 rounded-[2rem] border border-white/60"
+            >
+              <h3 className="text-lg font-bold text-text-main mb-4 px-2">
+                포트폴리오
+              </h3>
+              <AssetPortfolioChart data={chartData} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Asset List Section */}
+        {/* Asset List Section - 애니메이션 적용 */}
         <div>
           <div className="flex items-center justify-between mb-4 px-2">
             <h3 className="text-lg font-bold text-text-main">자산 목록</h3>
           </div>
 
-          {filteredAssets.length === 0 ? (
-            <div className="glass-panel p-8 rounded-[2rem] text-center border-dashed border-2 border-primary/20 bg-primary/5 flex flex-col items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-white/50 flex items-center justify-center">
-                <Wallet className="h-6 w-6 text-text-secondary" />
-              </div>
-              <p className="text-sm text-text-secondary font-medium">
-                해당 필터에 자산이 없습니다
-              </p>
-              <Link href="/assets/new">
-                <Button size="sm" className="rounded-xl mt-2 font-bold">
-                  자산 등록
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="bg-white/40 rounded-[2rem] p-1 border border-white/40">
-              <AssetsListClient
-                assets={filteredAssets as any}
-                members={members}
-                currentUserId={currentUserId}
-              />
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {filteredAssets.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="glass-panel p-8 rounded-[2rem] text-center border-dashed border-2 border-primary/20 bg-primary/5 flex flex-col items-center gap-3"
+              >
+                <div className="h-12 w-12 rounded-full bg-white/50 flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-text-secondary" />
+                </div>
+                <p className="text-sm text-text-secondary font-medium">
+                  해당 필터에 자산이 없습니다
+                </p>
+                <Link href="/assets/new">
+                  <Button size="sm" className="rounded-xl mt-2 font-bold">
+                    자산 등록
+                  </Button>
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={`list-${filteredAssets.map(a => a.id).join('-')}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/40 rounded-[2rem] p-1 border border-white/40"
+              >
+                <AssetsListClient
+                  assets={filteredAssets as any}
+                  members={members}
+                  currentUserId={currentUserId}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

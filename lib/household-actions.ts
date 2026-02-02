@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { seedDefaultPaymentMethods } from "./payment-method-actions";
 
 // Generate a random 8-character invite code
 function generateInviteCode(): string {
@@ -40,12 +41,13 @@ export async function createHousehold(formData: FormData) {
 
     if (householdError) throw householdError;
 
-    // Create or update profile
+    // Create or update profile (OWNER 역할)
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
       email: user.email!,
       full_name: userName,
       household_id: household.id,
+      role: "OWNER",
     });
 
     if (profileError) throw profileError;
@@ -61,8 +63,12 @@ export async function createHousehold(formData: FormData) {
     if (seedError) {
       console.error("Category seed error:", seedError);
     }
-  } catch (error: any) {
-    return { error: error.message || "가구 생성에 실패했습니다." };
+
+    // Seed default payment methods
+    await seedDefaultPaymentMethods(household.id);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "가구 생성에 실패했습니다.";
+    return { error: message };
   }
 
   revalidatePath("/", "layout");
@@ -111,17 +117,19 @@ export async function joinHousehold(formData: FormData) {
       return { error: "이미 2명의 구성원이 있는 가구입니다." };
     }
 
-    // Create or update profile
+    // Create or update profile (MEMBER 역할)
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,
       email: user.email!,
       full_name: userName,
       household_id: household.id,
+      role: "MEMBER",
     });
 
     if (profileError) throw profileError;
-  } catch (error: any) {
-    return { error: error.message || "가구 참여에 실패했습니다." };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "가구 참여에 실패했습니다.";
+    return { error: message };
   }
 
   revalidatePath("/", "layout");
