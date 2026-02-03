@@ -62,6 +62,9 @@ export default async function MonthDetailPage({
       .order("display_order", { ascending: true }),
   ]);
 
+  // 디버깅 로그
+  console.log("[transactions] RPC result:", JSON.stringify(transactionsResult, null, 2));
+
   // RPC 결과를 기존 형식에 맞게 변환
   const transactions = (transactionsResult.data || []).map((t: any) => ({
     ...t,
