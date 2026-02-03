@@ -104,34 +104,27 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
                     key={asset.id}
                     className="rounded-3xl border-none shadow-sm hover:shadow-md transition-all overflow-hidden"
                   >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div
-                        className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm"
-                        style={{ backgroundColor: config.color + '20' }}
-                      >
-                        <Icon className="h-6 w-6" style={{ color: config.color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[15px] text-foreground break-words line-clamp-2">
-                          {asset.name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {asset.is_liability ? '부채' : config.label}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div
-                          className={`text-sm sm:text-base font-black whitespace-nowrap text-right ${
-                            asset.is_liability ? 'text-destructive' : 'text-foreground'
-                          }`}
-                        >
-                          {asset.is_liability ? '-' : ''}₩
-                          {asset.current_amount.toLocaleString()}
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div
+                            className="h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
+                            style={{ backgroundColor: config.color + '20' }}
+                          >
+                            <Icon className="h-5 w-5" style={{ color: config.color }} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-[14px] text-foreground truncate">
+                              {asset.name}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {asset.is_liability ? '부채' : config.label}
+                            </p>
+                          </div>
                         </div>
-
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full shrink-0">
                               <MoreVertical className="h-4 w-4 text-muted-foreground" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -147,6 +140,14 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                      </div>
+                      <div
+                        className={`text-lg font-black mt-2 pl-13 ${
+                          asset.is_liability ? 'text-destructive' : 'text-foreground'
+                        }`}
+                        style={{ paddingLeft: '52px' }}
+                      >
+                        {asset.is_liability ? '-' : ''}₩{asset.current_amount.toLocaleString()}
                       </div>
                     </CardContent>
                   </Card>
