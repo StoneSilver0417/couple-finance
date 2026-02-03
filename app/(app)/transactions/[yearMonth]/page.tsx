@@ -50,17 +50,11 @@ export default async function MonthDetailPage({
 
   // 병렬 쿼리 실행 (성능 최적화)
   const [transactionsResult, categoriesResult] = await Promise.all([
-    supabase
-      .from("transactions")
-      .select(
-        `id, type, amount, transaction_date, expense_type, memo, category_id,
-        categories (name, icon, color)`,
-      )
-      .eq("household_id", profile.household_id)
-      .gte("transaction_date", startOfMonth)
-      .lte("transaction_date", endOfMonth)
-      .order("transaction_date", { ascending: false })
-      .order("created_at", { ascending: false }),
+    supabase.rpc("get_transactions_by_month", {
+      p_household_id: profile.household_id,
+      p_start_date: startOfMonth,
+      p_end_date: endOfMonth,
+    }),
     supabase
       .from("categories")
       .select("*")
@@ -68,7 +62,15 @@ export default async function MonthDetailPage({
       .order("display_order", { ascending: true }),
   ]);
 
-  const transactions = transactionsResult.data;
+  // RPC 결과를 기존 형식에 맞게 변환
+  const transactions = (transactionsResult.data || []).map((t: any) => ({
+    ...t,
+    categories: t.category_id ? {
+      name: t.category_name,
+      icon: t.category_icon,
+      color: t.category_color,
+    } : null,
+  }));
   const categories = categoriesResult.data;
   const summary = calculateSummary((transactions || []) as unknown as any[]);
 

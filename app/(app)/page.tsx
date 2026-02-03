@@ -51,13 +51,12 @@ export default async function DashboardPage() {
     monthlyBalancesResult,
     householdResult,
   ] = await Promise.all([
-    // 트랜잭션
-    supabase
-      .from("transactions")
-      .select(`*, categories (name, color, icon)`)
-      .eq("household_id", profile.household_id)
-      .gte("transaction_date", startOfMonth)
-      .lte("transaction_date", endOfMonth),
+    // 트랜잭션 (RPC 함수 사용)
+    supabase.rpc("get_transactions_by_month", {
+      p_household_id: profile.household_id,
+      p_start_date: startOfMonth,
+      p_end_date: endOfMonth,
+    }),
     // 가구 멤버
     supabase
       .from("profiles")
@@ -93,8 +92,15 @@ export default async function DashboardPage() {
       .single(),
   ]);
 
-  const currentMonthTxs: Transaction[] = (transactionsResult.data ||
-    []) as unknown as Transaction[];
+  // RPC 결과를 기존 형식에 맞게 변환
+  const currentMonthTxs: Transaction[] = (transactionsResult.data || []).map((t: any) => ({
+    ...t,
+    categories: t.category_id ? {
+      name: t.category_name,
+      icon: t.category_icon,
+      color: t.category_color,
+    } : null,
+  })) as unknown as Transaction[];
   const members = membersResult.data;
   const assets = assetsResult.data;
   const monthlyBudget = monthlyBudgetResult.data;
