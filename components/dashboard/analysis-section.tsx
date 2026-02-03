@@ -17,6 +17,7 @@ interface AnalysisSectionProps {
   incomeData: CategoryData[];
   totalBudget: number;
   totalExpense: number;
+  variableExpense: number;
   totalIncome: number;
 }
 
@@ -25,13 +26,15 @@ export default function AnalysisSection({
   incomeData,
   totalBudget,
   totalExpense,
+  variableExpense,
   totalIncome,
 }: AnalysisSectionProps) {
   const [mode, setMode] = useState<"expense" | "income">("expense");
 
-  const budgetRemaining = totalBudget - totalExpense;
+  // 예산 잔액은 변동지출만 차감
+  const budgetRemaining = totalBudget - variableExpense;
   const budgetUsedPercent =
-    totalBudget > 0 ? (totalExpense / totalBudget) * 100 : 0;
+    totalBudget > 0 ? (variableExpense / totalBudget) * 100 : 0;
 
   return (
     <section className="px-6 mb-8">

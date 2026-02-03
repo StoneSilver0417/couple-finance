@@ -150,6 +150,11 @@ export default async function DashboardPage() {
     currentMonthTxs.filter((tx) => tx.type === "income"),
   );
 
+  // 변동지출만 계산 (예산 잔액 계산용)
+  const variableExpenseTotal = currentMonthTxs
+    .filter((tx) => tx.type === "expense" && tx.expense_type === "variable")
+    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+
   return (
     <main className="flex-1 w-full animate-fade-in relative z-10">
       {/* --- HEADER --- */}
@@ -218,6 +223,7 @@ export default async function DashboardPage() {
         incomeData={incomeByCategory}
         totalBudget={totalBudget}
         totalExpense={summary.expense}
+        variableExpense={variableExpenseTotal}
         totalIncome={summary.income}
       />
 
