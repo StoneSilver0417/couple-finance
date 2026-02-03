@@ -157,16 +157,13 @@ function FormFields({
   return (
     <>
       <div className="space-y-2">
-        <div className="flex items-center justify-between px-1">
+        <div className="px-1">
           <Label
             htmlFor="amount"
             className="font-semibold text-text-main text-[13px]"
           >
             금액 *
           </Label>
-          <span className="text-[10px] font-medium text-text-secondary/80">
-            단위: 원 (세후 기준)
-          </span>
         </div>
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold z-10">

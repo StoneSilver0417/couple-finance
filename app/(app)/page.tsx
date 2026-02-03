@@ -49,6 +49,7 @@ export default async function DashboardPage() {
     assetsResult,
     monthlyBudgetResult,
     monthlyBalancesResult,
+    householdResult,
   ] = await Promise.all([
     // 트랜잭션
     supabase
@@ -84,6 +85,12 @@ export default async function DashboardPage() {
       .order("year", { ascending: false })
       .order("month", { ascending: false })
       .limit(6),
+    // 가구 정보
+    supabase
+      .from("households")
+      .select("name")
+      .eq("id", profile.household_id)
+      .single(),
   ]);
 
   const currentMonthTxs: Transaction[] = (transactionsResult.data ||
@@ -92,6 +99,7 @@ export default async function DashboardPage() {
   const assets = assetsResult.data;
   const monthlyBudget = monthlyBudgetResult.data;
   const monthlyBalances = monthlyBalancesResult.data;
+  const household = householdResult.data;
 
   // 4. Calculate Summary
   const summary = calculateSummary(currentMonthTxs);
@@ -137,7 +145,7 @@ export default async function DashboardPage() {
       {/* --- HEADER --- */}
       <DashboardHeader
         members={members || []}
-        userName={profile.full_name || "User"}
+        householdName={household?.name || "우리 가족"}
       />
 
       {/* --- MAIN BALANCE CARD --- */}

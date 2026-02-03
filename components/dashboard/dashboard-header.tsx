@@ -10,12 +10,12 @@ interface Member {
 
 interface DashboardHeaderProps {
   members: Member[];
-  userName: string;
+  householdName: string;
 }
 
 export default function DashboardHeader({
   members,
-  userName,
+  householdName,
 }: DashboardHeaderProps) {
   return (
     <header className="flex items-center justify-between p-6 pt-10">
@@ -47,10 +47,10 @@ export default function DashboardHeader({
         </div>
         <div>
           <p className="text-xs text-text-secondary font-bold tracking-wider uppercase mb-0.5">
-            반가워요
+            우리 가계부
           </p>
           <h2 className="text-xl font-black text-text-main leading-none tracking-tight">
-            {userName} <span className="text-primary-dark">&</span> 가족
+            {householdName}
           </h2>
         </div>
       </div>
