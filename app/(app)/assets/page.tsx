@@ -23,27 +23,40 @@ export default async function AssetsPage() {
     redirect("/onboarding");
   }
 
-  // Fetch all assets with owner info
-  const { data: assets } = await supabase
-    .from("assets")
-    .select("*")
-    .eq("household_id", profile.household_id)
-    .order("created_at", { ascending: false });
-
-  // Fetch household members
-  const { data: members } = await supabase
-    .from("profiles")
-    .select("id, full_name")
-    .eq("household_id", profile.household_id);
-
-  // 오늘 날짜 스냅샷 확인 및 생성
+  // 병렬 쿼리 실행 (성능 최적화)
   const today = new Date().toISOString().split("T")[0];
-  const { data: todaySnapshot } = await supabase
-    .from("asset_history")
-    .select("id")
-    .eq("household_id", profile.household_id)
-    .eq("record_date", today)
-    .single();
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const [assetsResult, membersResult, todaySnapshotResult, assetHistoryResult] =
+    await Promise.all([
+      supabase
+        .from("assets")
+        .select("*")
+        .eq("household_id", profile.household_id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("household_id", profile.household_id),
+      supabase
+        .from("asset_history")
+        .select("id")
+        .eq("household_id", profile.household_id)
+        .eq("record_date", today)
+        .single(),
+      supabase
+        .from("asset_history")
+        .select("*")
+        .eq("household_id", profile.household_id)
+        .gte("record_date", sixMonthsAgo.toISOString().split("T")[0])
+        .order("record_date", { ascending: true }),
+    ]);
+
+  const assets = assetsResult.data;
+  const members = membersResult.data;
+  const todaySnapshot = todaySnapshotResult.data;
+  const assetHistory = assetHistoryResult.data;
 
   // 오늘 스냅샷이 없고 자산이 있으면 생성
   if (!todaySnapshot && assets && assets.length > 0) {
@@ -71,17 +84,6 @@ export default async function AssetsPage() {
       breakdown_data: breakdown,
     });
   }
-
-  // Fetch asset history (최근 6개월)
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-  const { data: assetHistory } = await supabase
-    .from("asset_history")
-    .select("*")
-    .eq("household_id", profile.household_id)
-    .gte("record_date", sixMonthsAgo.toISOString().split("T")[0])
-    .order("record_date", { ascending: true });
 
   return (
     <AssetsPageClient

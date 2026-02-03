@@ -48,39 +48,29 @@ export default async function MonthDetailPage({
   const startOfMonth = `${year}-${monthStr}-01`;
   const endOfMonth = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
-  // Fetch all transactions for the month
-  const { data: transactions } = await supabase
-    .from("transactions")
-    .select(
-      `
-      id,
-      type,
-      amount,
-      transaction_date,
-      expense_type,
-      memo,
-      category_id,
-      categories (
-        name,
-        icon,
-        color
+  // 병렬 쿼리 실행 (성능 최적화)
+  const [transactionsResult, categoriesResult] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select(
+        `id, type, amount, transaction_date, expense_type, memo, category_id,
+        categories (name, icon, color)`,
       )
-    `,
-    )
-    .eq("household_id", profile.household_id)
-    .gte("transaction_date", startOfMonth)
-    .lte("transaction_date", endOfMonth)
-    .order("transaction_date", { ascending: false })
-    .order("created_at", { ascending: false });
+      .eq("household_id", profile.household_id)
+      .gte("transaction_date", startOfMonth)
+      .lte("transaction_date", endOfMonth)
+      .order("transaction_date", { ascending: false })
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("household_id", profile.household_id)
+      .order("display_order", { ascending: true }),
+  ]);
 
+  const transactions = transactionsResult.data;
+  const categories = categoriesResult.data;
   const summary = calculateSummary((transactions || []) as unknown as any[]);
-
-  // Fetch categories for edit form
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("household_id", profile.household_id)
-    .order("display_order", { ascending: true });
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">

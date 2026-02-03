@@ -39,46 +39,62 @@ export default async function DashboardPage() {
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
   const startOfMonth = `${year}-${String(month).padStart(2, "0")}-01`;
-  // End of month calculation
   const lastDate = new Date(year, month, 0).getDate();
   const endOfMonth = `${year}-${String(month).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
 
-  // 3. Fetch Transactions
-  const { data: rawTransactions, error: txError } = await supabase
-    .from("transactions")
-    .select(
-      `
-      *,
-      categories (
-        name,
-        color,
-        icon
-      )
-    `,
-    )
-    .eq("household_id", profile.household_id)
-    .gte("transaction_date", startOfMonth)
-    .lte("transaction_date", endOfMonth);
+  // 3. 모든 쿼리를 병렬로 실행 (성능 최적화)
+  const [
+    transactionsResult,
+    membersResult,
+    assetsResult,
+    monthlyBudgetResult,
+    monthlyBalancesResult,
+  ] = await Promise.all([
+    // 트랜잭션
+    supabase
+      .from("transactions")
+      .select(`*, categories (name, color, icon)`)
+      .eq("household_id", profile.household_id)
+      .gte("transaction_date", startOfMonth)
+      .lte("transaction_date", endOfMonth),
+    // 가구 멤버
+    supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .eq("household_id", profile.household_id)
+      .limit(2),
+    // 자산
+    supabase
+      .from("assets")
+      .select("*")
+      .eq("household_id", profile.household_id),
+    // 월별 예산
+    supabase
+      .from("monthly_budgets")
+      .select("total_budget")
+      .eq("household_id", profile.household_id)
+      .eq("year", year)
+      .eq("month", month)
+      .single(),
+    // 월별 잔액 (최근 6개월)
+    supabase
+      .from("monthly_balances")
+      .select("year, month, expense_total, income_total")
+      .eq("household_id", profile.household_id)
+      .order("year", { ascending: false })
+      .order("month", { ascending: false })
+      .limit(6),
+  ]);
 
-  if (txError) console.error(txError);
-  const currentMonthTxs: Transaction[] = (rawTransactions ||
+  const currentMonthTxs: Transaction[] = (transactionsResult.data ||
     []) as unknown as Transaction[];
+  const members = membersResult.data;
+  const assets = assetsResult.data;
+  const monthlyBudget = monthlyBudgetResult.data;
+  const monthlyBalances = monthlyBalancesResult.data;
 
   // 4. Calculate Summary
   const summary = calculateSummary(currentMonthTxs);
-
-  // 5. Fetch Household Members (for couple profile display)
-  const { data: members } = await supabase
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .eq("household_id", profile.household_id)
-    .limit(2);
-
-  // 6. Fetch Assets for summary
-  const { data: assets } = await supabase
-    .from("assets")
-    .select("*")
-    .eq("household_id", profile.household_id);
 
   const totalAssets =
     assets
@@ -92,28 +108,7 @@ export default async function DashboardPage() {
 
   const netWorth = totalAssets - totalLiabilities;
 
-  // 7. Fetch Monthly Budget
-  const { data: monthlyBudget } = await supabase
-    .from("monthly_budgets")
-    .select("total_budget")
-    .eq("household_id", profile.household_id)
-    .eq("year", year)
-    .eq("month", month)
-    .single();
-
   const totalBudget = monthlyBudget?.total_budget || 0;
-  const budgetRemaining = totalBudget - summary.expense;
-  const budgetUsedPercent =
-    totalBudget > 0 ? (summary.expense / totalBudget) * 100 : 0;
-
-  // 8. Fetch Monthly Balances for Trend Chart (last 6 months)
-  const { data: monthlyBalances } = await supabase
-    .from("monthly_balances")
-    .select("year, month, expense_total, income_total")
-    .eq("household_id", profile.household_id)
-    .order("year", { ascending: false })
-    .order("month", { ascending: false })
-    .limit(6);
 
   // Prepare trend data
   const reversedBalances = (monthlyBalances || []).reverse();
