@@ -62,17 +62,6 @@ export default async function MonthDetailPage({
       .order("display_order", { ascending: true }),
   ]);
 
-  // 에러 확인
-  if (transactionsResult.error) {
-    console.error("[transactions] RPC error:", transactionsResult.error);
-    return (
-      <div className="p-6 text-red-500">
-        <p>에러: {transactionsResult.error.message}</p>
-        <p>코드: {transactionsResult.error.code}</p>
-        <pre>{JSON.stringify(transactionsResult.error, null, 2)}</pre>
-      </div>
-    );
-  }
 
   // RPC 결과를 기존 형식에 맞게 변환
   const transactions = (transactionsResult.data || []).map((t: any) => ({
@@ -92,14 +81,6 @@ export default async function MonthDetailPage({
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
-      {/* 디버그 정보 */}
-      <div className="p-4 m-4 bg-yellow-100 rounded text-xs">
-        <p>RPC 데이터: {transactionsResult.data?.length || 0}건</p>
-        <p>변환 후: {transactions.length}건</p>
-        <p>household: {profile.household_id}</p>
-        <p>기간: {startOfMonth} ~ {endOfMonth}</p>
-        <p>Raw: {JSON.stringify(transactionsResult.data?.[0] || 'empty')}</p>
-      </div>
       {/* Header */}
       <header className="flex items-center justify-between p-6 pt-10">
         <div className="flex items-center gap-4">
