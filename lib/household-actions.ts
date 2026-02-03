@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { seedDefaultPaymentMethods } from "./payment-method-actions";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 // Generate a random 8-character invite code
@@ -30,43 +29,23 @@ export async function createHousehold(formData: FormData) {
   }
 
   try {
-    // Create household
-    const { data: household, error: householdError } = await supabase
-      .from("households")
-      .insert({
-        name: householdName,
-        invite_code: generateInviteCode(),
-      })
-      .select()
-      .single();
-
-    if (householdError) throw householdError;
-
-    // Create or update profile (OWNER 역할)
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      email: user.email!,
-      full_name: userName,
-      household_id: household.id,
-      role: "OWNER",
-    });
-
-    if (profileError) throw profileError;
-
-    // Seed default categories
-    const { error: seedError } = await supabase.rpc(
-      "create_default_categories",
+    // SECURITY DEFINER 함수로 가구 생성 (RLS 우회)
+    const { data: householdId, error: rpcError } = await supabase.rpc(
+      "create_household_with_owner",
       {
-        p_household_id: household.id,
+        p_user_id: user.id,
+        p_user_email: user.email!,
+        p_user_name: userName,
+        p_household_name: householdName,
+        p_invite_code: generateInviteCode(),
       },
     );
 
-    if (seedError) {
-      console.error("Category seed error:", seedError);
-    }
+    if (rpcError) throw rpcError;
 
-    // Seed default payment methods
-    await seedDefaultPaymentMethods(household.id);
+    if (!householdId) {
+      throw new Error("가구 생성에 실패했습니다.");
+    }
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
   }
@@ -94,39 +73,23 @@ export async function joinHousehold(formData: FormData) {
   }
 
   try {
-    // Find household by invite code
-    const { data: household, error: householdError } = await supabase
-      .from("households")
-      .select("id")
-      .eq("invite_code", inviteCode)
-      .single();
+    // SECURITY DEFINER 함수로 가구 참여 (RLS 우회)
+    const { data: result, error: rpcError } = await supabase.rpc(
+      "join_household_as_member",
+      {
+        p_user_id: user.id,
+        p_user_email: user.email!,
+        p_user_name: userName,
+        p_invite_code: inviteCode,
+      },
+    );
 
-    if (householdError || !household) {
-      return { error: "유효하지 않은 초대 코드입니다." };
+    if (rpcError) throw rpcError;
+
+    // RPC 함수에서 반환된 에러 확인
+    if (result?.error) {
+      return { error: result.error };
     }
-
-    // Check if household already has 2 members
-    const { data: members, error: membersError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("household_id", household.id);
-
-    if (membersError) throw membersError;
-
-    if (members && members.length >= 2) {
-      return { error: "이미 2명의 구성원이 있는 가구입니다." };
-    }
-
-    // Create or update profile (MEMBER 역할)
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      email: user.email!,
-      full_name: userName,
-      household_id: household.id,
-      role: "MEMBER",
-    });
-
-    if (profileError) throw profileError;
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
   }
