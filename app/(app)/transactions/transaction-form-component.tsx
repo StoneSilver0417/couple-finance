@@ -187,9 +187,6 @@ function FormFields({
           >
             카테고리 *
           </Label>
-          <span className="text-[10px] font-medium text-text-secondary/80">
-            자주 쓰는 항목만 골라주세요
-          </span>
         </div>
         <div className="relative">
           <select
@@ -235,9 +232,6 @@ function FormFields({
           >
             날짜 *
           </Label>
-          <span className="text-[10px] font-medium text-text-secondary/80">
-            달력에서 고른 날로 자동 입력돼요
-          </span>
         </div>
         <Input
           id="transaction_date"
@@ -257,9 +251,6 @@ function FormFields({
           >
             메모 (선택)
           </Label>
-          <span className="text-[10px] font-medium text-text-secondary/80">
-            나중에 봐도 이해될 한 줄이면 충분해요
-          </span>
         </div>
         <Input
           id="memo"
