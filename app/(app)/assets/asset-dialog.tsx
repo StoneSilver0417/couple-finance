@@ -12,10 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AmountInput } from "@/components/ui/amount-input";
 import { toast } from "sonner";
 import {
   Loader2,
-  Wallet,
   PiggyBank,
   TrendingUp,
   Banknote,
@@ -207,15 +207,12 @@ export default function AssetDialog({
           <div className="space-y-2">
             <Label htmlFor="current_amount">현재 금액 *</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold z-10">
                 ₩
               </span>
-              <Input
+              <AmountInput
                 id="current_amount"
                 name="current_amount"
-                type="number"
-                min="0"
-                step="1"
                 placeholder="0"
                 required
                 defaultValue={assetToEdit?.current_amount}

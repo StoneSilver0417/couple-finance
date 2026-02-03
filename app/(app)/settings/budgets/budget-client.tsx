@@ -1,12 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { updateMonthlyBudget } from "@/lib/monthly-budget-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Save, Target } from "lucide-react";
 import { Label } from "@/components/ui/label";
+
+// 숫자를 천단위 콤마 포맷으로 변환
+function formatNumber(value: number | string): string {
+  const num = typeof value === "string" ? value.replace(/,/g, "") : String(value);
+  if (!num || isNaN(Number(num))) return "";
+  return Number(num).toLocaleString("ko-KR");
+}
+
+// 콤마 제거하고 숫자만 추출
+function parseNumber(value: string): number {
+  const num = value.replace(/[^0-9]/g, "");
+  return num ? parseInt(num, 10) : 0;
+}
 
 interface BudgetClientProps {
   currentBudget: number;
@@ -19,19 +32,42 @@ export function BudgetClient({
   year,
   month,
 }: BudgetClientProps) {
-  const [budgetAmount, setBudgetAmount] = useState<string>(
-    currentBudget > 0 ? currentBudget.toString() : "",
+  const [displayValue, setDisplayValue] = useState<string>(
+    currentBudget > 0 ? formatNumber(currentBudget) : "",
   );
+  const [rawValue, setRawValue] = useState<number>(currentBudget || 0);
   const [isSaving, setIsSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 키보드가 올라올 때 입력 필드가 보이도록 스크롤
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const handleFocus = () => {
+      setTimeout(() => {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
+    };
+
+    input.addEventListener("focus", handleFocus);
+    return () => input.removeEventListener("focus", handleFocus);
+  }, []);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = parseNumber(e.target.value);
+    setRawValue(numericValue);
+    setDisplayValue(numericValue > 0 ? formatNumber(numericValue) : "");
+  };
 
   async function handleSave() {
-    if (!budgetAmount || Number(budgetAmount) < 0) {
+    if (rawValue <= 0) {
       toast.error("올바른 금액을 입력해주세요");
       return;
     }
 
     setIsSaving(true);
-    const result = await updateMonthlyBudget(year, month, Number(budgetAmount));
+    const result = await updateMonthlyBudget(year, month, rawValue);
     setIsSaving(false);
 
     if (result?.error) {
@@ -52,7 +88,7 @@ export function BudgetClient({
           </p>
         </div>
         <h2 className="text-4xl font-black tracking-tight">
-          ₩ {Number(budgetAmount || 0).toLocaleString()}
+          ₩ {rawValue.toLocaleString()}
         </h2>
       </div>
 
@@ -72,13 +108,16 @@ export function BudgetClient({
 
         <div className="space-y-4">
           <div className="relative">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-2xl">
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-2xl z-10">
               ₩
             </span>
             <Input
-              type="number"
-              value={budgetAmount}
-              onChange={(e) => setBudgetAmount(e.target.value)}
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9,]*"
+              value={displayValue}
+              onChange={handleAmountChange}
               placeholder="0"
               className="pl-12 text-3xl font-black rounded-3xl border-gray-200 bg-white h-24 shadow-inner focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
@@ -86,7 +125,7 @@ export function BudgetClient({
 
           <Button
             onClick={handleSave}
-            disabled={isSaving || !budgetAmount}
+            disabled={isSaving || rawValue <= 0}
             className="w-full h-16 rounded-2xl font-bold bg-gradient-to-tr from-primary-dark to-primary text-white text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 border-none"
           >
             {isSaving ? (

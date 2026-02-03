@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, TrendingDown, TrendingUp } from "lucide-react";
+import { AmountInput } from "@/components/ui/amount-input";
 
-import { Category, Transaction } from "@/types";
+import { Category } from "@/types";
 
 export interface TransactionFormData {
   type: "income" | "expense";
@@ -169,19 +169,15 @@ function FormFields({
           </span>
         </div>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold z-10">
             ₩
           </span>
-          <Input
+          <AmountInput
             id="amount"
             name="amount"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="10000"
+            placeholder="10,000"
             required
             defaultValue={initialData?.amount}
-            className="pl-8 text-lg font-extrabold rounded-2xl border-white/70 bg-white/70 shadow-soft focus:bg-white focus:ring-2 focus:ring-primary/40 h-12"
           />
         </div>
       </div>
