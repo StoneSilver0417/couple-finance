@@ -62,8 +62,17 @@ export default async function MonthDetailPage({
       .order("display_order", { ascending: true }),
   ]);
 
-  // 디버깅 로그
-  console.log("[transactions] RPC result:", JSON.stringify(transactionsResult, null, 2));
+  // 에러 확인
+  if (transactionsResult.error) {
+    console.error("[transactions] RPC error:", transactionsResult.error);
+    return (
+      <div className="p-6 text-red-500">
+        <p>에러: {transactionsResult.error.message}</p>
+        <p>코드: {transactionsResult.error.code}</p>
+        <pre>{JSON.stringify(transactionsResult.error, null, 2)}</pre>
+      </div>
+    );
+  }
 
   // RPC 결과를 기존 형식에 맞게 변환
   const transactions = (transactionsResult.data || []).map((t: any) => ({
