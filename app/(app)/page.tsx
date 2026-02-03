@@ -243,19 +243,19 @@ export default async function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-emerald-50 rounded-2xl p-4 text-center">
+            <div className="bg-emerald-50 rounded-2xl p-4 text-center overflow-hidden">
               <span className="text-[10px] font-bold text-emerald-600 mb-1 flex items-center justify-center gap-1">
-                <TrendUp className="h-3 w-3" /> 총 자산
+                <TrendUp className="h-3 w-3 shrink-0" /> 총 자산
               </span>
-              <span className="text-lg font-black text-emerald-700">
+              <span className="text-base font-black text-emerald-700 block truncate">
                 ₩{totalAssets.toLocaleString()}
               </span>
             </div>
-            <div className="bg-rose-50 rounded-2xl p-4 text-center">
+            <div className="bg-rose-50 rounded-2xl p-4 text-center overflow-hidden">
               <span className="text-[10px] font-bold text-rose-500 mb-1 flex items-center justify-center gap-1">
-                <TrendingDown className="h-3 w-3" /> 총 부채
+                <TrendingDown className="h-3 w-3 shrink-0" /> 총 부채
               </span>
-              <span className="text-lg font-black text-rose-600">
+              <span className="text-base font-black text-rose-600 block truncate">
                 ₩{totalLiabilities.toLocaleString()}
               </span>
             </div>

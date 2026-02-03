@@ -32,6 +32,14 @@ interface AssetsListClientProps {
 }
 
 const ASSET_TYPE_CONFIG: Record<string, { icon: any; label: string; color: string }> = {
+  // 대문자 타입 (PRD 표준)
+  CASH: { icon: Banknote, label: '현금', color: '#8B5CF6' },
+  SAVINGS: { icon: PiggyBank, label: '저금', color: '#10B981' },
+  INVESTMENT: { icon: TrendingUp, label: '투자', color: '#3B82F6' },
+  CHILD_SAVINGS: { icon: Baby, label: '자녀', color: '#F59E0B' },
+  DEBT: { icon: CreditCard, label: '부채', color: '#EF4444' },
+  OTHER: { icon: PiggyBank, label: '기타', color: '#6B7280' },
+  // 소문자 타입 (하위 호환)
   savings: { icon: PiggyBank, label: '저금', color: '#10B981' },
   child: { icon: Baby, label: '자녀', color: '#F59E0B' },
   investment: { icon: TrendingUp, label: '투자', color: '#3B82F6' },
@@ -104,7 +112,7 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
                         <Icon className="h-6 w-6" style={{ color: config.color }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[15px] text-foreground truncate">
+                        <p className="font-bold text-[15px] text-foreground break-words line-clamp-2">
                           {asset.name}
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">

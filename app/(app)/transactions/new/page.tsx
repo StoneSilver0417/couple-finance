@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import TransactionForm from "./transaction-form";
+import { ensureDefaultCategories } from "@/lib/household-actions";
 
 export default async function NewTransactionPage({
   searchParams,
@@ -36,12 +37,25 @@ export default async function NewTransactionPage({
 
   // Fetch categories
   // 가계부 등록 시에는 숨김 처리된 카테고리는 노출하지 않는다.
-  const { data: categories } = await supabase
+  let { data: categories } = await supabase
     .from("categories")
     .select("id, name, icon, type, expense_category, is_hidden")
     .eq("household_id", profile.household_id)
     .eq("is_hidden", false)
     .order("display_order", { ascending: true });
+
+  // 카테고리가 없으면 기본 카테고리 자동 생성
+  if (!categories || categories.length === 0) {
+    await ensureDefaultCategories();
+    // 다시 조회
+    const { data: newCategories } = await supabase
+      .from("categories")
+      .select("id, name, icon, type, expense_category, is_hidden")
+      .eq("household_id", profile.household_id)
+      .eq("is_hidden", false)
+      .order("display_order", { ascending: true });
+    categories = newCategories;
+  }
 
   return (
     <TransactionForm

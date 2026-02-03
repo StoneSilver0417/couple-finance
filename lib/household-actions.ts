@@ -112,7 +112,9 @@ async function createHouseholdDirect(
     });
 
     if (categoryError) {
-      console.error("[createHouseholdDirect] 카테고리 생성 실패:", categoryError);
+      console.error("[createHouseholdDirect] RPC 카테고리 생성 실패, 직접 INSERT 시도:", categoryError.message);
+      // RPC 함수가 없으면 직접 INSERT
+      await insertDefaultCategories(supabase, household.id);
     }
 
     // 4. 기본 결제 수단 생성
@@ -243,4 +245,89 @@ async function joinHouseholdDirect(
 
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+// 기본 카테고리 직접 INSERT 함수
+async function insertDefaultCategories(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  householdId: string,
+) {
+  const defaultCategories = [
+    // 수입 카테고리
+    { name: "월급", type: "income", expense_category: null, color: "#10B981", icon: "💰", display_order: 1 },
+    { name: "상여", type: "income", expense_category: null, color: "#10B981", icon: "🎁", display_order: 2 },
+    { name: "수당", type: "income", expense_category: null, color: "#10B981", icon: "💵", display_order: 3 },
+    { name: "기타 수입", type: "income", expense_category: null, color: "#10B981", icon: "💸", display_order: 4 },
+    // 고정 지출
+    { name: "대출상환", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏦", display_order: 1 },
+    { name: "임차료", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏠", display_order: 2 },
+    { name: "아파트관리비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏢", display_order: 3 },
+    { name: "공과금", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "💡", display_order: 4 },
+    { name: "통신비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "📱", display_order: 5 },
+    { name: "교육비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "📚", display_order: 6 },
+    { name: "보험료", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🛡️", display_order: 7 },
+    // 변동 지출
+    { name: "식비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🍚", display_order: 1 },
+    { name: "외식비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🍔", display_order: 2 },
+    { name: "생필품", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🧴", display_order: 3 },
+    { name: "건강/의료", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "💊", display_order: 4 },
+    { name: "아기", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "👶", display_order: 5 },
+    { name: "교통비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🚗", display_order: 6 },
+    { name: "문화/여가", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🎬", display_order: 7 },
+    { name: "쇼핑", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🛍️", display_order: 8 },
+    // 비정기 지출
+    { name: "경조사비", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "💐", display_order: 1 },
+    { name: "세금", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📋", display_order: 2 },
+    { name: "자동차", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "🚙", display_order: 3 },
+    { name: "대형구매", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📦", display_order: 4 },
+    { name: "기타", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📝", display_order: 5 },
+  ];
+
+  const categoriesWithHousehold = defaultCategories.map((cat) => ({
+    ...cat,
+    household_id: householdId,
+    is_custom: false,
+    is_hidden: false,
+  }));
+
+  const { error } = await supabase.from("categories").insert(categoriesWithHousehold);
+
+  if (error) {
+    console.error("[insertDefaultCategories] 카테고리 INSERT 실패:", error.message);
+  } else {
+    console.log("[insertDefaultCategories] 기본 카테고리 생성 완료");
+  }
+}
+
+// 카테고리가 없는 가구에 기본 카테고리 생성 (외부에서 호출 가능)
+export async function ensureDefaultCategories() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "로그인이 필요합니다." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("household_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.household_id) return { error: "가구 정보가 없습니다." };
+
+  // 기존 카테고리 수 확인
+  const { count } = await supabase
+    .from("categories")
+    .select("*", { count: "exact", head: true })
+    .eq("household_id", profile.household_id);
+
+  if (count === 0) {
+    await insertDefaultCategories(supabase, profile.household_id);
+    revalidatePath("/transactions/new");
+    return { created: true };
+  }
+
+  return { created: false };
 }

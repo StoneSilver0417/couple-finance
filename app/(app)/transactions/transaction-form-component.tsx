@@ -70,34 +70,20 @@ export default function TransactionFormComponent({
     >
       <TabsList className="grid w-full grid-cols-2 mb-6 h-11 rounded-2xl bg-white/30 border border-white/60 shadow-soft backdrop-blur-md">
         <TabsTrigger
-          value="income"
-          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-indigo-600 text-text-secondary"
-        >
-          <TrendingUp className="h-4 w-4" />
-          수입
-        </TabsTrigger>
-        <TabsTrigger
           value="expense"
           className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-pink-600 text-text-secondary"
         >
           <TrendingDown className="h-4 w-4" />
           지출
         </TabsTrigger>
+        <TabsTrigger
+          value="income"
+          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-indigo-600 text-text-secondary"
+        >
+          <TrendingUp className="h-4 w-4" />
+          수입
+        </TabsTrigger>
       </TabsList>
-
-      <TabsContent value="income">
-        <div className="bg-transparent">
-          {/* Title Removed as Tabs handle it */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <FormFields
-              categories={filteredCategories}
-              initialData={initialData}
-              isLoading={isLoading}
-              submitLabel={submitLabel}
-            />
-          </form>
-        </div>
-      </TabsContent>
 
       <TabsContent value="expense" className="space-y-6">
         <Tabs
@@ -127,6 +113,20 @@ export default function TransactionFormComponent({
         </Tabs>
 
         <div className="bg-transparent">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FormFields
+              categories={filteredCategories}
+              initialData={initialData}
+              isLoading={isLoading}
+              submitLabel={submitLabel}
+            />
+          </form>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="income">
+        <div className="bg-transparent">
+          {/* Title Removed as Tabs handle it */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormFields
               categories={filteredCategories}
