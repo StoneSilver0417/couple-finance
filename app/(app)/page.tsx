@@ -159,6 +159,12 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex-1 w-full animate-fade-in relative z-10">
+      {/* 디버그 */}
+      <div className="m-4 p-3 bg-yellow-100 rounded text-xs">
+        <p>전체 지출: {currentMonthTxs.filter(tx => tx.type === "expense").length}건</p>
+        <p>변동지출: {variableExpenses.length}건</p>
+        <p>expense_types: {JSON.stringify(currentMonthTxs.filter(tx => tx.type === "expense").map(tx => tx.expense_type))}</p>
+      </div>
       {/* --- HEADER --- */}
       <DashboardHeader
         members={members || []}
