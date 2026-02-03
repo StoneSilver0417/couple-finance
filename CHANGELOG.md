@@ -2,6 +2,17 @@
 
 ## 2026-02-03
 
+### v0.3.7 - 가구 생성 버그 수정 및 성능 개선
+- **회원가입 후 가구 생성 문제 해결**
+  - households, profiles 테이블 INSERT RLS 정책 추가
+  - SECURITY DEFINER 함수로 RLS 우회 (create_household_with_owner, join_household_as_member)
+  - RPC 함수 없을 때 폴백 로직 추가
+  - 운영 DB uuid-ossp 확장 및 테이블 기본값 설정
+- **페이지 로딩 속도 개선**
+  - 대시보드: 5개 쿼리 → Promise.all 병렬 실행
+  - 자산 페이지: 4개 쿼리 병렬화
+  - 거래내역 페이지: 2개 쿼리 병렬화
+
 ### v0.3.6 - UX 개선 및 PWA
 - 페이지 전환 애니메이션 추가 (Framer Motion)
 - PWA 설치 버튼 실제 동작하도록 구현
