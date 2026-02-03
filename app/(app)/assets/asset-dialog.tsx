@@ -141,7 +141,7 @@ export default function AssetDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-3xl max-w-md bg-white border-none shadow-2xl">
+      <DialogContent className="rounded-3xl max-w-md bg-white border-none shadow-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {assetToEdit ? "자산 수정" : "새 자산 추가"}
