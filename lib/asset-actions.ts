@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createActivityLog } from "./activity-log-actions";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 // 자산 스냅샷 저장 (자산 변경 시 호출)
 async function saveAssetSnapshot(householdId: string) {
@@ -113,8 +114,7 @@ export async function createAsset(formData: FormData) {
     revalidatePath("/assets");
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "자산 추가에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -182,8 +182,7 @@ export async function updateAsset(assetId: string, formData: FormData) {
     revalidatePath("/assets");
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "자산 수정에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -236,8 +235,7 @@ export async function deleteAsset(assetId: string) {
     revalidatePath("/assets");
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "자산 삭제에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 

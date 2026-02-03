@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { PaymentMethodType } from "@/types";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 export async function getPaymentMethods() {
   const supabase = await createClient();
@@ -100,9 +101,7 @@ export async function createPaymentMethod(formData: FormData) {
     revalidatePath("/settings");
     return { success: true };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "결제 수단 추가에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -164,9 +163,7 @@ export async function updatePaymentMethod(id: string, formData: FormData) {
     revalidatePath("/settings");
     return { success: true };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "결제 수단 수정에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -192,9 +189,7 @@ export async function deletePaymentMethod(id: string) {
     revalidatePath("/settings");
     return { success: true };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "결제 수단 삭제에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -220,8 +215,6 @@ export async function seedDefaultPaymentMethods(householdId: string) {
     if (error) throw error;
     return { success: true };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "기본 결제 수단 생성에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 }

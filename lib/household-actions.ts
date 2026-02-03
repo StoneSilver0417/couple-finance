@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { seedDefaultPaymentMethods } from "./payment-method-actions";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 // Generate a random 8-character invite code
 function generateInviteCode(): string {
@@ -67,8 +68,7 @@ export async function createHousehold(formData: FormData) {
     // Seed default payment methods
     await seedDefaultPaymentMethods(household.id);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "가구 생성에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 
   revalidatePath("/", "layout");
@@ -128,8 +128,7 @@ export async function joinHousehold(formData: FormData) {
 
     if (profileError) throw profileError;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "가구 참여에 실패했습니다.";
-    return { error: message };
+    return { error: getKoreanErrorMessage(error) };
   }
 
   revalidatePath("/", "layout");

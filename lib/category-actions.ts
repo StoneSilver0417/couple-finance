@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 export async function createCategory(formData: FormData) {
   const supabase = await createClient();
@@ -51,8 +52,8 @@ export async function createCategory(formData: FormData) {
 
     revalidatePath("/settings/categories");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "카테고리 추가에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -89,8 +90,8 @@ export async function updateCategory(categoryId: string, formData: FormData) {
 
     revalidatePath("/settings/categories");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "카테고리 수정에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -129,8 +130,8 @@ export async function deleteCategory(categoryId: string) {
 
     revalidatePath("/settings/categories");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "카테고리 삭제에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }
 
@@ -150,7 +151,7 @@ export async function toggleCategoryVisibility(
 
     revalidatePath("/settings/categories");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "카테고리 숨김 처리에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }

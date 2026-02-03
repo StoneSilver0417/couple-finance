@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { syncMonthlyBalance } from "./balance-actions";
 import { createActivityLog } from "./activity-log-actions";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 export async function createTransaction(formData: FormData) {
   const supabase = await createClient();
@@ -69,8 +70,8 @@ export async function createTransaction(formData: FormData) {
       "TRANSACTION",
       `${typeLabel} ₩${amountStr} 추가${memo ? ` - ${memo}` : ""}`
     );
-  } catch (error: any) {
-    return { error: error.message || "거래 추가에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 
   revalidatePath("/", "layout");
@@ -124,7 +125,7 @@ export async function deleteTransaction(transactionId: string) {
 
     revalidatePath("/transactions");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "거래 삭제에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }

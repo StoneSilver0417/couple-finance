@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 export async function updateBudget(
   categoryId: string,
@@ -48,7 +49,7 @@ export async function updateBudget(
 
     revalidatePath("/settings/budgets");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "예산 설정에 실패했습니다." };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
   }
 }

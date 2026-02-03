@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    return { error: error.message };
+    return { error: getKoreanErrorMessage(error.message) };
   }
 
   revalidatePath("/", "layout");
@@ -30,10 +31,16 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  // 이메일 확인 없이 바로 로그인 가능하도록 설정
+  const { error } = await supabase.auth.signUp({
+    ...data,
+    options: {
+      emailRedirectTo: undefined,
+    },
+  });
 
   if (error) {
-    return { error: error.message };
+    return { error: getKoreanErrorMessage(error.message) };
   }
 
   revalidatePath("/", "layout");
