@@ -143,17 +143,19 @@ export default async function DashboardPage() {
   }));
 
   // 9. Prepare Category Data for Analysis
-  const expenseByCategory = groupByCategory(
-    currentMonthTxs.filter((tx) => tx.type === "expense"),
+  // 변동지출만 필터링 (예산 분석용)
+  const variableExpenses = currentMonthTxs.filter(
+    (tx) => tx.type === "expense" && tx.expense_type === "variable"
   );
+  const expenseByCategory = groupByCategory(variableExpenses);
   const incomeByCategory = groupByCategory(
     currentMonthTxs.filter((tx) => tx.type === "income"),
   );
 
-  // 변동지출만 계산 (예산 잔액 계산용)
-  const variableExpenseTotal = currentMonthTxs
-    .filter((tx) => tx.type === "expense" && tx.expense_type === "variable")
-    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+  // 변동지출 합계 (예산 잔액 계산용)
+  const variableExpenseTotal = variableExpenses.reduce(
+    (sum, tx) => sum + Number(tx.amount), 0
+  );
 
   return (
     <main className="flex-1 w-full animate-fade-in relative z-10">
