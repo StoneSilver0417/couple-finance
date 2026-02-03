@@ -55,7 +55,7 @@ export default function TransactionForm({
             거래 추가
           </h1>
           <p className="text-xs text-text-secondary mt-1">
-            오늘의 수입·지출을 예쁘게 기록해볼까요?
+            오늘의 수입·지출을 기록해볼까요?
           </p>
         </div>
       </header>
