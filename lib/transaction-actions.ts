@@ -41,15 +41,16 @@ export async function createTransaction(formData: FormData) {
   }
 
   try {
-    const { error } = await supabase.from("transactions").insert({
-      household_id: profile.household_id,
-      user_id: user.id,
-      type,
-      expense_type: expenseType,
-      amount,
-      category_id: categoryId,
-      transaction_date: transactionDate,
-      memo,
+    // RPC 함수로 INSERT (RLS 우회)
+    const { data: transactionId, error } = await supabase.rpc("create_transaction", {
+      p_household_id: profile.household_id,
+      p_user_id: user.id,
+      p_type: type,
+      p_amount: amount,
+      p_category_id: categoryId,
+      p_transaction_date: transactionDate,
+      p_expense_type: expenseType,
+      p_memo: memo,
     });
 
     if (error) throw error;
