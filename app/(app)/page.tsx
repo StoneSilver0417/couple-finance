@@ -95,6 +95,10 @@ export default async function DashboardPage() {
   // RPC 결과를 기존 형식에 맞게 변환
   const currentMonthTxs: Transaction[] = (transactionsResult.data || []).map((t: any) => ({
     ...t,
+    amount: Number(t.amount),
+    transaction_date: typeof t.transaction_date === 'string'
+      ? t.transaction_date
+      : new Date(t.transaction_date).toISOString().split('T')[0],
     categories: t.category_id ? {
       name: t.category_name,
       icon: t.category_icon,
