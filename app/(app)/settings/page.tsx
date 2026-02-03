@@ -26,6 +26,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
+import { PWAInstallButton } from "@/components/pwa-install-button";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -296,22 +297,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-              <span className="block text-xs font-bold text-gray-300 mb-1">
-                iOS
-              </span>
-              <span className="text-[10px] text-gray-500">
-                공유 - 홈 화면 추가
-              </span>
-            </div>
-            <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-              <span className="block text-xs font-bold text-gray-300 mb-1">
-                Android
-              </span>
-              <span className="text-[10px] text-gray-500">메뉴 - 앱 설치</span>
-            </div>
-          </div>
+          <PWAInstallButton />
         </div>
       </div>
 
