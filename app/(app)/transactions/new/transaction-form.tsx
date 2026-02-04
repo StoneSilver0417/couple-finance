@@ -10,17 +10,15 @@ import TransactionFormComponent, {
   TransactionFormData,
 } from "../transaction-form-component";
 
-import { Category, PaymentMethod } from "@/types";
+import { Category } from "@/types";
 
 interface TransactionFormProps {
   categories: Category[];
-  paymentMethods: PaymentMethod[];
   initialDate?: string;
 }
 
 export default function TransactionForm({
   categories,
-  paymentMethods,
   initialDate,
 }: TransactionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +64,6 @@ export default function TransactionForm({
         <div className="glass-panel rounded-[2.5rem] p-6 shadow-glass border border-white/60 bg-gradient-to-b from-[#FFF5F7]/95 via-white/95 to-[#FFF8E1]/95">
           <TransactionFormComponent
             categories={categories}
-            paymentMethods={paymentMethods}
             initialData={
               initialDate
                 ? ({

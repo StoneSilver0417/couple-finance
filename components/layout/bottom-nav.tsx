@@ -19,8 +19,6 @@ export function BottomNav() {
     plusHref = "/settings/categories?mode=add";
   } else if (pathname?.startsWith("/settings/budgets")) {
     plusHref = "/settings/budgets?mode=add";
-  } else if (pathname?.startsWith("/settings/payment-methods")) {
-    plusHref = "/settings/payment-methods?mode=add";
   }
 
   return (

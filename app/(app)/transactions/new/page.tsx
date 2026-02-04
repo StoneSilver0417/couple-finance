@@ -35,23 +35,14 @@ export default async function NewTransactionPage({
       ? resolvedParams.date
       : undefined;
 
-  // Fetch categories and payment methods in parallel
-  const [categoriesResult, paymentMethodsResult] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id, name, icon, type, expense_category, is_hidden")
-      .eq("household_id", profile.household_id)
-      .eq("is_hidden", false)
-      .order("display_order", { ascending: true }),
-    supabase
-      .from("payment_methods")
-      .select("id, name, type, icon, is_default")
-      .eq("household_id", profile.household_id)
-      .order("display_order", { ascending: true }),
-  ]);
-
-  let categories = categoriesResult.data;
-  const paymentMethods = paymentMethodsResult.data || [];
+  // Fetch categories
+  // 가계부 등록 시에는 숨김 처리된 카테고리는 노출하지 않는다.
+  let { data: categories } = await supabase
+    .from("categories")
+    .select("id, name, icon, type, expense_category, is_hidden")
+    .eq("household_id", profile.household_id)
+    .eq("is_hidden", false)
+    .order("display_order", { ascending: true });
 
   // 카테고리가 없으면 기본 카테고리 자동 생성
   if (!categories || categories.length === 0) {
@@ -69,7 +60,6 @@ export default async function NewTransactionPage({
   return (
     <TransactionForm
       categories={categories || []}
-      paymentMethods={paymentMethods}
       initialDate={initialDate}
     />
   );

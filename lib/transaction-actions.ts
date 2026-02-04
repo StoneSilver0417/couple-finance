@@ -35,7 +35,6 @@ export async function createTransaction(formData: FormData) {
   const memo = (formData.get("memo") as string) || null;
   const expenseType =
     type === "expense" ? (formData.get("expense_type") as string) : null;
-  const paymentMethodId = (formData.get("payment_method_id") as string) || null;
 
   if (!amount || !categoryId || !transactionDate) {
     return { error: "필수 항목을 모두 입력해주세요." };
@@ -55,14 +54,6 @@ export async function createTransaction(formData: FormData) {
     });
 
     if (error) throw error;
-
-    // 결제수단 별도 업데이트 (RPC에 파라미터 없는 경우)
-    if (transactionId && paymentMethodId) {
-      await supabase
-        .from("transactions")
-        .update({ payment_method_id: paymentMethodId })
-        .eq("id", transactionId);
-    }
 
     // Sync monthly balance
     const date = new Date(transactionDate);

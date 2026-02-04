@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,14 +67,6 @@ export default function PaymentMethodsClient({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const searchParams = useSearchParams();
-
-  // mode=add 파라미터로 다이얼로그 자동 열기
-  useEffect(() => {
-    if (searchParams.get("mode") === "add") {
-      setDialogOpen(true);
-    }
-  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -192,9 +183,9 @@ export default function PaymentMethodsClient({
                   <SelectTrigger className="rounded-xl h-12">
                     <SelectValue placeholder="유형 선택" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border shadow-lg">
+                  <SelectContent>
                     {Object.entries(TYPE_CONFIG).map(([key, config]) => (
-                      <SelectItem key={key} value={key} className="bg-white hover:bg-gray-50">
+                      <SelectItem key={key} value={key}>
                         <div className="flex items-center gap-2">
                           <config.icon className={`h-4 w-4 ${config.color}`} />
                           {config.label}
