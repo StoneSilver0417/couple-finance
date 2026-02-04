@@ -75,23 +75,32 @@ export async function getActivityLogs(limit: number = 20) {
   if (!profile?.household_id) return { error: "가구 정보가 없습니다.", data: [] };
 
   try {
-    const { data, error } = await supabase
+    // 먼저 활동 로그 조회
+    const { data: logs, error: logsError } = await supabase
       .from("activity_logs")
-      .select(
-        `
-        *,
-        profiles:user_id (
-          full_name,
-          avatar_url
-        )
-      `
-      )
+      .select("*")
       .eq("household_id", profile.household_id)
       .order("created_at", { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
-    return { data: data as ActivityLog[] };
+    if (logsError) throw logsError;
+    if (!logs || logs.length === 0) return { data: [] };
+
+    // 사용자 정보 별도 조회
+    const userIds = [...new Set(logs.map(log => log.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", userIds);
+
+    // 프로필 정보 매핑
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    const logsWithProfiles = logs.map(log => ({
+      ...log,
+      profiles: profileMap.get(log.user_id) || null,
+    }));
+
+    return { data: logsWithProfiles as ActivityLog[] };
   } catch (error: any) {
     console.error("Fetch activity logs error:", error);
     return { error: error.message, data: [] };
