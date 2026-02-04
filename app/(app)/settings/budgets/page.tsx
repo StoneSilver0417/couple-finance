@@ -6,11 +6,12 @@ import { BudgetClient } from "./budget-client";
 import { ArrowLeft, Target } from "lucide-react";
 
 interface BudgetsPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
   const supabase = await createClient();
+  const resolvedParams = await searchParams;
 
   const {
     data: { user },
@@ -35,8 +36,8 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
   const currentMonth = today.getMonth() + 1;
 
   // Read from query params or default to current
-  const yearParam = searchParams?.year;
-  const monthParam = searchParams?.month;
+  const yearParam = resolvedParams?.year;
+  const monthParam = resolvedParams?.month;
 
   let year = yearParam ? parseInt(yearParam as string) : currentYear;
   let month = monthParam ? parseInt(monthParam as string) : currentMonth;
