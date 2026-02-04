@@ -36,6 +36,7 @@ export const metadata: Metadata = {
 };
 
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 
 export default function RootLayout({
   children,
@@ -47,11 +48,13 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${nunito.variable} font-sans antialiased bg-[#FDFDFD] text-[#2D2D5F] min-h-screen selection:bg-primary-soft selection:text-text-main`}
       >
-        <div className="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen pb-28 bg-mesh shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)]">
-          {children}
-          <BottomNav />
-        </div>
-        <Toaster position="top-center" richColors />
+        <ConfirmProvider>
+          <div className="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen pb-28 bg-mesh shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)]">
+            {children}
+            <BottomNav />
+          </div>
+          <Toaster position="top-center" richColors />
+        </ConfirmProvider>
       </body>
     </html>
   );

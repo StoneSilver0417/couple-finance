@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface CategoryCardProps {
   category: any;
@@ -23,11 +24,16 @@ interface CategoryCardProps {
 
 export function CategoryCard({ category, onEdit }: CategoryCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const confirm = useConfirm();
 
   async function handleDelete() {
-    if (!confirm("정말 이 카테고리를 삭제하시겠습니까?")) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "카테고리 삭제",
+      message: "정말 이 카테고리를 삭제하시겠습니까?",
+      confirmText: "삭제",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     setIsDeleting(true);
     const result = await deleteCategory(category.id);

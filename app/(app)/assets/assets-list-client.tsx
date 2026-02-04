@@ -8,6 +8,7 @@ import { MoreVertical, Edit2, Trash2, PiggyBank, Baby, TrendingUp, Banknote, Cre
 import { toast } from 'sonner'
 import { deleteAsset } from '@/lib/asset-actions'
 import AssetDialog from './asset-dialog'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface Asset {
   id: string
@@ -50,9 +51,16 @@ const ASSET_TYPE_CONFIG: Record<string, { icon: any; label: string; color: strin
 export default function AssetsListClient({ assets, members = [], currentUserId = "" }: AssetsListClientProps) {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const confirm = useConfirm()
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`'${name}' 자산을 삭제하시겠습니까?`)) return
+    const confirmed = await confirm({
+      title: "자산 삭제",
+      message: `'${name}' 자산을 삭제하시겠습니까?`,
+      confirmText: "삭제",
+      variant: "danger",
+    })
+    if (!confirmed) return
 
     const result = await deleteAsset(id)
     if (result?.error) {

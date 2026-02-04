@@ -20,6 +20,7 @@ import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
 import TransactionFormComponent from "@/app/(app)/transactions/transaction-form-component";
 import { Transaction, Category } from "@/types";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface DayTransactionsModalProps {
   open: boolean;
@@ -40,6 +41,7 @@ export default function DayTransactionsModal({
 }: DayTransactionsModalProps) {
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const confirm = useConfirm();
 
   const dateObj = new Date(date + "T00:00:00");
   const formattedDate = dateObj.toLocaleDateString("ko-KR", {
@@ -62,7 +64,13 @@ export default function DayTransactionsModal({
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   async function handleDelete(id: string) {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    const confirmed = await confirm({
+      title: "거래 삭제",
+      message: "정말 이 거래를 삭제하시겠습니까?",
+      confirmText: "삭제",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     const result = await deleteTransaction(id);
     if (result?.error) {

@@ -3,12 +3,20 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 export function LogoutButton() {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const handleLogout = async () => {
-    if (confirm("정말 로그아웃 하시겠습니까?")) {
+    const confirmed = await confirm({
+      title: "로그아웃",
+      message: "정말 로그아웃 하시겠습니까?",
+      confirmText: "로그아웃",
+      variant: "warning",
+    });
+    if (confirmed) {
       const supabase = createClient();
       await supabase.auth.signOut();
       toast.success("로그아웃되었습니다");

@@ -17,11 +17,13 @@ import { toast } from "sonner";
 import { Heart, Loader2, UserPlus, Home, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
+  const confirm = useConfirm();
 
   useEffect(() => {
     async function checkUser() {
@@ -86,7 +88,13 @@ export default function OnboardingPage() {
   }
 
   async function handleLogout() {
-    if (confirm("정말 로그아웃 하시겠습니까?")) {
+    const confirmed = await confirm({
+      title: "로그아웃",
+      message: "정말 로그아웃 하시겠습니까?",
+      confirmText: "로그아웃",
+      variant: "warning",
+    });
+    if (confirmed) {
       const supabase = createClient();
       await supabase.auth.signOut();
       toast.success("로그아웃되었습니다");
