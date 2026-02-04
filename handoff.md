@@ -1,13 +1,13 @@
 # Couple Finance - Handoff
 
 ## 현재 상태
-- **버전**: v0.3.8
+- **버전**: v0.3.9
 - **빌드 상태**: 성공
 - **배포 상태**: 프로덕션 배포 완료
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: 39ae232
+- **최신 커밋**: aba71bc
 
 ## Supabase 환경
 | 환경 | URL | 용도 |
@@ -26,19 +26,20 @@
 - **RLS INSERT 정책**: households, profiles 추가됨
 - **RPC 함수**: create_household_with_owner, join_household_as_member 생성됨
 
-## 최근 작업 (2026-02-04)
-- 예산 실적 분석 페이지 신규 추가
-  - `/transactions/[yearMonth]/analysis` 경로
-  - 수입/고정지출/변동지출/비정기지출 테이블 표시
-  - 항목별 막대 그래프 시각화
-  - 지출 비율 프로그레스 바
-- 카테고리 추가 버그 수정
-  - `is_hidden: false` 명시적 설정
-  - 카테고리 변경 시 `/transactions/new` 캐시 갱신 추가
+## 최근 작업 (2026-02-05)
+- 확인 모달 스타일 적용
+  - ConfirmProvider 컨텍스트 및 useConfirm 훅 추가
+  - 브라우저 기본 confirm() 대신 스타일된 모달 사용
+  - 거래/카테고리/자산 삭제, 로그아웃에 모두 적용
+  - danger/warning/default 변형 지원
+- 결제수단 기능 완전 삭제
+- 활동기록 쿼리 수정 (join → 별도 쿼리)
+- 금액 표시 만/억 단위 적용
+- 카테고리 색상 동적 적용
 
 ## 알려진 이슈
 - Next.js 16 middleware → proxy 경고 (기능 문제 없음)
 
 ## 다음 TODO
-1. [ ] 거래 입력 시 결제 수단 선택 UI
-2. [ ] 거래 목록에서 결제 수단 표시
+1. [ ] 활동기록 표시 확인 테스트
+2. [ ] 추가 UI/UX 개선
