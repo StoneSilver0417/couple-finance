@@ -90,11 +90,21 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
 
           return (
             <div key={type} className="space-y-3">
-              <div className="flex items-center gap-2 px-2">
-                <Icon className="h-4 w-4" style={{ color: config.color }} />
-                <span className="text-sm font-bold text-muted-foreground">{config.label} 자산</span>
-                <span className="text-xs font-black ml-auto" style={{ color: config.color }}>
-                  ₩{total.toLocaleString()}
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                style={{ backgroundColor: config.color + '15' }}
+              >
+                <div
+                  className="h-7 w-7 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: config.color + '25' }}
+                >
+                  <Icon className="h-4 w-4" style={{ color: config.color }} />
+                </div>
+                <span className="text-sm font-bold" style={{ color: config.color }}>{config.label} 자산</span>
+                <span className="text-sm font-black ml-auto" style={{ color: config.color }}>
+                  {total >= 100000000
+                    ? `${(total / 100000000).toFixed(1)}억`
+                    : `${(total / 10000).toFixed(0)}만`}
                 </span>
               </div>
 

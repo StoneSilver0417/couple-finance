@@ -274,20 +274,24 @@ export default async function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-emerald-50 rounded-2xl p-4 text-center overflow-hidden">
+            <div className="bg-emerald-50 rounded-2xl p-4 text-center">
               <span className="text-[10px] font-bold text-emerald-600 mb-1 flex items-center justify-center gap-1">
                 <TrendUp className="h-3 w-3 shrink-0" /> 총 자산
               </span>
-              <span className="text-base font-black text-emerald-700 block truncate">
-                ₩{totalAssets.toLocaleString()}
+              <span className="text-lg font-black text-emerald-700 block">
+                {totalAssets >= 100000000
+                  ? `${(totalAssets / 100000000).toFixed(1)}억`
+                  : `${(totalAssets / 10000).toFixed(0)}만`}
               </span>
             </div>
-            <div className="bg-rose-50 rounded-2xl p-4 text-center overflow-hidden">
+            <div className="bg-rose-50 rounded-2xl p-4 text-center">
               <span className="text-[10px] font-bold text-rose-500 mb-1 flex items-center justify-center gap-1">
                 <TrendingDown className="h-3 w-3 shrink-0" /> 총 부채
               </span>
-              <span className="text-base font-black text-rose-600 block truncate">
-                ₩{totalLiabilities.toLocaleString()}
+              <span className="text-lg font-black text-rose-600 block">
+                {totalLiabilities >= 100000000
+                  ? `${(totalLiabilities / 100000000).toFixed(1)}억`
+                  : `${(totalLiabilities / 10000).toFixed(0)}만`}
               </span>
             </div>
           </div>

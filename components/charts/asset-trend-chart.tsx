@@ -33,8 +33,14 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="h-[200px] flex items-center justify-center text-text-secondary text-sm">
-        자산 데이터가 없습니다
+      <div className="h-[200px] flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+          <span className="text-2xl">📈</span>
+        </div>
+        <p className="text-sm font-medium text-text-secondary">기록이 없습니다</p>
+        <p className="text-xs text-text-secondary mt-1">
+          자산을 추가하면 자동으로 기록됩니다
+        </p>
       </div>
     );
   }
@@ -43,13 +49,19 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
   if (data.length === 1) {
     const current = data[0];
     return (
-      <div className="h-[200px] flex flex-col items-center justify-center">
-        <p className="text-xs text-text-secondary mb-2">현재 순자산</p>
-        <p className="text-3xl font-black text-text-main">
-          ₩{current.value.toLocaleString()}
+      <div className="h-[200px] flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+          <span className="text-2xl">📊</span>
+        </div>
+        <p className="text-xs text-text-secondary mb-1">마지막 기록</p>
+        <p className="text-2xl font-black text-text-main">
+          {current.value >= 100000000
+            ? `${(current.value / 100000000).toFixed(1)}억`
+            : `${(current.value / 10000).toFixed(0)}만`}원
         </p>
-        <p className="text-xs text-text-secondary mt-2">
-          {current.label} 기준 • 추이를 보려면 시간이 더 필요합니다
+        <p className="text-[11px] text-text-secondary mt-3 text-center px-4">
+          {current.label} 기록됨<br />
+          자산을 수정하면 새 기록이 추가됩니다
         </p>
       </div>
     );

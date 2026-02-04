@@ -133,29 +133,41 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
         {data.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-center justify-between p-3 rounded-2xl bg-white/40 border border-white/50 shadow-sm hover:bg-white/60 transition-colors"
+            className="flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+            style={{
+              backgroundColor: item.color + "15",
+              borderColor: item.color + "30"
+            }}
           >
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm"
-                style={{ backgroundColor: item.color + "20" }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: item.color + "30" }}
               >
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-4 h-4 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
               </div>
               <div>
-                <p className="text-xs font-bold text-text-secondary">
+                <p className="text-xs font-bold" style={{ color: item.color }}>
                   {item.name}
                 </p>
                 <p className="text-sm font-black text-text-main">
-                  ₩ {item.value.toLocaleString()}
+                  {item.value >= 100000000
+                    ? `${(item.value / 100000000).toFixed(1)}억`
+                    : `${(item.value / 10000).toFixed(0)}만`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold px-2 py-1 rounded-full bg-white text-text-secondary border border-gray-100">
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-full"
+                style={{
+                  backgroundColor: item.color + "20",
+                  color: item.color
+                }}
+              >
                 {((item.value / total) * 100).toFixed(1)}%
               </span>
             </div>

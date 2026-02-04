@@ -188,9 +188,15 @@ export default function AnalysisSection({
                     <button
                       key={cat.name}
                       onClick={() => handleCategoryClick(cat, "expense")}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-gray-50/50 hover:bg-gray-100 transition-colors text-left"
+                      className="flex items-center gap-2 p-2 rounded-xl transition-colors text-left hover:opacity-80"
+                      style={{ backgroundColor: cat.color ? `${cat.color}20` : "#f9fafb" }}
                     >
-                      <span className="text-base">{cat.icon || "💸"}</span>
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+                        style={{ backgroundColor: cat.color ? `${cat.color}30` : "#f3f4f6" }}
+                      >
+                        {cat.icon || "💸"}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-bold text-text-main truncate">
                           {cat.name}
@@ -282,9 +288,15 @@ export default function AnalysisSection({
                   <button
                     key={cat.name}
                     onClick={() => handleCategoryClick(cat, "income")}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-green-50/50 hover:bg-green-100 transition-colors text-left"
+                    className="flex items-center gap-2 p-2 rounded-xl transition-colors text-left hover:opacity-80"
+                    style={{ backgroundColor: cat.color ? `${cat.color}20` : "#f0fdf4" }}
                   >
-                    <span className="text-base">{cat.icon || "💰"}</span>
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+                      style={{ backgroundColor: cat.color ? `${cat.color}30` : "#dcfce7" }}
+                    >
+                      {cat.icon || "💰"}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-bold text-text-main truncate">
                         {cat.name}

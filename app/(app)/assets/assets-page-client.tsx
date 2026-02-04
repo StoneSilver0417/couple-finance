@@ -161,9 +161,13 @@ export default function AssetsPageClient({
               총 순자산
             </span>
             <h2
-              className={`text-4xl font-black tracking-tight mb-6 ${netWorth >= 0 ? "text-text-main" : "text-destructive"}`}
+              className={`text-3xl font-black tracking-tight mb-6 ${netWorth >= 0 ? "text-text-main" : "text-destructive"}`}
             >
-              ₩{netWorth.toLocaleString()}
+              {netWorth >= 0 ? "" : "-"}
+              {Math.abs(netWorth) >= 100000000
+                ? `${(Math.abs(netWorth) / 100000000).toFixed(1)}억`
+                : `${(Math.abs(netWorth) / 10000).toFixed(0)}만`}
+              <span className="text-lg font-bold text-text-secondary ml-1">원</span>
             </h2>
 
             <div className="grid grid-cols-2 gap-4 w-full">
@@ -171,16 +175,20 @@ export default function AssetsPageClient({
                 <span className="text-[10px] font-bold text-green-600 mb-1 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" /> 자산 합계
                 </span>
-                <span className="text-lg font-bold text-text-main">
-                  ₩{totalAssets.toLocaleString()}
+                <span className="text-lg font-black text-emerald-600">
+                  {totalAssets >= 100000000
+                    ? `${(totalAssets / 100000000).toFixed(1)}억`
+                    : `${(totalAssets / 10000).toFixed(0)}만`}
                 </span>
               </div>
               <div className="bg-white/60 rounded-2xl p-3 border border-white/50 shadow-sm flex flex-col items-center">
                 <span className="text-[10px] font-bold text-red-500 mb-1 flex items-center gap-1">
                   <TrendingDown className="h-3 w-3" /> 부채 합계
                 </span>
-                <span className="text-lg font-bold text-text-main">
-                  ₩{totalLiabilities.toLocaleString()}
+                <span className="text-lg font-black text-rose-600">
+                  {totalLiabilities >= 100000000
+                    ? `${(totalLiabilities / 100000000).toFixed(1)}억`
+                    : `${(totalLiabilities / 10000).toFixed(0)}만`}
                 </span>
               </div>
             </div>
@@ -217,10 +225,15 @@ export default function AssetsPageClient({
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="glass-panel p-5 rounded-[2rem] border border-white/60"
             >
-              <h3 className="text-lg font-bold text-text-main mb-4 px-2 flex items-center gap-2">
-                <LineChart className="h-5 w-5 text-primary" />
-                자산 추이
-              </h3>
+              <div className="px-2 mb-4">
+                <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
+                  <LineChart className="h-5 w-5 text-primary" />
+                  자산 변동 기록
+                </h3>
+                <p className="text-xs text-text-secondary mt-1">
+                  자산을 추가/수정할 때마다 자동 기록됩니다
+                </p>
+              </div>
               <AssetTrendChart data={trendData} />
             </motion.div>
           )}

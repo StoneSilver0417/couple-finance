@@ -106,10 +106,10 @@ export default async function MonthDetailPage({
         <Link href={`/transactions/${yearMonth}/analysis`}>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-12 w-12 rounded-2xl bg-white/40 backdrop-blur-md border border-white/50 shadow-sm text-text-secondary hover:text-primary hover:bg-white transition-all hover:scale-105"
+            className="h-auto px-3 py-2 rounded-2xl bg-primary/10 backdrop-blur-md border border-primary/20 shadow-sm text-primary hover:bg-primary/20 transition-all hover:scale-105 flex items-center gap-1.5"
           >
-            <PieChart className="h-5 w-5" />
+            <PieChart className="h-4 w-4" />
+            <span className="text-xs font-bold">분석</span>
           </Button>
         </Link>
       </header>
