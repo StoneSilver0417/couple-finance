@@ -118,8 +118,8 @@ export function CategoryTransactionsModal({
           )}
         </div>
 
-        {/* 하단 safe area */}
-        <div className="shrink-0" style={{ height: 'calc(24px + env(safe-area-inset-bottom, 0px))' }} />
+        {/* 하단 safe area - 네비게이션 바 높이 고려 */}
+        <div className="shrink-0" style={{ height: 'calc(100px + env(safe-area-inset-bottom, 0px))' }} />
       </div>
     </div>
   );
