@@ -103,7 +103,7 @@ export default async function MonthDetailPage({
           </div>
         </div>
 
-        <Link href="/settings/budgets">
+        <Link href={`/transactions/${yearMonth}/analysis`}>
           <Button
             variant="ghost"
             size="icon"

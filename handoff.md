@@ -1,7 +1,7 @@
 # Couple Finance - Handoff
 
 ## 현재 상태
-- **버전**: v0.3.7
+- **버전**: v0.3.8
 - **빌드 상태**: 성공
 - **배포 상태**: 프로덕션 배포 완료
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
@@ -26,9 +26,15 @@
 - **RLS INSERT 정책**: households, profiles 추가됨
 - **RPC 함수**: create_household_with_owner, join_household_as_member 생성됨
 
-## 최근 작업 (2026-02-03)
-- 회원가입 후 가구 생성 안 되는 문제 해결
-- 페이지 로딩 속도 개선 (쿼리 병렬화)
+## 최근 작업 (2026-02-04)
+- 예산 실적 분석 페이지 신규 추가
+  - `/transactions/[yearMonth]/analysis` 경로
+  - 수입/고정지출/변동지출/비정기지출 테이블 표시
+  - 항목별 막대 그래프 시각화
+  - 지출 비율 프로그레스 바
+- 카테고리 추가 버그 수정
+  - `is_hidden: false` 명시적 설정
+  - 카테고리 변경 시 `/transactions/new` 캐시 갱신 추가
 
 ## 알려진 이슈
 - Next.js 16 middleware → proxy 경고 (기능 문제 없음)

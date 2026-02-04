@@ -45,12 +45,14 @@ export async function createCategory(formData: FormData) {
       icon,
       color,
       is_custom: true,
+      is_hidden: false,
       display_order: 999, // Put custom categories at the end
     });
 
     if (error) throw error;
 
     revalidatePath("/settings/categories");
+    revalidatePath("/transactions/new");
     return { success: true };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
@@ -129,6 +131,7 @@ export async function deleteCategory(categoryId: string) {
     if (error) throw error;
 
     revalidatePath("/settings/categories");
+    revalidatePath("/transactions/new");
     return { success: true };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
@@ -150,6 +153,7 @@ export async function toggleCategoryVisibility(
     if (error) throw error;
 
     revalidatePath("/settings/categories");
+    revalidatePath("/transactions/new");
     return { success: true };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };

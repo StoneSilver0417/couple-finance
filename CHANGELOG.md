@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-02-04
+
+### v0.3.8 - 예산 실적 분석 페이지
+- **신규 페이지: 항목별 예산 실적 분석**
+  - 경로: `/transactions/[yearMonth]/analysis`
+  - 가계부 탭 우측 상단 버튼으로 진입
+  - 수입/고정지출/변동지출/비정기지출 테이블 형식 표시
+  - 항목별 수평 막대 그래프 (Recharts)
+  - 지출 유형별 비율 프로그레스 바
+  - 잔액 계산 및 표시
+- **카테고리 추가 버그 수정**
+  - createCategory에서 `is_hidden: false` 명시적 설정
+  - 카테고리 CRUD 시 `/transactions/new` revalidatePath 추가
+
 ## 2026-02-03
 
 ### v0.3.7 - 가구 생성 버그 수정 및 성능 개선
