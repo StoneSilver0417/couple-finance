@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -10,6 +11,7 @@ import {
   LabelList,
 } from "recharts";
 import { TrendingUp, TrendingDown, Wallet, PiggyBank } from "lucide-react";
+import { CategoryTransactionsModal } from "@/components/dashboard/category-transactions-modal";
 
 interface AnalysisData {
   income: number;
@@ -20,9 +22,24 @@ interface AnalysisData {
   balance: number;
 }
 
+interface TransactionItem {
+  id: string;
+  type: string;
+  expense_type: string | null;
+  amount: number;
+  memo: string | null;
+  transaction_date: string;
+  category_name?: string;
+  category_icon?: string;
+  category_color?: string;
+}
+
 interface BudgetAnalysisClientProps {
   data: AnalysisData;
+  transactions?: TransactionItem[];
 }
+
+type ExpenseType = "income" | "fixed" | "variable" | "irregular";
 
 // 금액 포맷팅 함수
 function formatAmount(amount: number): string {
@@ -36,7 +53,10 @@ function formatFullAmount(amount: number): string {
   return `₩${amount.toLocaleString()}`;
 }
 
-export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
+export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysisClientProps) {
+  const [selectedType, setSelectedType] = useState<ExpenseType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const chartData = [
     {
       name: "수입",
@@ -62,6 +82,78 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
 
   const maxValue = Math.max(...chartData.map((d) => d.value));
 
+  const handleItemClick = (type: ExpenseType) => {
+    setSelectedType(type);
+    setIsModalOpen(true);
+  };
+
+  // 선택된 타입에 따른 거래 필터링
+  const getFilteredTransactions = () => {
+    if (!selectedType) return [];
+
+    if (selectedType === "income") {
+      return transactions.filter((t) => t.type === "income");
+    }
+    return transactions.filter(
+      (t) => t.type === "expense" && t.expense_type === selectedType
+    );
+  };
+
+  const getModalTitle = () => {
+    switch (selectedType) {
+      case "income":
+        return "수입";
+      case "fixed":
+        return "고정지출";
+      case "variable":
+        return "변동지출";
+      case "irregular":
+        return "비정기지출";
+      default:
+        return "";
+    }
+  };
+
+  const getModalIcon = () => {
+    switch (selectedType) {
+      case "income":
+        return "💰";
+      case "fixed":
+        return "🏠";
+      case "variable":
+        return "🛒";
+      case "irregular":
+        return "🎁";
+      default:
+        return "💸";
+    }
+  };
+
+  const getModalColor = () => {
+    switch (selectedType) {
+      case "income":
+        return "#6366f1";
+      case "fixed":
+        return "#f43f5e";
+      case "variable":
+        return "#f97316";
+      case "irregular":
+        return "#a855f7";
+      default:
+        return "#6366f1";
+    }
+  };
+
+  const filteredTransactions = getFilteredTransactions().map((t) => ({
+    id: t.id,
+    amount: t.amount,
+    memo: t.memo,
+    transaction_date: t.transaction_date,
+    category_name: t.category_name,
+    category_icon: t.category_icon,
+    category_color: t.category_color,
+  }));
+
   return (
     <div className="space-y-6">
       {/* 요약 테이블 */}
@@ -73,7 +165,10 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
 
         <div className="space-y-3">
           {/* 수입 */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 border border-indigo-100">
+          <button
+            onClick={() => handleItemClick("income")}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 hover:bg-indigo-100/70 transition-colors text-left"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-indigo-600" />
@@ -83,10 +178,13 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
             <span className="font-black text-lg text-indigo-600">
               {formatFullAmount(data.income)}
             </span>
-          </div>
+          </button>
 
           {/* 고정지출 */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-100">
+          <button
+            onClick={() => handleItemClick("fixed")}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-100 hover:bg-rose-100/70 transition-colors text-left"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
                 <span className="text-lg">🏠</span>
@@ -99,10 +197,13 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
             <span className="font-black text-lg text-rose-600">
               {formatFullAmount(data.fixedExpense)}
             </span>
-          </div>
+          </button>
 
           {/* 변동지출 */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-orange-50/70 border border-orange-100">
+          <button
+            onClick={() => handleItemClick("variable")}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-orange-50/70 border border-orange-100 hover:bg-orange-100/70 transition-colors text-left"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                 <span className="text-lg">🛒</span>
@@ -115,10 +216,13 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
             <span className="font-black text-lg text-orange-600">
               {formatFullAmount(data.variableExpense)}
             </span>
-          </div>
+          </button>
 
           {/* 비정기지출 */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-purple-50/70 border border-purple-100">
+          <button
+            onClick={() => handleItemClick("irregular")}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-purple-50/70 border border-purple-100 hover:bg-purple-100/70 transition-colors text-left"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                 <span className="text-lg">🎁</span>
@@ -131,7 +235,7 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
             <span className="font-black text-lg text-purple-600">
               {formatFullAmount(data.irregularExpense)}
             </span>
-          </div>
+          </button>
 
           {/* 구분선 */}
           <div className="border-t border-gray-200 my-2" />
@@ -290,6 +394,17 @@ export function BudgetAnalysisClient({ data }: BudgetAnalysisClientProps) {
           </div>
         </div>
       )}
+
+      {/* 거래 내역 모달 */}
+      <CategoryTransactionsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        categoryName={getModalTitle()}
+        categoryIcon={getModalIcon()}
+        categoryColor={getModalColor()}
+        transactions={filteredTransactions}
+        type={selectedType === "income" ? "income" : "expense"}
+      />
     </div>
   );
 }

@@ -37,6 +37,12 @@ export default async function BudgetAnalysisPage({
   const startOfMonth = `${year}-${monthStr}-01`;
   const endOfMonth = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
+  // 이전/다음 월 계산
+  const prevDate = new Date(year, month - 2, 1);
+  const nextDate = new Date(year, month, 1);
+  const prevYearMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+  const nextYearMonth = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}`;
+
   // 거래 데이터 조회
   const { data: transactionsData } = await supabase.rpc("get_transactions_by_month", {
     p_household_id: profile.household_id,
@@ -45,12 +51,18 @@ export default async function BudgetAnalysisPage({
   });
 
   const transactions = (transactionsData || []).map((t: any) => ({
-    ...t,
+    id: t.id,
+    type: t.type,
+    expense_type: t.expense_type,
     amount: Number(t.amount),
+    memo: t.memo,
     transaction_date:
       typeof t.transaction_date === "string"
         ? t.transaction_date
         : new Date(t.transaction_date).toISOString().split("T")[0],
+    category_name: t.category_name,
+    category_icon: t.category_icon,
+    category_color: t.category_color,
   }));
 
   // 항목별 집계
@@ -106,17 +118,35 @@ export default async function BudgetAnalysisPage({
         </div>
       </header>
 
-      {/* 월 표시 */}
+      {/* 월 네비게이션 */}
       <div className="px-6 mb-6">
-        <div className="glass-panel p-3 rounded-2xl border border-white/60 shadow-sm text-center">
+        <div className="flex items-center justify-between glass-panel p-2 rounded-2xl border border-white/60 shadow-sm">
+          <Link href={`/transactions/${prevYearMonth}/analysis`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-xl hover:bg-white/50"
+            >
+              <ArrowLeft className="h-4 w-4 text-text-secondary" />
+            </Button>
+          </Link>
           <span className="font-black text-lg text-text-main">
             {year}년 {month}월 실적
           </span>
+          <Link href={`/transactions/${nextYearMonth}/analysis`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-xl hover:bg-white/50"
+            >
+              <ArrowLeft className="h-4 w-4 text-text-secondary rotate-180" />
+            </Button>
+          </Link>
         </div>
       </div>
 
       <div className="px-6 space-y-6">
-        <BudgetAnalysisClient data={analysisData} />
+        <BudgetAnalysisClient data={analysisData} transactions={transactions} />
       </div>
 
       {/* Bottom Spacer */}

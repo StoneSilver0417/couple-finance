@@ -231,6 +231,15 @@ export default async function DashboardPage() {
         totalExpense={summary.expense}
         variableExpense={variableExpenseTotal}
         totalIncome={summary.income}
+        transactions={currentMonthTxs.map((tx) => ({
+          id: tx.id,
+          amount: tx.amount,
+          memo: tx.memo,
+          transaction_date: tx.transaction_date,
+          category_name: tx.categories?.name,
+          category_icon: tx.categories?.icon,
+          category_color: tx.categories?.color,
+        }))}
       />
 
       {/* --- TREND CHART --- */}

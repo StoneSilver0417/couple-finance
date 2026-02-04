@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ChevronRight, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  CategoryTransactionsModal,
+  TransactionItem,
+} from "./category-transactions-modal";
 
 interface CategoryData {
   name: string;
@@ -19,6 +21,7 @@ interface AnalysisSectionProps {
   totalExpense: number;
   variableExpense: number;
   totalIncome: number;
+  transactions?: TransactionItem[];
 }
 
 export default function AnalysisSection({
@@ -28,13 +31,29 @@ export default function AnalysisSection({
   totalExpense,
   variableExpense,
   totalIncome,
+  transactions = [],
 }: AnalysisSectionProps) {
   const [mode, setMode] = useState<"expense" | "income">("expense");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryData | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 예산 잔액은 변동지출만 차감
   const budgetRemaining = totalBudget - variableExpense;
   const budgetUsedPercent =
     totalBudget > 0 ? (variableExpense / totalBudget) * 100 : 0;
+
+  const handleCategoryClick = (cat: CategoryData, type: "expense" | "income") => {
+    setSelectedCategory(cat);
+    setMode(type);
+    setIsModalOpen(true);
+  };
+
+  // 선택된 카테고리의 거래 내역 필터링
+  const filteredTransactions = selectedCategory
+    ? transactions.filter((tx) => tx.category_name === selectedCategory.name)
+    : [];
 
   return (
     <section className="px-6 mb-8">
@@ -51,7 +70,7 @@ export default function AnalysisSection({
               "px-3 py-1 text-xs font-bold rounded-lg transition-all",
               mode === "expense"
                 ? "bg-white shadow-sm text-primary"
-                : "text-text-secondary hover:text-text-main",
+                : "text-text-secondary hover:text-text-main"
             )}
           >
             지출
@@ -62,7 +81,7 @@ export default function AnalysisSection({
               "px-3 py-1 text-xs font-bold rounded-lg transition-all",
               mode === "income"
                 ? "bg-white shadow-sm text-green-600"
-                : "text-text-secondary hover:text-text-main",
+                : "text-text-secondary hover:text-text-main"
             )}
           >
             수입
@@ -76,7 +95,7 @@ export default function AnalysisSection({
         <div className="p-6 relative z-10">
           {mode === "expense" ? (
             <div className="flex flex-col gap-6">
-              {/* Budget Progress - Vertical Layout for better space usage */}
+              {/* Budget Progress */}
               <div className="flex flex-col items-center gap-6">
                 <div className="relative size-40 shrink-0 flex items-center justify-center">
                   <svg
@@ -166,9 +185,10 @@ export default function AnalysisSection({
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {expenseData.slice(0, 4).map((cat) => (
-                    <div
+                    <button
                       key={cat.name}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-gray-50/50"
+                      onClick={() => handleCategoryClick(cat, "expense")}
+                      className="flex items-center gap-2 p-2 rounded-xl bg-gray-50/50 hover:bg-gray-100 transition-colors text-left"
                     >
                       <span className="text-base">{cat.icon || "💸"}</span>
                       <div className="flex-1 min-w-0">
@@ -179,7 +199,7 @@ export default function AnalysisSection({
                           {(cat.value / 10000).toFixed(1)}만
                         </p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -189,7 +209,6 @@ export default function AnalysisSection({
               {/* Income Category Breakdown View */}
               <div className="flex items-center gap-6">
                 <div className="relative size-32 shrink-0 flex items-center justify-center">
-                  {/* Simple mini pie for income */}
                   <svg
                     className="absolute inset-0 -rotate-90"
                     viewBox="0 0 100 100"
@@ -226,7 +245,11 @@ export default function AnalysisSection({
                 <div className="flex-1 space-y-4">
                   {incomeData.length > 0 ? (
                     incomeData.slice(0, 3).map((cat) => (
-                      <div key={cat.name} className="space-y-1">
+                      <button
+                        key={cat.name}
+                        onClick={() => handleCategoryClick(cat, "income")}
+                        className="w-full space-y-1 text-left hover:opacity-80 transition-opacity"
+                      >
                         <div className="flex items-center justify-between text-[10px] font-bold">
                           <span className="text-text-main">{cat.name}</span>
                           <span className="text-green-600">
@@ -243,7 +266,7 @@ export default function AnalysisSection({
                             }}
                           />
                         </div>
-                      </div>
+                      </button>
                     ))
                   ) : (
                     <p className="text-xs text-text-secondary text-center py-4">
@@ -256,9 +279,10 @@ export default function AnalysisSection({
               {/* All Income Categories */}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
                 {incomeData.slice(0, 4).map((cat) => (
-                  <div
+                  <button
                     key={cat.name}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-green-50/50"
+                    onClick={() => handleCategoryClick(cat, "income")}
+                    className="flex items-center gap-2 p-2 rounded-xl bg-green-50/50 hover:bg-green-100 transition-colors text-left"
                   >
                     <span className="text-base">{cat.icon || "💰"}</span>
                     <div className="flex-1 min-w-0">
@@ -269,13 +293,24 @@ export default function AnalysisSection({
                         {(cat.value / 10000).toFixed(1)}만
                       </p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* 카테고리 거래 내역 모달 */}
+      <CategoryTransactionsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        categoryName={selectedCategory?.name || ""}
+        categoryIcon={selectedCategory?.icon}
+        categoryColor={selectedCategory?.color}
+        transactions={filteredTransactions}
+        type={mode}
+      />
     </section>
   );
 }
