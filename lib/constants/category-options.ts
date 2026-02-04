@@ -146,6 +146,12 @@ export const CATEGORY_ICONS = [
 
 // Toss-style friendly color palette
 export const CATEGORY_COLORS = [
+  // 기본 카테고리 색상 (우선 표시)
+  { name: "에메랄드", value: "#10B981", light: "#D1FAE5" },
+  { name: "앰버", value: "#F59E0B", light: "#FEF3C7" },
+  { name: "바이올렛", value: "#8B5CF6", light: "#EDE9FE" },
+  { name: "레드", value: "#EF4444", light: "#FEE2E2" },
+  // 추가 색상
   { name: "코랄 핑크", value: "#FF6B9D", light: "#FFE5EF" },
   { name: "피치", value: "#FFB84D", light: "#FFF3E0" },
   { name: "라벤더", value: "#A29BFE", light: "#F0EEFF" },
@@ -157,5 +163,5 @@ export const CATEGORY_COLORS = [
   { name: "퍼플", value: "#9575CD", light: "#F3E5F5" },
   { name: "옐로우", value: "#FFD54F", light: "#FFF9E1" },
   { name: "틸", value: "#4DB6AC", light: "#E0F2F1" },
-  { name: "레드", value: "#EF5350", light: "#FFEBEE" },
+  { name: "딥레드", value: "#EF5350", light: "#FFEBEE" },
 ];
