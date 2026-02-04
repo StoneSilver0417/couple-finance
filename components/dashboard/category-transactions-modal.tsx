@@ -45,14 +45,14 @@ export function CategoryTransactionsModal({
       />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
+      <div className="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up max-h-[80vh] min-h-[280px] flex flex-col">
         {/* 핸들 바 */}
-        <div className="flex justify-center pt-3 pb-2">
+        <div className="flex justify-center pt-3 pb-2 shrink-0">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
 
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-3">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
@@ -81,13 +81,13 @@ export function CategoryTransactionsModal({
         </div>
 
         {/* 거래 목록 */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4 min-h-[120px]">
           {transactions.length === 0 ? (
             <div className="text-center py-12 text-text-secondary">
               거래 내역이 없습니다
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 pb-4">
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
@@ -119,7 +119,7 @@ export function CategoryTransactionsModal({
         </div>
 
         {/* 하단 safe area */}
-        <div className="h-6" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
+        <div className="shrink-0" style={{ height: 'calc(24px + env(safe-area-inset-bottom, 0px))' }} />
       </div>
     </div>
   );
