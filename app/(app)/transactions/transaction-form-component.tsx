@@ -8,19 +8,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, TrendingDown, TrendingUp } from "lucide-react";
 import { AmountInput } from "@/components/ui/amount-input";
 
-import { Category } from "@/types";
+import { Category, PaymentMethod } from "@/types";
 
 export interface TransactionFormData {
   type: "income" | "expense";
   expense_type: "fixed" | "variable" | "irregular" | null;
   amount: number;
   category_id: string;
+  payment_method_id: string | null;
   transaction_date: string;
   memo: string | null;
 }
 
 interface TransactionFormProps {
   categories: Category[];
+  paymentMethods?: PaymentMethod[];
   initialData?: TransactionFormData;
   onSubmit: (formData: FormData) => Promise<void>;
   isLoading: boolean;
@@ -31,6 +33,7 @@ interface TransactionFormProps {
 
 export default function TransactionFormComponent({
   categories,
+  paymentMethods = [],
   initialData,
   onSubmit,
   isLoading,
@@ -116,6 +119,7 @@ export default function TransactionFormComponent({
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormFields
               categories={filteredCategories}
+              paymentMethods={paymentMethods}
               initialData={initialData}
               isLoading={isLoading}
               submitLabel={submitLabel}
@@ -130,6 +134,7 @@ export default function TransactionFormComponent({
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormFields
               categories={filteredCategories}
+              paymentMethods={paymentMethods}
               initialData={initialData}
               isLoading={isLoading}
               submitLabel={submitLabel}
@@ -143,16 +148,19 @@ export default function TransactionFormComponent({
 
 function FormFields({
   categories,
+  paymentMethods = [],
   initialData,
   isLoading,
   submitLabel,
 }: {
   categories: Category[];
+  paymentMethods?: PaymentMethod[];
   initialData?: TransactionFormData;
   isLoading: boolean;
   submitLabel: string;
 }) {
   const today = new Date().toISOString().split("T")[0];
+  const defaultPaymentMethod = paymentMethods.find((pm) => pm.is_default)?.id || "";
 
   return (
     <>
@@ -223,6 +231,53 @@ function FormFields({
           </div>
         </div>
       </div>
+
+      {/* 결제수단 선택 */}
+      {paymentMethods.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <Label
+              htmlFor="payment_method_id"
+              className="font-semibold text-text-main text-[13px]"
+            >
+              결제수단
+            </Label>
+          </div>
+          <div className="relative">
+            <select
+              id="payment_method_id"
+              name="payment_method_id"
+              defaultValue={initialData?.payment_method_id || defaultPaymentMethod}
+              className="flex h-12 w-full appearance-none rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-text-main shadow-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundImage: "none" }}
+            >
+              <option value="">선택 안함</option>
+              {paymentMethods.map((pm) => (
+                <option key={pm.id} value={pm.id}>
+                  {pm.icon || "💳"} {pm.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg
+                width="10"
+                height="6"
+                viewBox="0 0 10 6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 1L5 5L9 1"
+                  stroke="#64748B"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">

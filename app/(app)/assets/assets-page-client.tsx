@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart } from "lucide-react";
+import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart, HelpCircle, X } from "lucide-react";
 import AssetsListClient from "./assets-list-client";
 import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
 import AssetTrendChart from "@/components/charts/asset-trend-chart";
@@ -48,6 +48,7 @@ export default function AssetsPageClient({
 }: AssetsPageClientProps) {
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>(assets);
   const [activeFilterId, setActiveFilterId] = useState("ALL");
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // 필터 변경 핸들러
   const handleFilterChange = (filtered: Asset[], filterId?: string) => {
@@ -226,15 +227,84 @@ export default function AssetsPageClient({
               className="glass-panel p-5 rounded-[2rem] border border-white/60"
             >
               <div className="px-2 mb-4">
-                <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
-                  <LineChart className="h-5 w-5 text-primary" />
-                  자산 변동 기록
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
+                    <LineChart className="h-5 w-5 text-primary" />
+                    자산 변동 기록
+                  </h3>
+                  <button
+                    onClick={() => setShowHelpModal(true)}
+                    className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <HelpCircle className="h-5 w-5 text-text-secondary" />
+                  </button>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   자산을 추가/수정할 때마다 자동 기록됩니다
                 </p>
               </div>
               <AssetTrendChart data={trendData} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 도움말 모달 */}
+        <AnimatePresence>
+          {showHelpModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setShowHelpModal(false)}
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              >
+                <button
+                  onClick={() => setShowHelpModal(false)}
+                  className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <LineChart className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-text-main">자산 변동 기록이란?</h3>
+                </div>
+
+                <div className="space-y-4 text-sm text-text-secondary">
+                  <div className="p-3 bg-blue-50 rounded-xl">
+                    <p className="font-semibold text-blue-700 mb-1">📊 언제 기록되나요?</p>
+                    <p>자산을 <strong>추가, 수정, 삭제</strong>할 때마다 그날의 순자산이 자동으로 저장됩니다.</p>
+                  </div>
+
+                  <div className="p-3 bg-green-50 rounded-xl">
+                    <p className="font-semibold text-green-700 mb-1">📈 무엇을 보여주나요?</p>
+                    <p>저장된 순자산 기록을 시간순으로 연결하여 <strong>자산 변화 추이</strong>를 그래프로 보여줍니다.</p>
+                  </div>
+
+                  <div className="p-3 bg-amber-50 rounded-xl">
+                    <p className="font-semibold text-amber-700 mb-1">💡 활용 팁</p>
+                    <p>자산 금액이 변경될 때마다 수정해주시면 더 정확한 추이를 확인할 수 있어요!</p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => setShowHelpModal(false)}
+                  className="w-full mt-5 h-12 rounded-xl bg-primary text-white font-bold"
+                >
+                  확인
+                </Button>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
