@@ -129,8 +129,8 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
         </div>
       </div>
 
-      {/* Bottom Spacer - Increased to prevent BottomNav overlap */}
-      <div className="h-40" />
+      {/* Bottom Spacer - safe-area 포함 */}
+      <div className="h-32" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }} />
     </div>
   );
 }
