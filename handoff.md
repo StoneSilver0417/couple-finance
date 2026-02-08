@@ -7,7 +7,7 @@
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: c3f3768
+- **최신 커밋**: 9f95860
 
 ## Supabase 환경
 | 환경 | URL | 용도 |
