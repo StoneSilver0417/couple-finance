@@ -113,21 +113,19 @@ export default function ActivityLogSheet() {
       </SheetTrigger>
       <SheetContent side="bottom" className="max-h-[70vh] overflow-hidden">
         <SheetHeader className="pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2 text-xl font-bold">
-              <Bell className="w-5 h-5 text-primary-dark" />
-              활동 기록
-            </SheetTitle>
-            {logs.length > 0 && (
-              <button
-                onClick={handleClear}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 rounded-full transition-colors"
-              >
-                <RotateCcw className="w-3 h-3" />
-                초기화
-              </button>
-            )}
-          </div>
+          <SheetTitle className="flex items-center gap-2 text-xl font-bold">
+            <Bell className="w-5 h-5 text-primary-dark" />
+            활동 기록
+          </SheetTitle>
+          {logs.length > 0 && (
+            <button
+              onClick={handleClear}
+              className="flex items-center gap-1 self-start px-3 py-1 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              기록 초기화
+            </button>
+          )}
         </SheetHeader>
 
         <div className="overflow-y-auto max-h-[calc(70vh-100px)] py-4 -mx-2 px-2">
