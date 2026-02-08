@@ -47,6 +47,7 @@ export async function createActivityLog(
       action_type: actionType,
       target_table: targetTable,
       description,
+      created_at: new Date().toISOString(),
     });
 
     if (error) throw error;
@@ -75,10 +76,10 @@ export async function getActivityLogs(limit: number = 20) {
   if (!profile?.household_id) return { error: "가구 정보가 없습니다.", data: [] };
 
   try {
-    // 먼저 활동 로그 조회
+    // 명시적 컬럼 선택으로 활동 로그 조회
     const { data: logs, error: logsError } = await supabase
       .from("activity_logs")
-      .select("*")
+      .select("id, household_id, user_id, action_type, target_table, description, created_at")
       .eq("household_id", profile.household_id)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -93,10 +94,11 @@ export async function getActivityLogs(limit: number = 20) {
       .select("id, full_name, avatar_url")
       .in("id", userIds);
 
-    // 프로필 정보 매핑
+    // 프로필 정보 매핑 + created_at을 문자열로 보장
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
     const logsWithProfiles = logs.map(log => ({
       ...log,
+      created_at: log.created_at ? String(log.created_at) : new Date().toISOString(),
       profiles: profileMap.get(log.user_id) || null,
     }));
 

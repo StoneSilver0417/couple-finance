@@ -44,8 +44,12 @@ const TARGET_ICONS = {
   CATEGORY: <Tag className="w-4 h-4" />,
 };
 
-function formatTimeAgo(dateStr: string): string {
+function formatTimeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+
   const date = new Date(dateStr);
+  if (isNaN(date.getTime()) || date.getFullYear() < 2000) return "";
+
   const now = new Date();
   const diff = now.getTime() - date.getTime();
 
@@ -58,16 +62,12 @@ function formatTimeAgo(dateStr: string): string {
   if (minutes < 1) return "방금 전";
   if (minutes < 60) return `${minutes}분 전`;
   if (hours < 24) return `${hours}시간 전`;
-  if (days < 7) return `${days}일 전`;
+  if (days < 30) return `${days}일 전`;
 
-  const koDate = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const month = koDate.getMonth() + 1;
-  const day = koDate.getDate();
-  const hour = koDate.getHours();
-  const minute = String(koDate.getMinutes()).padStart(2, "0");
-
-  if (days < 365) return `${month}/${day} ${hour}:${minute}`;
-  return `${koDate.getFullYear()}/${month}/${day}`;
+  return date.toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+  });
 }
 
 export default function ActivityLogSheet() {

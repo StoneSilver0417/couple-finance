@@ -97,9 +97,9 @@ export default function DayTransactionsModal({
   if (editingTx) {
     return (
       <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-x-hidden overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md p-5">
+        <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md !p-4">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black flex items-center gap-2">
+            <DialogTitle className="text-lg font-black flex items-center gap-2 pr-6">
               <Edit2 className="h-5 w-5 text-primary" /> 거래 수정
             </DialogTitle>
           </DialogHeader>
@@ -131,28 +131,28 @@ export default function DayTransactionsModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-x-hidden overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md p-5">
+      <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md !p-4">
         <DialogHeader>
-          <DialogTitle className="text-xl font-black text-text-main">
+          <DialogTitle className="text-lg font-black text-text-main pr-6">
             {formattedDate}
           </DialogTitle>
         </DialogHeader>
 
         {/* Summary */}
         {dayTransactions.length > 0 && (
-          <div className="flex gap-3 mb-4">
+          <div className="flex gap-2">
             {totalIncome > 0 && (
-              <div className="flex-1 min-w-0 bg-blue-50 rounded-xl p-3 text-center">
-                <p className="text-[10px] font-bold text-blue-400 mb-1">수입</p>
-                <p className="text-sm font-black text-blue-600 truncate">
+              <div className="flex-1 bg-blue-50 rounded-xl p-2.5 text-center">
+                <p className="text-[10px] font-bold text-blue-400 mb-0.5">수입</p>
+                <p className="text-xs font-black text-blue-600">
                   +₩{totalIncome.toLocaleString()}
                 </p>
               </div>
             )}
             {totalExpense > 0 && (
-              <div className="flex-1 min-w-0 bg-rose-50 rounded-xl p-3 text-center">
-                <p className="text-[10px] font-bold text-rose-400 mb-1">지출</p>
-                <p className="text-sm font-black text-rose-600 truncate">
+              <div className="flex-1 bg-rose-50 rounded-xl p-2.5 text-center">
+                <p className="text-[10px] font-bold text-rose-400 mb-0.5">지출</p>
+                <p className="text-xs font-black text-rose-600">
                   -₩{totalExpense.toLocaleString()}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function DayTransactionsModal({
         )}
 
         {/* Transactions List */}
-        <div className="space-y-3 mb-4">
+        <div className="space-y-2">
           {dayTransactions.length === 0 ? (
             <div className="text-center py-10 bg-gray-100 rounded-2xl">
               <p className="text-4xl mb-3">📅</p>
@@ -172,33 +172,37 @@ export default function DayTransactionsModal({
             dayTransactions.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div
-                  className="h-9 w-9 shrink-0 rounded-xl flex items-center justify-center text-lg"
+                  className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center text-base"
                   style={{
                     backgroundColor: (tx.categories?.color || "#cbd5e1") + "20",
                   }}
                 >
                   {tx.categories?.icon || "💰"}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-text-main truncate">
-                    {tx.categories?.name || "미분류"}
-                  </p>
-                  <p className="text-xs text-text-secondary truncate">
-                    {tx.memo || (tx.type === "income" ? "수입" : "지출")}
-                  </p>
-                </div>
-                <div
-                  className={`shrink-0 font-black text-sm whitespace-nowrap ${tx.type === "income" ? "text-blue-600" : "text-text-main"}`}
-                >
-                  {tx.type === "income" ? "+" : "-"}₩{tx.amount.toLocaleString()}
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-baseline justify-between gap-1">
+                    <p className="font-bold text-sm text-text-main truncate">
+                      {tx.categories?.name || "미분류"}
+                    </p>
+                    <span
+                      className={`shrink-0 font-black text-xs ${tx.type === "income" ? "text-blue-600" : "text-text-main"}`}
+                    >
+                      {tx.type === "income" ? "+" : "-"}₩{tx.amount.toLocaleString()}
+                    </span>
+                  </div>
+                  {tx.memo && (
+                    <p className="text-xs text-text-secondary truncate">
+                      {tx.memo}
+                    </p>
+                  )}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                      <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl">
