@@ -117,15 +117,6 @@ export default function ActivityLogSheet() {
             <Bell className="w-5 h-5 text-primary-dark" />
             활동 기록
           </SheetTitle>
-          {logs.length > 0 && (
-            <button
-              onClick={handleClear}
-              className="flex items-center gap-1 self-start px-3 py-1 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" />
-              기록 초기화
-            </button>
-          )}
         </SheetHeader>
 
         <div className="overflow-y-auto max-h-[calc(70vh-100px)] py-4 -mx-2 px-2">
@@ -176,6 +167,15 @@ export default function ActivityLogSheet() {
                   </div>
                 </div>
               ))}
+              <div className="flex justify-center pt-4 pb-2">
+                <button
+                  onClick={handleClear}
+                  className="flex items-center gap-1 px-4 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  기록 초기화
+                </button>
+              </div>
             </div>
           )}
         </div>
