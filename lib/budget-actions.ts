@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { createActivityLog } from "./activity-log-actions";
 
 export async function updateBudget(
   categoryId: string,
@@ -46,6 +47,13 @@ export async function updateBudget(
     );
 
     if (error) throw error;
+
+    // 활동기록 로깅
+    await createActivityLog(
+      "UPDATE",
+      "BUDGET",
+      `${year}년 ${month}월 예산 ₩${amount.toLocaleString()} 설정`
+    );
 
     revalidatePath("/settings/budgets");
     return { success: true };

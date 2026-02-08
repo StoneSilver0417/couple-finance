@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { createActivityLog } from "./activity-log-actions";
 
 export async function createCategory(formData: FormData) {
   const supabase = await createClient();
@@ -51,6 +52,8 @@ export async function createCategory(formData: FormData) {
 
     if (error) throw error;
 
+    await createActivityLog("CREATE", "CATEGORY", `카테고리 "${name}" 추가`);
+
     revalidatePath("/settings/categories");
     revalidatePath("/transactions/new");
     return { success: true };
@@ -90,6 +93,8 @@ export async function updateCategory(categoryId: string, formData: FormData) {
 
     if (error) throw error;
 
+    await createActivityLog("UPDATE", "CATEGORY", `카테고리 "${name}" 수정`);
+
     revalidatePath("/settings/categories");
     return { success: true };
   } catch (error: unknown) {
@@ -122,13 +127,24 @@ export async function deleteCategory(categoryId: string) {
       };
     }
 
+    // 삭제 전 이름 조회
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("id", categoryId)
+      .single();
+
     const { error } = await supabase
       .from("categories")
       .delete()
       .eq("id", categoryId)
-      .eq("is_custom", true); // Only allow deleting custom categories
+      .eq("is_custom", true);
 
     if (error) throw error;
+
+    if (cat) {
+      await createActivityLog("DELETE", "CATEGORY", `카테고리 "${cat.name}" 삭제`);
+    }
 
     revalidatePath("/settings/categories");
     revalidatePath("/transactions/new");

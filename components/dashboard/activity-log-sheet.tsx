@@ -25,6 +25,12 @@ const ACTION_ICONS = {
   DELETE: <Trash2 className="w-3 h-3" />,
 };
 
+const ACTION_LABELS: Record<string, string> = {
+  CREATE: "추가",
+  UPDATE: "수정",
+  DELETE: "삭제",
+};
+
 const ACTION_COLORS = {
   CREATE: "bg-green-100 text-green-600",
   UPDATE: "bg-blue-100 text-blue-600",
@@ -127,7 +133,7 @@ export default function ActivityLogSheet() {
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${ACTION_COLORS[log.action_type]}`}
                       >
                         {ACTION_ICONS[log.action_type]}
-                        {log.action_type}
+                        {ACTION_LABELS[log.action_type] || log.action_type}
                       </span>
                       <span className="text-xs text-text-secondary">
                         {formatTimeAgo(log.created_at)}
@@ -138,7 +144,7 @@ export default function ActivityLogSheet() {
                     </p>
                     {log.profiles?.full_name && (
                       <p className="text-xs text-text-secondary mt-0.5">
-                        {log.profiles.full_name} 님이
+                        {log.profiles.full_name}
                       </p>
                     )}
                   </div>

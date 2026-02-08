@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { syncMonthlyBalance } from "./balance-actions";
+import { createActivityLog } from "./activity-log-actions";
 
 export async function updateTransaction(
   transactionId: string,
@@ -82,8 +83,16 @@ export async function updateTransaction(
       newDate.getMonth() + 1,
     );
 
+    // 활동기록 로깅
+    const typeLabel = type === "income" ? "수입" : "지출";
+    const amountStr = amount.toLocaleString();
+    await createActivityLog(
+      "UPDATE",
+      "TRANSACTION",
+      `${typeLabel} ₩${amountStr} 수정${memo ? ` - ${memo}` : ""}`
+    );
+
     revalidatePath("/transactions");
-    // No redirect here, usually edit happens in place or modal
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "거래 수정에 실패했습니다." };

@@ -1,13 +1,12 @@
 # Couple Finance - Handoff
 
 ## 현재 상태
-- **버전**: v0.3.9
+- **버전**: v0.4.0
 - **빌드 상태**: 성공
-- **배포 상태**: 프로덕션 배포 완료
+- **배포 상태**: 로컬 빌드 확인 완료 (배포 필요)
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: aba71bc
 
 ## Supabase 환경
 | 환경 | URL | 용도 |
@@ -26,20 +25,25 @@
 - **RLS INSERT 정책**: households, profiles 추가됨
 - **RPC 함수**: create_household_with_owner, join_household_as_member 생성됨
 
-## 최근 작업 (2026-02-05)
-- 확인 모달 스타일 적용
-  - ConfirmProvider 컨텍스트 및 useConfirm 훅 추가
-  - 브라우저 기본 confirm() 대신 스타일된 모달 사용
-  - 거래/카테고리/자산 삭제, 로그아웃에 모두 적용
-  - danger/warning/default 변형 지원
-- 결제수단 기능 완전 삭제
-- 활동기록 쿼리 수정 (join → 별도 쿼리)
-- 금액 표시 만/억 단위 적용
-- 카테고리 색상 동적 적용
+## 최근 작업 (2026-02-08)
+- 활동기록 개선
+  - action_type 한글 표시 (CREATE→추가, UPDATE→수정, DELETE→삭제)
+  - 프로필 이름 표시에서 불필요한 "님이" 접미사 제거
+  - 거래 수정(UPDATE) 시 활동기록 로깅 추가 (transaction-update-action.ts)
+  - 예산 설정 시 활동기록 로깅 추가 (budget-actions.ts)
+  - 카테고리 생성/수정/삭제 시 활동기록 로깅 추가 (category-actions.ts)
+- 거래내역 모달 가로 스크롤 수정
+  - DialogContent에 overflow-x-hidden 적용
+  - 패딩 축소 (p-6 → p-5)
+  - 금액 영역에 shrink-0, whitespace-nowrap 적용
+  - 아이콘 영역에 shrink-0 적용
+  - 요약 카드에 min-w-0, truncate 적용
+  - gap 축소 (gap-3 → gap-2)로 여유 공간 확보
 
 ## 알려진 이슈
 - Next.js 16 middleware → proxy 경고 (기능 문제 없음)
 
 ## 다음 TODO
-1. [ ] 활동기록 표시 확인 테스트
-2. [ ] 추가 UI/UX 개선
+1. [ ] 프로덕션 배포
+2. [ ] 활동기록 표시 실기기 테스트
+3. [ ] 추가 UI/UX 개선

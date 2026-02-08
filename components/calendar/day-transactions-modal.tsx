@@ -97,7 +97,7 @@ export default function DayTransactionsModal({
   if (editingTx) {
     return (
       <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md">
+        <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-x-hidden overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md p-5">
           <DialogHeader>
             <DialogTitle className="text-xl font-black flex items-center gap-2">
               <Edit2 className="h-5 w-5 text-primary" /> 거래 수정
@@ -131,7 +131,7 @@ export default function DayTransactionsModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md">
+      <DialogContent className="rounded-[2rem] max-h-[85vh] overflow-x-hidden overflow-y-auto bg-white/98 border border-white/80 shadow-glass backdrop-blur-md p-5">
         <DialogHeader>
           <DialogTitle className="text-xl font-black text-text-main">
             {formattedDate}
@@ -140,19 +140,19 @@ export default function DayTransactionsModal({
 
         {/* Summary */}
         {dayTransactions.length > 0 && (
-          <div className="flex gap-4 mb-4">
+          <div className="flex gap-3 mb-4">
             {totalIncome > 0 && (
-              <div className="flex-1 bg-blue-50 rounded-xl p-3 text-center">
+              <div className="flex-1 min-w-0 bg-blue-50 rounded-xl p-3 text-center">
                 <p className="text-[10px] font-bold text-blue-400 mb-1">수입</p>
-                <p className="text-sm font-black text-blue-600">
+                <p className="text-sm font-black text-blue-600 truncate">
                   +₩{totalIncome.toLocaleString()}
                 </p>
               </div>
             )}
             {totalExpense > 0 && (
-              <div className="flex-1 bg-rose-50 rounded-xl p-3 text-center">
+              <div className="flex-1 min-w-0 bg-rose-50 rounded-xl p-3 text-center">
                 <p className="text-[10px] font-bold text-rose-400 mb-1">지출</p>
-                <p className="text-sm font-black text-rose-600">
+                <p className="text-sm font-black text-rose-600 truncate">
                   -₩{totalExpense.toLocaleString()}
                 </p>
               </div>
@@ -172,10 +172,10 @@ export default function DayTransactionsModal({
             dayTransactions.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div
-                  className="h-10 w-10 rounded-xl flex items-center justify-center text-xl"
+                  className="h-9 w-9 shrink-0 rounded-xl flex items-center justify-center text-lg"
                   style={{
                     backgroundColor: (tx.categories?.color || "#cbd5e1") + "20",
                   }}
@@ -191,13 +191,13 @@ export default function DayTransactionsModal({
                   </p>
                 </div>
                 <div
-                  className={`font-black text-sm ${tx.type === "income" ? "text-blue-600" : "text-text-main"}`}
+                  className={`shrink-0 font-black text-sm whitespace-nowrap ${tx.type === "income" ? "text-blue-600" : "text-text-main"}`}
                 >
                   {tx.type === "income" ? "+" : "-"}₩{tx.amount.toLocaleString()}
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
