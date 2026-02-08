@@ -16,8 +16,9 @@ import {
   Wallet,
   CreditCard,
   Tag,
+  RotateCcw,
 } from "lucide-react";
-import { getActivityLogs, ActivityLog } from "@/lib/activity-log-actions";
+import { getActivityLogs, clearActivityLogs, ActivityLog } from "@/lib/activity-log-actions";
 
 const ACTION_ICONS = {
   CREATE: <Plus className="w-3 h-3" />,
@@ -90,6 +91,16 @@ export default function ActivityLogSheet() {
     setLoading(false);
   }
 
+  async function handleClear() {
+    if (!confirm("모든 활동 기록을 삭제할까요?")) return;
+    setLoading(true);
+    const result = await clearActivityLogs();
+    if (result.success) {
+      setLogs([]);
+    }
+    setLoading(false);
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -102,10 +113,21 @@ export default function ActivityLogSheet() {
       </SheetTrigger>
       <SheetContent side="bottom" className="max-h-[70vh] overflow-hidden">
         <SheetHeader className="pb-4 border-b">
-          <SheetTitle className="flex items-center gap-2 text-xl font-bold">
-            <Bell className="w-5 h-5 text-primary-dark" />
-            활동 기록
-          </SheetTitle>
+          <div className="flex items-center justify-between">
+            <SheetTitle className="flex items-center gap-2 text-xl font-bold">
+              <Bell className="w-5 h-5 text-primary-dark" />
+              활동 기록
+            </SheetTitle>
+            {logs.length > 0 && (
+              <button
+                onClick={handleClear}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 rounded-full transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                초기화
+              </button>
+            )}
+          </div>
         </SheetHeader>
 
         <div className="overflow-y-auto max-h-[calc(70vh-100px)] py-4 -mx-2 px-2">

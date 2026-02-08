@@ -58,6 +58,37 @@ export async function createActivityLog(
   }
 }
 
+export async function clearActivityLogs() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "로그인이 필요합니다." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("household_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.household_id) return { error: "가구 정보가 없습니다." };
+
+  try {
+    const { error } = await supabase
+      .from("activity_logs")
+      .delete()
+      .eq("household_id", profile.household_id);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error: any) {
+    console.error("Clear activity logs error:", error);
+    return { error: error.message };
+  }
+}
+
 export async function getActivityLogs(limit: number = 20) {
   const supabase = await createClient();
 
@@ -76,11 +107,13 @@ export async function getActivityLogs(limit: number = 20) {
   if (!profile?.household_id) return { error: "가구 정보가 없습니다.", data: [] };
 
   try {
-    // 명시적 컬럼 선택으로 활동 로그 조회
+    // 명시적 컬럼 선택 + NULL 날짜 필터링
     const { data: logs, error: logsError } = await supabase
       .from("activity_logs")
       .select("id, household_id, user_id, action_type, target_table, description, created_at")
       .eq("household_id", profile.household_id)
+      .not("created_at", "is", null)
+      .gte("created_at", "2020-01-01T00:00:00Z")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -94,11 +127,11 @@ export async function getActivityLogs(limit: number = 20) {
       .select("id, full_name, avatar_url")
       .in("id", userIds);
 
-    // 프로필 정보 매핑 + created_at을 문자열로 보장
+    // 프로필 정보 매핑 + created_at을 문자열로 보장 (NULL은 빈 문자열)
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
     const logsWithProfiles = logs.map(log => ({
       ...log,
-      created_at: log.created_at ? String(log.created_at) : new Date().toISOString(),
+      created_at: log.created_at ? String(log.created_at) : "",
       profiles: profileMap.get(log.user_id) || null,
     }));
 
