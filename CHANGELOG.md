@@ -2,6 +2,19 @@
 
 ## 2026-02-08
 
+### v0.4.3 - 활동기록 재수정 및 가구 멤버 표시
+- **활동기록 "방금 전" 버그 수정**
+  - `created_at` NULL fallback을 `new Date().toISOString()` → 빈 문자열로 변경
+  - Supabase 쿼리에 `.not("created_at", "is", null)` + `.gte()` 필터 추가
+  - 기존 잘못된 활동기록 DB에서 일괄 삭제 (SQL 실행)
+- **활동기록 초기화 기능 추가**
+  - `clearActivityLogs` 서버 액션 추가
+  - 활동기록 시트 하단에 초기화 버튼 배치
+  - `activity_logs` DELETE RLS 정책 추가
+- **설정 페이지 가구 멤버 표시 수정**
+  - profiles SELECT RLS: `auth.uid() = id` → 같은 `household_id` 멤버도 조회 허용
+  - `get_my_household_id()` SECURITY DEFINER 함수로 RLS 서브쿼리 재귀 문제 해결
+
 ### v0.4.2 - 활동기록 버그 수정 및 모달 레이아웃 개선
 - **활동기록 1970/1/1 날짜 버그 수정**
   - `created_at`을 명시적 `new Date().toISOString()`으로 설정 (DB DEFAULT 의존 제거)
