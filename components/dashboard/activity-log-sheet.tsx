@@ -49,6 +49,8 @@ function formatTimeAgo(dateStr: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
 
+  if (diff < 0) return "방금 전";
+
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -58,10 +60,14 @@ function formatTimeAgo(dateStr: string): string {
   if (hours < 24) return `${hours}시간 전`;
   if (days < 7) return `${days}일 전`;
 
-  return date.toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-  });
+  const koDate = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const month = koDate.getMonth() + 1;
+  const day = koDate.getDate();
+  const hour = koDate.getHours();
+  const minute = String(koDate.getMinutes()).padStart(2, "0");
+
+  if (days < 365) return `${month}/${day} ${hour}:${minute}`;
+  return `${koDate.getFullYear()}/${month}/${day}`;
 }
 
 export default function ActivityLogSheet() {

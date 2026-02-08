@@ -65,7 +65,7 @@ export async function createTransaction(formData: FormData) {
 
     // Log activity
     const typeLabel = type === "income" ? "수입" : "지출";
-    const amountStr = amount.toLocaleString();
+    const amountStr = Math.round(amount).toLocaleString("ko-KR");
     await createActivityLog(
       "CREATE",
       "TRANSACTION",
@@ -116,7 +116,7 @@ export async function deleteTransaction(transactionId: string) {
 
       // Log activity
       const typeLabel = tx.type === "income" ? "수입" : "지출";
-      const amountStr = Number(tx.amount).toLocaleString();
+      const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");
       await createActivityLog(
         "DELETE",
         "TRANSACTION",

@@ -105,7 +105,7 @@ export async function createAsset(formData: FormData) {
     await createActivityLog(
       "CREATE",
       "ASSET",
-      `${label} "${name}" ₩${currentAmount.toLocaleString()} 추가`
+      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")} 추가`
     );
 
     // 자산 스냅샷 저장
@@ -173,7 +173,7 @@ export async function updateAsset(assetId: string, formData: FormData) {
     await createActivityLog(
       "UPDATE",
       "ASSET",
-      `${label} "${name}" ₩${currentAmount.toLocaleString()}으로 수정`
+      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")}으로 수정`
     );
 
     // 자산 스냅샷 저장
@@ -225,7 +225,7 @@ export async function deleteAsset(assetId: string) {
       await createActivityLog(
         "DELETE",
         "ASSET",
-        `${label} "${asset.name}" ₩${Number(asset.current_amount).toLocaleString()} 삭제`
+        `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`
       );
     }
 

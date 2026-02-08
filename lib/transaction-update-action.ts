@@ -85,7 +85,7 @@ export async function updateTransaction(
 
     // 활동기록 로깅
     const typeLabel = type === "income" ? "수입" : "지출";
-    const amountStr = amount.toLocaleString();
+    const amountStr = Math.round(amount).toLocaleString("ko-KR");
     await createActivityLog(
       "UPDATE",
       "TRANSACTION",

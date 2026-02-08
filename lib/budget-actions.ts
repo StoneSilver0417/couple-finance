@@ -52,7 +52,7 @@ export async function updateBudget(
     await createActivityLog(
       "UPDATE",
       "BUDGET",
-      `${year}년 ${month}월 예산 ₩${amount.toLocaleString()} 설정`
+      `${year}년 ${month}월 예산 ₩${Math.round(amount).toLocaleString("ko-KR")} 설정`
     );
 
     revalidatePath("/settings/budgets");
