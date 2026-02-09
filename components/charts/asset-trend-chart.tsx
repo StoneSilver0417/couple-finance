@@ -37,7 +37,9 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
           <span className="text-2xl">📈</span>
         </div>
-        <p className="text-sm font-medium text-text-secondary">기록이 없습니다</p>
+        <p className="text-sm font-medium text-text-secondary">
+          기록이 없습니다
+        </p>
         <p className="text-xs text-text-secondary mt-1">
           자산을 추가하면 자동으로 기록됩니다
         </p>
@@ -57,10 +59,12 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
         <p className="text-2xl font-black text-text-main">
           {current.value >= 100000000
             ? `${(current.value / 100000000).toFixed(1)}억`
-            : `${(current.value / 10000).toFixed(0)}만`}원
+            : `${(current.value / 10000).toFixed(0)}만`}
+          원
         </p>
         <p className="text-[11px] text-text-secondary mt-3 text-center px-4">
-          {current.label} 기록됨<br />
+          {current.label} 기록됨
+          <br />
           자산을 수정하면 새 기록이 추가됩니다
         </p>
       </div>
@@ -84,7 +88,11 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
               <stop offset="95%" stopColor="#fb6f92" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#f0f0f0"
+            vertical={false}
+          />
           <XAxis
             dataKey="label"
             axisLine={false}
@@ -109,8 +117,8 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
               padding: "10px 14px",
             }}
             labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
-            formatter={(value: number) => [
-              `₩${(value * 10000).toLocaleString()}`,
+            formatter={(value: any) => [
+              `₩${(Number(value) * 10000).toLocaleString()}`,
               "금액",
             ]}
           />

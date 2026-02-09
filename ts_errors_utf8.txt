@@ -1,0 +1,17 @@
+﻿.next/dev/types/validator.ts(96,39): error TS2307: Cannot find module '../../../app/(app)/settings/payment-methods/page.js' or its corresponding type declarations.
+app/(app)/transactions/[yearMonth]/analysis/budget-analysis-client.tsx(403,19): error TS2322: Type '(value: number) => string' is not assignable to type 'LabelFormatter'.
+  Types of parameters 'value' and 'label' are incompatible.
+    Type 'RenderableText' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+app/(app)/transactions/new/page.tsx(62,7): error TS2322: Type '{ id: any; name: any; icon: any; type: any; expense_category: any; is_hidden: any; }[]' is not assignable to type 'Category[]'.
+  Type '{ id: any; name: any; icon: any; type: any; expense_category: any; is_hidden: any; }' is missing the following properties from type 'Category': color, is_custom, display_order
+components/charts/asset-trend-chart.tsx(112,13): error TS2322: Type '(value: number) => [string, "湲덉븸"]' is not assignable to type 'Formatter<number, "湲덉븸"> & ((value: number, name: "湲덉븸", item: Payload<number, "湲덉븸">, index: number, payload: Payload<number, "湲덉븸">[]) => ReactNode | [...])'.
+  Type '(value: number) => [string, "湲덉븸"]' is not assignable to type 'Formatter<number, "湲덉븸">'.
+    Types of parameters 'value' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+components/page-transition.tsx(38,7): error TS2322: Type '{ type: string; ease: string; duration: number; }' is not assignable to type 'Transition<any> | undefined'.
+  Type '{ type: string; ease: string; duration: number; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+    Type '{ type: string; ease: string; duration: number; }' is not assignable to type 'ValueAnimationTransition<any>'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'AnimationGeneratorType | undefined'.

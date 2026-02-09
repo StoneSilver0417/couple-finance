@@ -53,7 +53,10 @@ function formatFullAmount(amount: number): string {
   return `₩${amount.toLocaleString()}`;
 }
 
-export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysisClientProps) {
+export function BudgetAnalysisClient({
+  data,
+  transactions = [],
+}: BudgetAnalysisClientProps) {
   const [selectedType, setSelectedType] = useState<ExpenseType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -95,7 +98,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
       return transactions.filter((t) => t.type === "income");
     }
     return transactions.filter(
-      (t) => t.type === "expense" && t.expense_type === selectedType
+      (t) => t.type === "expense" && t.expense_type === selectedType,
     );
   };
 
@@ -170,7 +173,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
             style={{
               backgroundColor: "#6366f115",
-              borderColor: "#6366f130"
+              borderColor: "#6366f130",
             }}
           >
             <div className="flex items-center gap-3">
@@ -183,14 +186,14 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
               <div>
                 <p className="text-xs font-bold text-indigo-600">수입</p>
                 <p className="text-sm font-black text-text-main">
-                  {data.income >= 100000000 ? `${(data.income / 100000000).toFixed(1)}억` : `${(data.income / 10000).toFixed(0)}만원`}
+                  {data.income >= 100000000
+                    ? `${(data.income / 100000000).toFixed(1)}억`
+                    : `${(data.income / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100/50 text-indigo-600"
-              >
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100/50 text-indigo-600">
                 100%
               </span>
             </div>
@@ -202,7 +205,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
             style={{
               backgroundColor: "#f43f5e15",
-              borderColor: "#f43f5e30"
+              borderColor: "#f43f5e30",
             }}
           >
             <div className="flex items-center gap-3">
@@ -215,15 +218,18 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
               <div>
                 <p className="text-xs font-bold text-rose-600">고정지출</p>
                 <p className="text-sm font-black text-text-main">
-                  {data.fixedExpense >= 100000000 ? `${(data.fixedExpense / 100000000).toFixed(1)}억` : `${(data.fixedExpense / 10000).toFixed(0)}만원`}
+                  {data.fixedExpense >= 100000000
+                    ? `${(data.fixedExpense / 100000000).toFixed(1)}억`
+                    : `${(data.fixedExpense / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-full bg-rose-100/50 text-rose-600"
-              >
-                {data.totalExpense > 0 ? ((data.fixedExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-rose-100/50 text-rose-600">
+                {data.totalExpense > 0
+                  ? ((data.fixedExpense / data.totalExpense) * 100).toFixed(1)
+                  : 0}
+                %
               </span>
             </div>
           </button>
@@ -234,7 +240,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
             style={{
               backgroundColor: "#f9731615",
-              borderColor: "#f9731630"
+              borderColor: "#f9731630",
             }}
           >
             <div className="flex items-center gap-3">
@@ -247,15 +253,20 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
               <div>
                 <p className="text-xs font-bold text-orange-600">변동지출</p>
                 <p className="text-sm font-black text-text-main">
-                  {data.variableExpense >= 100000000 ? `${(data.variableExpense / 100000000).toFixed(1)}억` : `${(data.variableExpense / 10000).toFixed(0)}만원`}
+                  {data.variableExpense >= 100000000
+                    ? `${(data.variableExpense / 100000000).toFixed(1)}억`
+                    : `${(data.variableExpense / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100/50 text-orange-600"
-              >
-                {data.totalExpense > 0 ? ((data.variableExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100/50 text-orange-600">
+                {data.totalExpense > 0
+                  ? ((data.variableExpense / data.totalExpense) * 100).toFixed(
+                      1,
+                    )
+                  : 0}
+                %
               </span>
             </div>
           </button>
@@ -266,7 +277,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
             style={{
               backgroundColor: "#a855f715",
-              borderColor: "#a855f730"
+              borderColor: "#a855f730",
             }}
           >
             <div className="flex items-center gap-3">
@@ -279,15 +290,20 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
               <div>
                 <p className="text-xs font-bold text-purple-600">비정기지출</p>
                 <p className="text-sm font-black text-text-main">
-                  {data.irregularExpense >= 100000000 ? `${(data.irregularExpense / 100000000).toFixed(1)}억` : `${(data.irregularExpense / 10000).toFixed(0)}만원`}
+                  {data.irregularExpense >= 100000000
+                    ? `${(data.irregularExpense / 100000000).toFixed(1)}억`
+                    : `${(data.irregularExpense / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-full bg-purple-100/50 text-purple-600"
-              >
-                {data.totalExpense > 0 ? ((data.irregularExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              <span className="text-xs font-bold px-2 py-1 rounded-full bg-purple-100/50 text-purple-600">
+                {data.totalExpense > 0
+                  ? ((data.irregularExpense / data.totalExpense) * 100).toFixed(
+                      1,
+                    )
+                  : 0}
+                %
               </span>
             </div>
           </button>
@@ -296,19 +312,17 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
           <div className="border-t border-gray-100 my-2" />
 
           {/* 총 지출 */}
-          <div
-            className="flex items-center justify-between p-3 rounded-2xl border shadow-sm bg-gray-50/50 border-gray-200"
-          >
+          <div className="flex items-center justify-between p-3 rounded-2xl border shadow-sm bg-gray-50/50 border-gray-200">
             <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center shadow-sm"
-              >
+              <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center shadow-sm">
                 <TrendingDown className="h-5 w-5 text-gray-600" />
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-500">총 지출</p>
                 <p className="text-sm font-black text-text-main">
-                  {data.totalExpense >= 100000000 ? `${(data.totalExpense / 100000000).toFixed(1)}억` : `${(data.totalExpense / 10000).toFixed(0)}만원`}
+                  {data.totalExpense >= 100000000
+                    ? `${(data.totalExpense / 100000000).toFixed(1)}억`
+                    : `${(data.totalExpense / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
@@ -335,17 +349,20 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
                 />
               </div>
               <div>
-                <p className={`text-xs font-bold ${data.balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                <p
+                  className={`text-xs font-bold ${data.balance >= 0 ? "text-emerald-600" : "text-red-600"}`}
+                >
                   이번 달 잔액
                 </p>
                 <p className="text-sm font-black text-text-main">
                   {data.balance >= 0 ? "+" : "-"}
-                  {Math.abs(data.balance) >= 100000000 ? `${(Math.abs(data.balance) / 100000000).toFixed(1)}억` : `${(Math.abs(data.balance) / 10000).toFixed(0)}만원`}
+                  {Math.abs(data.balance) >= 100000000
+                    ? `${(Math.abs(data.balance) / 100000000).toFixed(1)}억`
+                    : `${(Math.abs(data.balance) / 10000).toFixed(0)}만원`}
                 </p>
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
 
@@ -383,7 +400,7 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
                 <LabelList
                   dataKey="value"
                   position="right"
-                  formatter={(value: number) => formatAmount(value)}
+                  formatter={(value: any) => formatAmount(Number(value))}
                   style={{ fontSize: 13, fontWeight: 700, fill: "#374151" }}
                 />
               </Bar>
@@ -403,7 +420,9 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             {/* 고정지출 비율 */}
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm font-semibold text-text-secondary">고정지출</span>
+                <span className="text-sm font-semibold text-text-secondary">
+                  고정지출
+                </span>
                 <span className="text-sm font-bold text-rose-600">
                   {((data.fixedExpense / data.totalExpense) * 100).toFixed(1)}%
                 </span>
@@ -421,9 +440,14 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             {/* 변동지출 비율 */}
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm font-semibold text-text-secondary">변동지출</span>
+                <span className="text-sm font-semibold text-text-secondary">
+                  변동지출
+                </span>
                 <span className="text-sm font-bold text-orange-600">
-                  {((data.variableExpense / data.totalExpense) * 100).toFixed(1)}%
+                  {((data.variableExpense / data.totalExpense) * 100).toFixed(
+                    1,
+                  )}
+                  %
                 </span>
               </div>
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -439,9 +463,14 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
             {/* 비정기지출 비율 */}
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm font-semibold text-text-secondary">비정기지출</span>
+                <span className="text-sm font-semibold text-text-secondary">
+                  비정기지출
+                </span>
                 <span className="text-sm font-bold text-purple-600">
-                  {((data.irregularExpense / data.totalExpense) * 100).toFixed(1)}%
+                  {((data.irregularExpense / data.totalExpense) * 100).toFixed(
+                    1,
+                  )}
+                  %
                 </span>
               </div>
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
