@@ -54,7 +54,10 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
         }
       `}</style>
 
-      <div className="relative h-[250px] w-full portfolio-chart">
+      <div
+        className="relative h-[250px] w-full portfolio-chart"
+        onClick={() => setSelectedIndex(null)}
+      >
         {/* 도넛 중앙 텍스트 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -99,7 +102,8 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               labelLine={false}
               onMouseEnter={(_, index) => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              onClick={(_, index) => {
+              onClick={(_, index, e) => {
+                e?.stopPropagation();
                 setSelectedIndex((prev) => (prev === index ? null : index));
               }}
               label={({
