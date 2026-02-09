@@ -1,14 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import {
   PieChart,
   Pie,
   Cell,
+  Sector,
   ResponsiveContainer,
-  Legend,
-  Tooltip,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PiggyBank } from "lucide-react";
 
 interface AssetChartProps {
@@ -21,6 +20,14 @@ interface AssetChartProps {
 
 export default function AssetPortfolioChart({ data }: AssetChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const activeItem = activeIndex !== null ? data[activeIndex] : null;
+
+  const formatAmount = (value: number) =>
+    value / 10000 >= 10000
+      ? `${(value / 100000000).toFixed(1)}억`
+      : `${(value / 10000).toFixed(0)}만`;
 
   if (!data || data.length === 0) {
     return (
@@ -34,16 +41,36 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
   return (
     <div className="relative">
       <div className="relative h-[250px] w-full">
-        {/* Center Text Overlay */}
+        {/* 도넛 중앙 텍스트: 호버 시 해당 자산 정보, 기본은 Total */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            Total
-          </span>
-          <span className="text-xl font-black text-text-main">
-            {total / 10000 >= 10000
-              ? `${(total / 100000000).toFixed(1)}억`
-              : `${(total / 10000).toFixed(0)}만`}
-          </span>
+          {activeItem ? (
+            <>
+              <span
+                className="text-[10px] font-bold uppercase tracking-widest"
+                style={{ color: activeItem.color }}
+              >
+                {activeItem.name}
+              </span>
+              <span className="text-xl font-black text-text-main">
+                {formatAmount(activeItem.value)}
+              </span>
+              <span
+                className="text-[10px] font-bold mt-0.5"
+                style={{ color: activeItem.color }}
+              >
+                {((activeItem.value / total) * 100).toFixed(1)}%
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Total
+              </span>
+              <span className="text-xl font-black text-text-main">
+                {formatAmount(total)}
+              </span>
+            </>
+          )}
         </div>
 
         <ResponsiveContainer width="100%" height="100%">
@@ -60,6 +87,26 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               stroke="none"
               isAnimationActive={true}
               labelLine={false}
+              activeIndex={activeIndex !== null ? activeIndex : undefined}
+              activeShape={(props: any) => {
+                const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, cornerRadius } = props;
+                return (
+                  <g>
+                    <Sector
+                      cx={cx}
+                      cy={cy}
+                      innerRadius={innerRadius - 3}
+                      outerRadius={outerRadius + 3}
+                      startAngle={startAngle}
+                      endAngle={endAngle}
+                      fill={fill}
+                      cornerRadius={cornerRadius}
+                    />
+                  </g>
+                );
+              }}
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
               label={({
                 cx,
                 cy,
@@ -67,12 +114,13 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                 innerRadius,
                 outerRadius,
                 percent,
+                index,
               }: any) => {
                 const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                 const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                 const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
 
-                if (!percent || percent < 0.05) return null; // Don't show labels for very small slices
+                if (!percent || percent < 0.05) return null;
 
                 return (
                   <text
@@ -82,6 +130,10 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                     textAnchor="middle"
                     dominantBaseline="central"
                     className="text-[10px] font-black"
+                    style={{
+                      opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
+                      transition: "opacity 0.2s",
+                    }}
                   >
                     {`${(percent * 100).toFixed(0)}%`}
                   </text>
@@ -92,45 +144,20 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                 <Cell
                   key={`cell-${index}`}
                   fill={entry.color}
-                  className="stroke-2 stroke-white hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{
+                    opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
+                    transition: "opacity 0.2s",
+                  }}
                 />
               ))}
             </Pie>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0].payload;
-                  const percentage = ((data.value / total) * 100).toFixed(1);
-                  return (
-                    <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white/50 ring-1 ring-black/5">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ background: data.color }}
-                        />
-                        <p className="font-bold text-sm text-text-main">
-                          {data.name}
-                        </p>
-                      </div>
-                      <p className="text-lg font-black text-text-main">
-                        ₩{data.value.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-medium">
-                        {percentage}%
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
           </PieChart>
         </ResponsiveContainer>
       </div>
 
       {/* Enhanced Legend */}
       <div className="mt-6 flex flex-col gap-3">
-        {data.map((item, idx) => (
+        {[...data].sort((a, b) => b.value - a.value).map((item, idx) => (
           <div
             key={idx}
             className="flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"

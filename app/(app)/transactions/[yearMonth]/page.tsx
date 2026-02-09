@@ -4,13 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
   PieChart,
 } from "lucide-react";
 import { calculateSummary } from "@/lib/calculations/finance";
 import CalendarViewClient from "./calendar-view-client";
+import MonthSummaryCards from "./month-summary-cards";
 
 export default async function MonthDetailPage({
   params,
@@ -115,40 +113,11 @@ export default async function MonthDetailPage({
       </header>
 
       <div className="px-6 space-y-6">
-        {/* Month Summary Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass-panel p-4 rounded-[1.5rem] flex flex-col items-center justify-center text-center bg-indigo-50/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-10 h-10 bg-indigo-200/30 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-bold text-indigo-400 mb-1 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" /> 수입
-            </span>
-            <span className="text-sm font-black text-text-main leading-tight">
-              {(summary.income / 10000).toFixed(0)}만
-            </span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-[1.5rem] flex flex-col items-center justify-center text-center bg-pink-50/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-10 h-10 bg-pink-200/30 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-bold text-pink-400 mb-1 flex items-center gap-1">
-              <TrendingDown className="h-3 w-3" /> 지출
-            </span>
-            <span className="text-sm font-black text-text-main leading-tight">
-              {(summary.expense / 10000).toFixed(0)}만
-            </span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-[1.5rem] flex flex-col items-center justify-center text-center bg-emerald-50/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-10 h-10 bg-emerald-200/30 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-bold text-emerald-500 mb-1 flex items-center gap-1">
-              <Wallet className="h-3 w-3" /> 잔액
-            </span>
-            <span
-              className={`text-sm font-black leading-tight ${summary.balance >= 0 ? "text-emerald-600" : "text-rose-500"}`}
-            >
-              {(summary.balance / 10000).toFixed(0)}만
-            </span>
-          </div>
-        </div>
+        {/* Month Summary Cards - 클릭 시 카테고리별 상세 표시 */}
+        <MonthSummaryCards
+          summary={summary}
+          transactions={(transactions || []) as any}
+        />
 
         {/* Calendar View */}
         <CalendarViewClient

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart } from "lucide-react";
+import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart, Info } from "lucide-react";
 import AssetsListClient from "./assets-list-client";
 import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
 import AssetTrendChart from "@/components/charts/asset-trend-chart";
@@ -230,9 +230,14 @@ export default function AssetsPageClient({
                   <LineChart className="h-5 w-5 text-primary" />
                   자산 변동 기록
                 </h3>
-                <p className="text-xs text-text-secondary mt-1">
-                  자산을 추가/수정할 때마다 자동 기록됩니다
-                </p>
+                <div className="mt-2 flex items-start gap-2 bg-blue-50/80 rounded-xl p-3 border border-blue-100">
+                  <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                  <div className="text-[11px] text-blue-700 leading-relaxed space-y-1">
+                    <p className="font-semibold">자산을 추가하거나 금액을 수정하면 자동으로 기록됩니다.</p>
+                    <p>정확한 추이를 위해 <span className="font-bold">각 자산의 현재 잔액을 주기적으로 업데이트</span>해주세요.</p>
+                    <p className="text-blue-500">예) 월급일에 예금 잔액 수정, 투자 수익 반영 등</p>
+                  </div>
+                </div>
               </div>
               <AssetTrendChart data={trendData} />
             </motion.div>
