@@ -5,7 +5,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Sector,
   ResponsiveContainer,
 } from "recharts";
 import { PiggyBank } from "lucide-react";
@@ -41,36 +40,51 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
   return (
     <div className="relative">
       <div className="relative h-[250px] w-full">
-        {/* 도넛 중앙 텍스트: 호버 시 해당 자산 정보, 기본은 Total */}
+        {/* 클릭 시 말풍선 - 도넛 상단에 표시 */}
+        {activeItem && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 animate-fade-in">
+            <div
+              className="relative px-4 py-2 rounded-2xl shadow-lg border border-white/60 backdrop-blur-md"
+              style={{ backgroundColor: `${activeItem.color}15` }}
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: activeItem.color }}
+                />
+                <span className="text-xs font-bold text-text-main">
+                  {activeItem.name}
+                </span>
+                <span className="text-xs font-black text-text-main">
+                  {formatAmount(activeItem.value)}
+                </span>
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${activeItem.color}20`,
+                    color: activeItem.color,
+                  }}
+                >
+                  {((activeItem.value / total) * 100).toFixed(1)}%
+                </span>
+              </div>
+              {/* 말풍선 꼬리 */}
+              <div
+                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-r border-b border-white/60"
+                style={{ backgroundColor: `${activeItem.color}15` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 도넛 중앙 - 항상 Total 표시 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-          {activeItem ? (
-            <>
-              <span
-                className="text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: activeItem.color }}
-              >
-                {activeItem.name}
-              </span>
-              <span className="text-xl font-black text-text-main">
-                {formatAmount(activeItem.value)}
-              </span>
-              <span
-                className="text-[10px] font-bold mt-0.5"
-                style={{ color: activeItem.color }}
-              >
-                {((activeItem.value / total) * 100).toFixed(1)}%
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Total
-              </span>
-              <span className="text-xl font-black text-text-main">
-                {formatAmount(total)}
-              </span>
-            </>
-          )}
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            Total
+          </span>
+          <span className="text-xl font-black text-text-main">
+            {formatAmount(total)}
+          </span>
         </div>
 
         <ResponsiveContainer width="100%" height="100%">
@@ -87,26 +101,11 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               stroke="none"
               isAnimationActive={true}
               labelLine={false}
-              activeIndex={activeIndex !== null ? activeIndex : undefined}
-              activeShape={(props: any) => {
-                const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, cornerRadius } = props;
-                return (
-                  <g>
-                    <Sector
-                      cx={cx}
-                      cy={cy}
-                      innerRadius={innerRadius - 3}
-                      outerRadius={outerRadius + 3}
-                      startAngle={startAngle}
-                      endAngle={endAngle}
-                      fill={fill}
-                      cornerRadius={cornerRadius}
-                    />
-                  </g>
-                );
-              }}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
+              onClick={(_, index) =>
+                setActiveIndex((prev) => (prev === index ? null : index))
+              }
               label={({
                 cx,
                 cy,
@@ -147,6 +146,7 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                   style={{
                     opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
                     transition: "opacity 0.2s",
+                    cursor: "pointer",
                   }}
                 />
               ))}
