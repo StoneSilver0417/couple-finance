@@ -14,8 +14,10 @@ interface AssetChartProps {
 
 export default function AssetPortfolioChart({ data }: AssetChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
+  const activeIndex = hoveredIndex ?? selectedIndex;
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
 
   const formatAmount = (value: number) =>
@@ -95,11 +97,11 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               stroke="none"
               isAnimationActive={false}
               labelLine={false}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
-              onClick={(_, index) =>
-                setActiveIndex((prev) => (prev !== null ? null : index))
-              }
+              onMouseEnter={(_, index) => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={(_, index) => {
+                setSelectedIndex((prev) => (prev === index ? null : index));
+              }}
               label={({
                 cx,
                 cy,
