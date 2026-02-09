@@ -167,103 +167,164 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
           {/* 수입 */}
           <button
             onClick={() => handleItemClick("income")}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 hover:bg-indigo-100/70 transition-colors text-left"
+            className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+            style={{
+              backgroundColor: "#6366f115",
+              borderColor: "#6366f130"
+            }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: "#6366f130" }}
+              >
                 <TrendingUp className="h-5 w-5 text-indigo-600" />
               </div>
-              <span className="font-bold text-text-main">수입</span>
+              <div>
+                <p className="text-xs font-bold text-indigo-600">수입</p>
+                <p className="text-sm font-black text-text-main">
+                  {data.income >= 100000000 ? `${(data.income / 100000000).toFixed(1)}억` : `${(data.income / 10000).toFixed(0)}만원`}
+                </p>
+              </div>
             </div>
-            <span className="font-black text-lg text-indigo-600">
-              {formatFullAmount(data.income)}
-            </span>
+            <div className="text-right">
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-full bg-indigo-100/50 text-indigo-600"
+              >
+                100%
+              </span>
+            </div>
           </button>
 
           {/* 고정지출 */}
           <button
             onClick={() => handleItemClick("fixed")}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-rose-50/70 border border-rose-100 hover:bg-rose-100/70 transition-colors text-left"
+            className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+            style={{
+              backgroundColor: "#f43f5e15",
+              borderColor: "#f43f5e30"
+            }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: "#f43f5e30" }}
+              >
                 <span className="text-lg">🏠</span>
               </div>
               <div>
-                <span className="font-bold text-text-main">고정지출</span>
-                <p className="text-xs text-text-secondary">월세, 보험, 구독료 등</p>
+                <p className="text-xs font-bold text-rose-600">고정지출</p>
+                <p className="text-sm font-black text-text-main">
+                  {data.fixedExpense >= 100000000 ? `${(data.fixedExpense / 100000000).toFixed(1)}억` : `${(data.fixedExpense / 10000).toFixed(0)}만원`}
+                </p>
               </div>
             </div>
-            <span className="font-black text-lg text-rose-600">
-              {formatFullAmount(data.fixedExpense)}
-            </span>
+            <div className="text-right">
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-full bg-rose-100/50 text-rose-600"
+              >
+                {data.totalExpense > 0 ? ((data.fixedExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
           </button>
 
           {/* 변동지출 */}
           <button
             onClick={() => handleItemClick("variable")}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-orange-50/70 border border-orange-100 hover:bg-orange-100/70 transition-colors text-left"
+            className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+            style={{
+              backgroundColor: "#f9731615",
+              borderColor: "#f9731630"
+            }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: "#f9731630" }}
+              >
                 <span className="text-lg">🛒</span>
               </div>
               <div>
-                <span className="font-bold text-text-main">변동지출</span>
-                <p className="text-xs text-text-secondary">식비, 교통비, 생활비 등</p>
+                <p className="text-xs font-bold text-orange-600">변동지출</p>
+                <p className="text-sm font-black text-text-main">
+                  {data.variableExpense >= 100000000 ? `${(data.variableExpense / 100000000).toFixed(1)}억` : `${(data.variableExpense / 10000).toFixed(0)}만원`}
+                </p>
               </div>
             </div>
-            <span className="font-black text-lg text-orange-600">
-              {formatFullAmount(data.variableExpense)}
-            </span>
+            <div className="text-right">
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100/50 text-orange-600"
+              >
+                {data.totalExpense > 0 ? ((data.variableExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
           </button>
 
           {/* 비정기지출 */}
           <button
             onClick={() => handleItemClick("irregular")}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-purple-50/70 border border-purple-100 hover:bg-purple-100/70 transition-colors text-left"
+            className="w-full flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+            style={{
+              backgroundColor: "#a855f715",
+              borderColor: "#a855f730"
+            }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ backgroundColor: "#a855f730" }}
+              >
                 <span className="text-lg">🎁</span>
               </div>
               <div>
-                <span className="font-bold text-text-main">비정기지출</span>
-                <p className="text-xs text-text-secondary">경조사, 여행, 큰 구매 등</p>
+                <p className="text-xs font-bold text-purple-600">비정기지출</p>
+                <p className="text-sm font-black text-text-main">
+                  {data.irregularExpense >= 100000000 ? `${(data.irregularExpense / 100000000).toFixed(1)}억` : `${(data.irregularExpense / 10000).toFixed(0)}만원`}
+                </p>
               </div>
             </div>
-            <span className="font-black text-lg text-purple-600">
-              {formatFullAmount(data.irregularExpense)}
-            </span>
+            <div className="text-right">
+              <span
+                className="text-xs font-bold px-2 py-1 rounded-full bg-purple-100/50 text-purple-600"
+              >
+                {data.totalExpense > 0 ? ((data.irregularExpense / data.totalExpense) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
           </button>
 
           {/* 구분선 */}
-          <div className="border-t border-gray-200 my-2" />
+          <div className="border-t border-gray-100 my-2" />
 
           {/* 총 지출 */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50/70 border border-gray-200">
+          <div
+            className="flex items-center justify-between p-3 rounded-2xl border shadow-sm bg-gray-50/50 border-gray-200"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <div
+                className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center shadow-sm"
+              >
                 <TrendingDown className="h-5 w-5 text-gray-600" />
               </div>
-              <span className="font-bold text-text-main">총 지출</span>
+              <div>
+                <p className="text-xs font-bold text-gray-500">총 지출</p>
+                <p className="text-sm font-black text-text-main">
+                  {data.totalExpense >= 100000000 ? `${(data.totalExpense / 100000000).toFixed(1)}억` : `${(data.totalExpense / 10000).toFixed(0)}만원`}
+                </p>
+              </div>
             </div>
-            <span className="font-black text-lg text-gray-700">
-              {formatFullAmount(data.totalExpense)}
-            </span>
           </div>
 
           {/* 잔액 */}
           <div
-            className={`flex items-center justify-between p-3 rounded-xl border ${
+            className={`flex items-center justify-between p-3 rounded-2xl border shadow-sm ${
               data.balance >= 0
-                ? "bg-emerald-50/70 border-emerald-200"
-                : "bg-red-50/70 border-red-200"
+                ? "bg-emerald-50/50 border-emerald-200"
+                : "bg-red-50/50 border-red-200"
             }`}
           >
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
                   data.balance >= 0 ? "bg-emerald-100" : "bg-red-100"
                 }`}
               >
@@ -273,17 +334,18 @@ export function BudgetAnalysisClient({ data, transactions = [] }: BudgetAnalysis
                   }`}
                 />
               </div>
-              <span className="font-bold text-text-main">이번 달 잔액</span>
+              <div>
+                <p className={`text-xs font-bold ${data.balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  이번 달 잔액
+                </p>
+                <p className="text-sm font-black text-text-main">
+                  {data.balance >= 0 ? "+" : "-"}
+                  {Math.abs(data.balance) >= 100000000 ? `${(Math.abs(data.balance) / 100000000).toFixed(1)}억` : `${(Math.abs(data.balance) / 10000).toFixed(0)}만원`}
+                </p>
+              </div>
             </div>
-            <span
-              className={`font-black text-lg ${
-                data.balance >= 0 ? "text-emerald-600" : "text-red-600"
-              }`}
-            >
-              {data.balance >= 0 ? "+" : ""}
-              {formatFullAmount(data.balance)}
-            </span>
           </div>
+        </div>
         </div>
       </div>
 

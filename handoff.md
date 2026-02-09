@@ -1,13 +1,13 @@
 # Couple Finance - Handoff
 
 ## 현재 상태
-- **버전**: v0.4.3
+- **버전**: v0.4.4
 - **빌드 상태**: 성공
 - **배포 상태**: 프로덕션 배포 완료
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: 6dfe7ea
+- **최신 커밋**: e105f86
 
 ## Supabase 환경
 | 환경 | URL | 용도 |
@@ -26,15 +26,21 @@
 - **RLS INSERT 정책**: households, profiles 추가됨
 - **RPC 함수**: create_household_with_owner, join_household_as_member, get_my_household_id 생성됨
 
-## 최근 작업 (2026-02-08)
-- 활동기록 "방금 전" 버그 수정
-  - created_at NULL fallback을 현재 시간 → 빈 문자열로 변경
-  - Supabase 쿼리에 NULL/비정상 날짜 필터링 추가
-  - 활동기록 초기화 기능 추가 (clearActivityLogs + UI 버튼)
-  - activity_logs DELETE RLS 정책 추가
-- 설정 페이지 가구 멤버 표시 수정
-  - profiles SELECT RLS 정책: 자기만 → 같은 가구 멤버 조회 허용
-  - SECURITY DEFINER 함수(get_my_household_id) 사용하여 RLS 재귀 문제 해결
+## 최근 작업 (2026-02-09)
+- 자산 포트폴리오 차트 개선
+  - Recharts Tooltip/activeShape 제거 → 검은 테두리/네모박스 해결
+  - 클릭 시 Total 아래에 한 줄로 자산 정보 표시
+  - 퍼센트 즉시 표시 (애니메이션 제거)
+  - 레전드 금액 내림차순 정렬
+- 자산변동기록 도움말 안내 박스 추가
+- 가계부 탭 수입/지출 카드 클릭 시 카테고리별 상세 펼침 기능
+  - MonthSummaryCards 클라이언트 컴포넌트 신규
+  - 카테고리 클릭 시 CategoryTransactionsModal 연동
+- 카테고리 삭제 소프트 삭제로 통합
+  - deleteCategory: is_hidden=true (기본/커스텀 모두)
+  - restoreCategory: 복원 함수 추가
+  - 숨기기 토글 제거, 삭제 버튼 모든 카테고리에 적용
+  - 설정 하단에 "삭제된 카테고리" 복원 섹션
 
 ## 알려진 이슈
 - Next.js 16 middleware → proxy 경고 (기능 문제 없음)

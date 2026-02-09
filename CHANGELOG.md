@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-02-09
+
+### v0.4.4 - 자산 차트 개선, 가계부 카테고리 상세, 카테고리 소프트 삭제
+- **자산 포트폴리오 차트 개선**
+  - Recharts Tooltip/activeShape 완전 제거 → 네모박스/검은 테두리 해결
+  - SVG focus outline 강제 제거 (CSS)
+  - 클릭 시 Total 아래에 한 줄로 자산 정보 표시
+  - `isAnimationActive=false`로 퍼센트 즉시 표시
+  - 레전드 금액 내림차순 정렬
+- **자산변동기록 도움말 안내 박스 추가**
+  - 파란색 Info 박스로 입력 가이드 표시
+- **가계부 탭 카테고리별 상세 펼침**
+  - MonthSummaryCards 클라이언트 컴포넌트 신규
+  - 수입/지출 카드 클릭 시 카테고리별 목록 (비율 프로그레스바)
+  - 카테고리 클릭 시 CategoryTransactionsModal 연동
+- **카테고리 삭제 소프트 삭제로 통합**
+  - deleteCategory: 하드 삭제 → `is_hidden=true` (기본/커스텀 모두)
+  - restoreCategory 복원 함수 추가
+  - 숨기기 토글 UI 제거, 삭제 버튼 모든 카테고리에 적용
+  - 설정 하단에 "삭제된 카테고리" 접이식 복원 섹션
+  - DeletedCategoryList 컴포넌트 신규
+
 ## 2026-02-08
 
 ### v0.4.3 - 활동기록 재수정 및 가구 멤버 표시
