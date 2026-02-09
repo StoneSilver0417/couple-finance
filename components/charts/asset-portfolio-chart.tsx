@@ -39,45 +39,26 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
 
   return (
     <div className="relative">
-      <div className="relative h-[250px] w-full">
-        {/* 클릭 시 말풍선 - 도넛 상단에 표시 */}
-        {activeItem && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 animate-fade-in">
-            <div
-              className="relative px-4 py-2 rounded-2xl shadow-lg border border-white/60 backdrop-blur-md"
-              style={{ backgroundColor: `${activeItem.color}15` }}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: activeItem.color }}
-                />
-                <span className="text-xs font-bold text-text-main">
-                  {activeItem.name}
-                </span>
-                <span className="text-xs font-black text-text-main">
-                  {formatAmount(activeItem.value)}
-                </span>
-                <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={{
-                    backgroundColor: `${activeItem.color}20`,
-                    color: activeItem.color,
-                  }}
-                >
-                  {((activeItem.value / total) * 100).toFixed(1)}%
-                </span>
-              </div>
-              {/* 말풍선 꼬리 */}
-              <div
-                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-r border-b border-white/60"
-                style={{ backgroundColor: `${activeItem.color}15` }}
-              />
-            </div>
-          </div>
-        )}
+      {/* 포커스/클릭 시 검은 테두리 제거 */}
+      <style>{`
+        .portfolio-chart svg,
+        .portfolio-chart svg *,
+        .portfolio-chart .recharts-surface,
+        .portfolio-chart .recharts-sector,
+        .portfolio-chart .recharts-pie,
+        .portfolio-chart .recharts-layer {
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+          box-shadow: none !important;
+        }
+        .portfolio-chart .recharts-sector:focus,
+        .portfolio-chart .recharts-sector:active {
+          outline: none !important;
+        }
+      `}</style>
 
-        {/* 도넛 중앙 - 항상 Total 표시 */}
+      <div className="relative h-[250px] w-full portfolio-chart">
+        {/* 도넛 중앙 텍스트 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
             Total
@@ -85,6 +66,21 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
           <span className="text-xl font-black text-text-main">
             {formatAmount(total)}
           </span>
+          {/* 클릭 시 선택 정보를 Total 아래에 간단히 표시 */}
+          {activeItem && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: activeItem.color }}
+              />
+              <span className="text-[11px] font-bold text-text-main">
+                {activeItem.name}
+              </span>
+              <span className="text-[11px] font-black" style={{ color: activeItem.color }}>
+                {formatAmount(activeItem.value)}
+              </span>
+            </div>
+          )}
         </div>
 
         <ResponsiveContainer width="100%" height="100%">
@@ -99,7 +95,7 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               cornerRadius={8}
               dataKey="value"
               stroke="none"
-              isAnimationActive={true}
+              isAnimationActive={false}
               labelLine={false}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
@@ -131,7 +127,6 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                     className="text-[10px] font-black"
                     style={{
                       opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
-                      transition: "opacity 0.2s",
                     }}
                   >
                     {`${(percent * 100).toFixed(0)}%`}
@@ -145,9 +140,9 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                   fill={entry.color}
                   style={{
                     opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
-                    transition: "opacity 0.2s",
                     cursor: "pointer",
                   }}
+                  tabIndex={-1}
                 />
               ))}
             </Pie>
@@ -155,7 +150,7 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
         </ResponsiveContainer>
       </div>
 
-      {/* Enhanced Legend */}
+      {/* Legend */}
       <div className="mt-6 flex flex-col gap-3">
         {[...data].sort((a, b) => b.value - a.value).map((item, idx) => (
           <div
