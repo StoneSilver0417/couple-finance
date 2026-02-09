@@ -4,15 +4,17 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CategoryCard } from "./category-card";
 import { CategoryDialog } from "./category-dialog";
+import { DeletedCategoryList } from "./deleted-category-list";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { Plus, TrendingDown, TrendingUp, Trash2, ChevronDown } from "lucide-react";
 
 interface CategoriesClientProps {
   incomeCategories: any[];
   fixedExpenseCategories: any[];
   variableExpenseCategories: any[];
   irregularExpenseCategories: any[];
+  deletedCategories: any[];
 }
 
 export function CategoriesClient(props: CategoriesClientProps) {
@@ -28,6 +30,7 @@ function CategoriesClientInner({
   fixedExpenseCategories,
   variableExpenseCategories,
   irregularExpenseCategories,
+  deletedCategories,
 }: CategoriesClientProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"income" | "expense">("expense");
@@ -36,6 +39,7 @@ function CategoriesClientInner({
   >("variable");
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("income");
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
@@ -54,7 +58,6 @@ function CategoriesClientInner({
 
       openCreateDialog(type, expenseCat);
 
-      // Remove query param without refresh
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
     }
@@ -244,6 +247,32 @@ function CategoriesClientInner({
           </div>
         </Tabs>
       </div>
+
+      {/* 삭제된 카테고리 복원 섹션 */}
+      {deletedCategories.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowDeleted(!showDeleted)}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50/80 border border-gray-200/60 hover:bg-gray-100/80 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-sm font-bold text-text-secondary">
+              <Trash2 className="h-4 w-4" />
+              삭제된 카테고리 ({deletedCategories.length})
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 text-text-secondary transition-transform duration-200 ${
+                showDeleted ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showDeleted && (
+            <div className="mt-3">
+              <DeletedCategoryList categories={deletedCategories} />
+            </div>
+          )}
+        </div>
+      )}
 
       <CategoryDialog
         open={dialogOpen}

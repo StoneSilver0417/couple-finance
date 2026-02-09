@@ -114,19 +114,6 @@ export async function deleteCategory(categoryId: string) {
   }
 
   try {
-    // Check if category is used in transactions
-    const { data: transactions } = await supabase
-      .from("transactions")
-      .select("id")
-      .eq("category_id", categoryId)
-      .limit(1);
-
-    if (transactions && transactions.length > 0) {
-      return {
-        error: "이 카테고리는 거래 내역에서 사용 중이어서 삭제할 수 없습니다.",
-      };
-    }
-
     // 삭제 전 이름 조회
     const { data: cat } = await supabase
       .from("categories")
@@ -134,11 +121,11 @@ export async function deleteCategory(categoryId: string) {
       .eq("id", categoryId)
       .single();
 
+    // 소프트 삭제: is_hidden = true (기본/커스텀 모두 가능)
     const { error } = await supabase
       .from("categories")
-      .delete()
-      .eq("id", categoryId)
-      .eq("is_custom", true);
+      .update({ is_hidden: true })
+      .eq("id", categoryId);
 
     if (error) throw error;
 
@@ -154,19 +141,34 @@ export async function deleteCategory(categoryId: string) {
   }
 }
 
-export async function toggleCategoryVisibility(
-  categoryId: string,
-  isHidden: boolean,
-) {
+export async function restoreCategory(categoryId: string) {
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "로그인이 필요합니다." };
+  }
+
   try {
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("id", categoryId)
+      .single();
+
     const { error } = await supabase
       .from("categories")
-      .update({ is_hidden: isHidden })
+      .update({ is_hidden: false })
       .eq("id", categoryId);
 
     if (error) throw error;
+
+    if (cat) {
+      await createActivityLog("UPDATE", "CATEGORY", `카테고리 "${cat.name}" 복원`);
+    }
 
     revalidatePath("/settings/categories");
     revalidatePath("/transactions/new");

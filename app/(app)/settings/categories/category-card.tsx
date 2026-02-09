@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  deleteCategory,
-  toggleCategoryVisibility,
-} from "@/lib/category-actions";
-import { Card } from "@/components/ui/card";
+import { deleteCategory } from "@/lib/category-actions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Edit2, Trash2, Eye, EyeOff, MoreVertical } from "lucide-react";
+import { Edit2, Trash2, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +25,7 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
   async function handleDelete() {
     const confirmed = await confirm({
       title: "카테고리 삭제",
-      message: "정말 이 카테고리를 삭제하시겠습니까?",
+      message: `"${category.name}" 카테고리를 삭제하시겠습니까?\n기존 거래 내역은 유지됩니다.`,
       confirmText: "삭제",
       variant: "danger",
     });
@@ -46,30 +42,10 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
     }
   }
 
-  async function handleToggleVisibility() {
-    const result = await toggleCategoryVisibility(
-      category.id,
-      !category.is_hidden,
-    );
-
-    if (result?.error) {
-      toast.error(result.error);
-    } else {
-      toast.success(
-        category.is_hidden ? "카테고리가 표시됩니다" : "카테고리가 숨겨집니다",
-      );
-    }
-  }
-
   return (
     <div
       onClick={() => onEdit(category)}
-      className={`
-        glass-panel group relative overflow-hidden transition-all duration-300
-        hover:shadow-glow hover:scale-[1.02] cursor-pointer
-        ${category.is_hidden ? "opacity-50" : ""}
-        animate-slide-up rounded-[2.5rem] p-4 border border-white/60
-      `}
+      className="glass-panel group relative overflow-hidden transition-all duration-300 hover:shadow-glow hover:scale-[1.02] cursor-pointer animate-slide-up rounded-[2.5rem] p-4 border border-white/60"
     >
       <div
         className="absolute top-0 left-0 w-1.5 h-full opacity-80"
@@ -97,16 +73,11 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
           </div>
           <div className="flex items-center gap-1.5">
             <div
-              className={`h-4 px-2 rounded-full text-[9px] font-bold text-white flex items-center uppercase tracking-tighter`}
+              className="h-4 px-2 rounded-full text-[9px] font-bold text-white flex items-center uppercase tracking-tighter"
               style={{ backgroundColor: category.color }}
             >
               Category
             </div>
-            {category.is_hidden && (
-              <span className="text-[10px] font-bold text-text-secondary px-2 py-0.5 rounded-lg bg-gray-100 uppercase">
-                Hidden
-              </span>
-            )}
           </div>
         </div>
 
@@ -135,35 +106,14 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                handleToggleVisibility();
+                handleDelete();
               }}
-              className="rounded-xl font-bold py-2.5"
+              disabled={isDeleting}
+              className="rounded-xl font-bold py-2.5 text-destructive focus:text-destructive"
             >
-              {category.is_hidden ? (
-                <>
-                  <Eye className="h-4 w-4 mr-2 text-green-500" />
-                  표시하기
-                </>
-              ) : (
-                <>
-                  <EyeOff className="h-4 w-4 mr-2 text-orange-500" />
-                  숨기기
-                </>
-              )}
+              <Trash2 className="h-4 w-4 mr-2" />
+              삭제하기
             </DropdownMenuItem>
-            {category.is_custom && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete();
-                }}
-                disabled={isDeleting}
-                className="rounded-xl font-bold py-2.5 text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                삭제하기
-              </DropdownMenuItem>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

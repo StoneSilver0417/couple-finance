@@ -33,20 +33,23 @@ export default async function CategoriesPage() {
     .eq("household_id", profile.household_id)
     .order("display_order", { ascending: true });
 
+  const activeCategories = categories?.filter((cat) => !cat.is_hidden) || [];
+  const deletedCategories = categories?.filter((cat) => cat.is_hidden) || [];
+
   const incomeCategories =
-    categories?.filter((cat) => cat.type === "income") || [];
+    activeCategories.filter((cat) => cat.type === "income");
   const fixedExpenseCategories =
-    categories?.filter(
+    activeCategories.filter(
       (cat) => cat.type === "expense" && cat.expense_category === "fixed",
-    ) || [];
+    );
   const variableExpenseCategories =
-    categories?.filter(
+    activeCategories.filter(
       (cat) => cat.type === "expense" && cat.expense_category === "variable",
-    ) || [];
+    );
   const irregularExpenseCategories =
-    categories?.filter(
+    activeCategories.filter(
       (cat) => cat.type === "expense" && cat.expense_category === "irregular",
-    ) || [];
+    );
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -78,6 +81,7 @@ export default async function CategoriesPage() {
           fixedExpenseCategories={fixedExpenseCategories}
           variableExpenseCategories={variableExpenseCategories}
           irregularExpenseCategories={irregularExpenseCategories}
+          deletedCategories={deletedCategories}
         />
 
         <div className="p-6 rounded-[2rem] bg-white/30 border border-white/40 shadow-sm text-center">
