@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { PiggyBank } from "lucide-react";
 
 interface AssetChartProps {
@@ -76,7 +71,10 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               <span className="text-[11px] font-bold text-text-main">
                 {activeItem.name}
               </span>
-              <span className="text-[11px] font-black" style={{ color: activeItem.color }}>
+              <span
+                className="text-[11px] font-black"
+                style={{ color: activeItem.color }}
+              >
                 {formatAmount(activeItem.value)}
               </span>
             </div>
@@ -100,7 +98,7 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
               onClick={(_, index) =>
-                setActiveIndex((prev) => (prev === index ? null : index))
+                setActiveIndex((prev) => (prev !== null ? null : index))
               }
               label={({
                 cx,
@@ -126,7 +124,8 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                     dominantBaseline="central"
                     className="text-[10px] font-black"
                     style={{
-                      opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
+                      opacity:
+                        activeIndex === null || activeIndex === index ? 1 : 0.4,
                     }}
                   >
                     {`${(percent * 100).toFixed(0)}%`}
@@ -139,7 +138,8 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                   key={`cell-${index}`}
                   fill={entry.color}
                   style={{
-                    opacity: activeIndex === null || activeIndex === index ? 1 : 0.4,
+                    opacity:
+                      activeIndex === null || activeIndex === index ? 1 : 0.4,
                     cursor: "pointer",
                   }}
                   tabIndex={-1}
@@ -152,49 +152,54 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
 
       {/* Legend */}
       <div className="mt-6 flex flex-col gap-3">
-        {[...data].sort((a, b) => b.value - a.value).map((item, idx) => (
-          <div
-            key={idx}
-            className="flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
-            style={{
-              backgroundColor: item.color + "15",
-              borderColor: item.color + "30"
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                style={{ backgroundColor: item.color + "30" }}
-              >
+        {[...data]
+          .sort((a, b) => b.value - a.value)
+          .map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 rounded-2xl border shadow-sm hover:opacity-90 transition-all"
+              style={{
+                backgroundColor: item.color + "15",
+                borderColor: item.color + "30",
+              }}
+            >
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                  style={{ backgroundColor: item.color + "30" }}
+                >
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                </div>
+                <div>
+                  <p
+                    className="text-xs font-bold"
+                    style={{ color: item.color }}
+                  >
+                    {item.name}
+                  </p>
+                  <p className="text-sm font-black text-text-main">
+                    {item.value >= 100000000
+                      ? `${(item.value / 100000000).toFixed(1)}억`
+                      : `${(item.value / 10000).toFixed(0)}만`}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold" style={{ color: item.color }}>
-                  {item.name}
-                </p>
-                <p className="text-sm font-black text-text-main">
-                  {item.value >= 100000000
-                    ? `${(item.value / 100000000).toFixed(1)}억`
-                    : `${(item.value / 10000).toFixed(0)}만`}
-                </p>
+              <div className="text-right">
+                <span
+                  className="text-xs font-bold px-2 py-1 rounded-full"
+                  style={{
+                    backgroundColor: item.color + "20",
+                    color: item.color,
+                  }}
+                >
+                  {((item.value / total) * 100).toFixed(1)}%
+                </span>
               </div>
             </div>
-            <div className="text-right">
-              <span
-                className="text-xs font-bold px-2 py-1 rounded-full"
-                style={{
-                  backgroundColor: item.color + "20",
-                  color: item.color
-                }}
-              >
-                {((item.value / total) * 100).toFixed(1)}%
-              </span>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
