@@ -157,28 +157,6 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             value="inquiry"
             className="p-6 pt-2 focus-visible:ring-0 outline-none"
           >
-            <div className="mb-6 bg-blue-50/50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <div className="text-xs text-gray-600">
-                  <p className="font-bold text-gray-800">
-                    이메일로 직접 문의하기
-                  </p>
-                  <p>{EMAIL_ADDRESS}</p>
-                </div>
-              </div>
-              <a
-                href={`mailto:${EMAIL_ADDRESS}`}
-                className="text-xs font-bold bg-white px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-50 text-blue-600 transition-colors"
-                target="_blank"
-                rel="noreferrer"
-              >
-                보내기
-              </a>
-            </div>
-
             <form action={formAction} className="space-y-4">
               <input type="hidden" name="deviceInfo" value={deviceInfo} />
 
