@@ -15,7 +15,7 @@ CREATE POLICY "Admins can view all feedbacks"
     ON public.feedbacks FOR SELECT
     USING (
       auth.uid() IN (
-        SELECT id FROM auth.users WHERE email IN ('stonesilver0417@gmail.com', 'admin@example.com')
+        SELECT id FROM auth.users WHERE email IN ('waterdrop11@naver.com', 'admin@example.com')
       )
     );
 
@@ -23,6 +23,6 @@ CREATE POLICY "Admins can update feedbacks"
     ON public.feedbacks FOR UPDATE
     USING (
       auth.uid() IN (
-        SELECT id FROM auth.users WHERE email IN ('stonesilver0417@gmail.com', 'admin@example.com')
+        SELECT id FROM auth.users WHERE email IN ('waterdrop11@naver.com', 'admin@example.com')
       )
     );

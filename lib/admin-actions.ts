@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 const ADMIN_EMAILS = [
   process.env.NEXT_PUBLIC_CONTACT_EMAIL || "admin@example.com",
-  "stonesilver0417@gmail.com",
+  "waterdrop11@naver.com",
 ];
 
 export async function isAdmin() {
