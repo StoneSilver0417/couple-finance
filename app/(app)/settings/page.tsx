@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   MessageCircleQuestion,
   ShieldCheck,
+  Heart,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
@@ -308,6 +309,24 @@ export default async function SettingsPage() {
           </div>
 
           <PWAInstallButton />
+        </div>
+
+        {/* Footer Credit */}
+        <div className="flex flex-col items-center justify-center pt-8 pb-4 opacity-40">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-[1px] w-8 bg-text-secondary"></div>
+            <p className="text-[10px] font-black tracking-[0.2em] text-text-secondary uppercase">
+              Developer Credit
+            </p>
+            <div className="h-[1px] w-8 bg-text-secondary"></div>
+          </div>
+          <p className="text-xs font-bold text-text-secondary flex items-center gap-1.5">
+            Made with <Heart className="w-3 h-3 text-primary animate-pulse" />{" "}
+            by <span className="text-text-main font-black">도준파더</span>
+          </p>
+          <p className="text-[9px] text-text-secondary/60 mt-2 font-medium">
+            © 2026 Couple Finance. All rights reserved.
+          </p>
         </div>
       </div>
 
