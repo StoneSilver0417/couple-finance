@@ -57,3 +57,20 @@ export async function submitFeedback(
     return { error: "알 수 없는 오류가 발생했습니다." };
   }
 }
+
+export async function getMyFeedbacks() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("feedbacks")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return data || [];
+}

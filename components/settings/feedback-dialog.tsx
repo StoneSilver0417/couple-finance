@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { submitFeedback } from "@/lib/feedback-actions";
+import { submitFeedback, getMyFeedbacks } from "@/lib/feedback-actions";
 import { toast } from "sonner";
 import {
   MessageCircle,
@@ -33,6 +33,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { MyFeedbackList } from "@/components/settings/my-feedback-list";
 
 // 오픈채팅방 링크 (추후 실제 링크로 교체 필요)
 const KAKAO_OPEN_CHAT_URL = "";
@@ -68,6 +69,8 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [state, formAction] = useActionState(submitFeedback, {}); // React 19: useActionState
   const [deviceInfo, setDeviceInfo] = useState("");
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("inquiry");
 
   useEffect(() => {
     if (state.success) {
@@ -76,10 +79,27 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
         icon: "💌",
       });
       setIsOpen(false);
+      // 성공 후 목록 갱신을 위해 탭 초기화 등 필요한 조치
     } else if (state.error) {
       toast.error(state.error);
     }
   }, [state]);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const data = await getMyFeedbacks();
+      setFeedbacks(data);
+    } catch (error) {
+      console.error("Failed to fetch feedbacks:", error);
+    }
+  };
+
+  // 탭 변경 시 로딩
+  useEffect(() => {
+    if (activeTab === "history" && isOpen) {
+      fetchFeedbacks();
+    }
+  }, [activeTab, isOpen]);
 
   // 기기 정보 수집
   useEffect(() => {
@@ -108,56 +128,57 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="chat" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 mb-4">
             <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/50 p-1">
               <TabsTrigger
-                value="chat"
+                value="inquiry"
                 className="rounded-lg font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                📧 이메일 문의
+                📝 문의하기
               </TabsTrigger>
               <TabsTrigger
-                value="form"
+                value="history"
                 className="rounded-lg font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                📝 앱 내 문의
+                📂 내 문의함
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent
-            value="chat"
+            value="history"
             className="p-6 pt-2 space-y-4 focus-visible:ring-0 outline-none"
           >
-            <div className="space-y-3">
-              <a
-                href={`mailto:${EMAIL_ADDRESS}`}
-                className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100/50 transition-all cursor-pointer"
-              >
-                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">이메일 문의</h3>
-                  <p className="text-xs text-gray-500">{EMAIL_ADDRESS}</p>
-                </div>
-              </a>
-            </div>
-
-            <div className="mt-4 p-4 bg-gray-50 rounded-xl text-xs text-gray-500 text-center leading-relaxed">
-              <p>
-                평일 10:00 - 18:00 사이에 답변해 드립니다.
-                <br />
-                주말 및 공휴일은 답변이 지연될 수 있습니다.
-              </p>
-            </div>
+            <MyFeedbackList feedbacks={feedbacks} />
           </TabsContent>
 
           <TabsContent
-            value="form"
+            value="inquiry"
             className="p-6 pt-2 focus-visible:ring-0 outline-none"
           >
+            <div className="mb-6 bg-blue-50/50 p-3 rounded-xl border border-blue-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <div className="text-xs text-gray-600">
+                  <p className="font-bold text-gray-800">
+                    이메일로 직접 문의하기
+                  </p>
+                  <p>{EMAIL_ADDRESS}</p>
+                </div>
+              </div>
+              <a
+                href={`mailto:${EMAIL_ADDRESS}`}
+                className="text-xs font-bold bg-white px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-50 text-blue-600 transition-colors"
+                target="_blank"
+                rel="noreferrer"
+              >
+                보내기
+              </a>
+            </div>
+
             <form action={formAction} className="space-y-4">
               <input type="hidden" name="deviceInfo" value={deviceInfo} />
 
