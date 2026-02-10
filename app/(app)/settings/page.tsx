@@ -12,14 +12,17 @@ import {
   Smartphone,
   ArrowLeft,
   MessageCircleQuestion,
+  ShieldCheck,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { LogoutButton } from "./logout-button";
 import { FeedbackDialog } from "@/components/settings/feedback-dialog";
+import { isAdmin } from "@/lib/admin-actions";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
+  const isUserAdmin = await isAdmin();
 
   const {
     data: { user },
@@ -260,6 +263,35 @@ export default async function SettingsPage() {
 
         {/* Logout Button */}
         <LogoutButton />
+
+        {/* Admin Console Section (Admin Only) */}
+        {isUserAdmin && (
+          <Link href="/admin/feedbacks">
+            <div className="glass-panel p-5 rounded-[2rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl hover:scale-[1.02] active:scale-95 transition-all cursor-pointer group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-[1.2rem] bg-white/20 flex items-center justify-center shadow-inner backdrop-blur-md">
+                    <ShieldCheck className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg text-white flex items-center gap-2">
+                      관리자 콘솔
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-black uppercase">
+                        Admin
+                      </span>
+                    </p>
+                    <p className="text-xs text-white/70 font-medium">
+                      사용자 피드백 및 앱 설정 관리
+                    </p>
+                  </div>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                  <ChevronRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Utilities */}
         <div className="glass-panel p-5 rounded-[2rem] bg-gradient-to-br from-gray-900 to-gray-800 text-white border-none shadow-xl">
