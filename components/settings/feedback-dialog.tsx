@@ -113,7 +113,7 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
                 value="chat"
                 className="rounded-lg font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                💬 실시간/이메일
+                📧 이메일 문의
               </TabsTrigger>
               <TabsTrigger
                 value="form"
@@ -129,32 +129,6 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             className="p-6 pt-2 space-y-4 focus-visible:ring-0 outline-none"
           >
             <div className="space-y-3">
-              <a
-                href={KAKAO_OPEN_CHAT_URL || "#"}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => !KAKAO_OPEN_CHAT_URL && e.preventDefault()}
-                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-                  KAKAO_OPEN_CHAT_URL
-                    ? "bg-[#FAE100]/10 border-[#FAE100]/30 hover:bg-[#FAE100]/20 cursor-pointer"
-                    : "bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed"
-                }`}
-              >
-                <div
-                  className={`h-12 w-12 rounded-full flex items-center justify-center text-2xl ${KAKAO_OPEN_CHAT_URL ? "bg-[#FAE100]" : "bg-gray-200"}`}
-                >
-                  💬
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">카카오톡 오픈채팅</h3>
-                  <p className="text-xs text-gray-500">
-                    {KAKAO_OPEN_CHAT_URL
-                      ? "가장 빠르게 답변을 받을 수 있어요"
-                      : "현재 준비 중입니다"}
-                  </p>
-                </div>
-              </a>
-
               <a
                 href={`mailto:${EMAIL_ADDRESS}`}
                 className="flex items-center gap-4 p-4 rounded-2xl bg-blue-50 border border-blue-100 hover:bg-blue-100/50 transition-all cursor-pointer"
