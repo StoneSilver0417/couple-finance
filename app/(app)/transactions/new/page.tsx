@@ -39,7 +39,9 @@ export default async function NewTransactionPage({
   // 가계부 등록 시에는 숨김 처리된 카테고리는 노출하지 않는다.
   let { data: categories } = await supabase
     .from("categories")
-    .select("id, name, icon, type, expense_category, is_hidden")
+    .select(
+      "id, name, icon, type, expense_category, is_hidden, color, is_custom, display_order",
+    )
     .eq("household_id", profile.household_id)
     .eq("is_hidden", false)
     .order("display_order", { ascending: true });
@@ -50,7 +52,9 @@ export default async function NewTransactionPage({
     // 다시 조회
     const { data: newCategories } = await supabase
       .from("categories")
-      .select("id, name, icon, type, expense_category, is_hidden")
+      .select(
+        "id, name, icon, type, expense_category, is_hidden, color, is_custom, display_order",
+      )
       .eq("household_id", profile.household_id)
       .eq("is_hidden", false)
       .order("display_order", { ascending: true });
@@ -58,9 +62,6 @@ export default async function NewTransactionPage({
   }
 
   return (
-    <TransactionForm
-      categories={categories || []}
-      initialDate={initialDate}
-    />
+    <TransactionForm categories={categories || []} initialDate={initialDate} />
   );
 }

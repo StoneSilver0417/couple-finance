@@ -11,10 +11,12 @@ import {
   Wallet,
   Smartphone,
   ArrowLeft,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { LogoutButton } from "./logout-button";
+import { FeedbackDialog } from "@/components/settings/feedback-dialog";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -228,6 +230,32 @@ export default async function SettingsPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Support Section */}
+        <div className="glass-panel p-5 rounded-[2rem] bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100/50 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-[1.2rem] bg-indigo-100/50 text-indigo-600 flex items-center justify-center shadow-sm">
+                <MessageCircleQuestion className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-bold text-lg text-text-main">고객 지원</p>
+                <p className="text-xs text-text-secondary font-medium">
+                  문의하기 및 버그 제보
+                </p>
+              </div>
+            </div>
+
+            <FeedbackDialog>
+              <Button
+                size="sm"
+                className="rounded-xl px-4 font-bold bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50 shadow-sm"
+              >
+                문의하기
+              </Button>
+            </FeedbackDialog>
+          </div>
         </div>
 
         {/* Logout Button */}
