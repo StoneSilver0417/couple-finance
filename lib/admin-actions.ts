@@ -27,15 +27,7 @@ export async function getAllFeedbacks() {
   // profiles 정보를 조인해서 사용자 이름도 가져옴
   const { data, error } = await supabase
     .from("feedbacks")
-    .select(
-      `
-      *,
-      profiles:user_id (
-        full_name,
-        email
-      )
-    `,
-    )
+    .select("*, profiles:user_id(full_name)")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
