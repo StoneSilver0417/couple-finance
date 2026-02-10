@@ -36,7 +36,9 @@ import { motion } from "framer-motion";
 
 // 오픈채팅방 링크 (추후 실제 링크로 교체 필요)
 const KAKAO_OPEN_CHAT_URL = "";
-const EMAIL_ADDRESS = "developer@example.com"; // 개발자 이메일
+// 개발자 이메일 (환경변수 설정 필요)
+const EMAIL_ADDRESS =
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "admin@example.com";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
