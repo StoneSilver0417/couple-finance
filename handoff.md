@@ -2,13 +2,13 @@
 
 ## 현재 상태
 
-- **버전**: v0.4.7
+- **버전**: v0.5.0
 - **빌드 상태**: 성공
 - **배포 상태**: 프로덕션 배포 완료 (GitHub Push 완료)
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **저장소**: https://github.com/StoneSilver0417/couple-finance
 - **브랜치**: master
-- **최신 커밋**: b98f514
+- **최신 커밋**: 02b1672
 
 ## Supabase 환경
 
@@ -30,15 +30,13 @@
 - **RLS INSERT 정책**: households, profiles 추가됨
 - **RPC 함수**: create_household_with_owner, join_household_as_member, get_my_household_id 생성됨
 
-## 최근 작업 (2026-02-09)
+## 최근 작업 (2026-02-10)
 
-- 자산 포트폴리오 차트 인터랙션 최적화
-  - 배경 클릭 시 선택 해제 기능 추가 (해제 동작 개선)
-  - 이벤트 전파 방지(StopPropagation)로 반응성 향상 및 버그 해결
-- 포트폴리오 차트 클릭 동작 수정 (호버/선택 상태 분리)
-- 예산실적분석 페이지 항목별 리스트 디자인 개선 (자산 탭 스타일 통일)
-- 자산 차트 디자인 개선 (검은 테두리 해결, 정보 표시 최적화)
-- 자산변동기록 도움말 안내 박스 추가
+- 고객 지원 및 피드백 시스템 구축
+  - 설정 페이지에 '고객 지원' 섹션 및 문의하기 모달 추가
+  - `feedbacks` 테이블 생성 및 서버 액션 연동
+  - 카카오톡 오픈채팅 및 이메일 문의 바로가기 제공
+- React 19 `useActionState` 적용 및 shadcn/ui 기반 컴포넌트 구현
 
 ## 알려진 이슈
 
