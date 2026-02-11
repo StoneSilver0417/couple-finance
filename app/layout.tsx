@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   description:
     "부부가 함께 관리하는 투명한 우리 집 가계부. 수입, 지출, 예산, 자산을 한눈에 확인하세요.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

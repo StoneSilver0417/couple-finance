@@ -1,0 +1,35 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient_bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff8fab" />
+      <stop offset="1" stop-color="#e0c3fc" />
+    </linearGradient>
+    <filter id="shadow" x="-50" y="-50" width="612" height="612" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="#fb6f92" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background: Rounded Square with Gradient -->
+  <rect x="30" y="30" width="452" height="452" rx="120" fill="url(#gradient_bg)" filter="url(#shadow)" />
+  
+  <!-- Icon: Heart Piggy Bank -->
+  <!-- Piggy Body (Heart Shape) -->
+  <path d="M256 130C200 80 110 80 80 160C60 220 120 300 256 400C392 300 452 220 432 160C402 80 312 80 256 130Z" fill="white"/>
+  
+  <!-- Coin Slot -->
+  <rect x="236" y="180" width="40" height="8" rx="4" fill="#fb6f92" opacity="0.4"/>
+  
+  <!-- Piggy Eyes -->
+  <circle cx="180" cy="200" r="12" fill="#2d2d5f" opacity="0.8"/>
+  <circle cx="332" cy="200" r="12" fill="#2d2d5f" opacity="0.8"/>
+  
+  <!-- Piggy Snout -->
+  <ellipse cx="256" cy="240" rx="36" ry="24" fill="#ffe5ec"/>
+  <circle cx="244" cy="240" r="6" fill="#fb6f92"/>
+  <circle cx="268" cy="240" r="6" fill="#fb6f92"/>
+
+  <!-- Cheeks -->
+  <circle cx="140" cy="240" r="16" fill="#ffb3c6" opacity="0.6"/>
+  <circle cx="372" cy="240" r="16" fill="#ffb3c6" opacity="0.6"/>
+
+</svg>
