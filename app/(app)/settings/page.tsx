@@ -19,11 +19,12 @@ import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { LogoutButton } from "./logout-button";
 import { FeedbackDialog } from "@/components/settings/feedback-dialog";
-import { isAdmin } from "@/lib/admin-actions";
+import { isAdmin, getPendingFeedbackCount } from "@/lib/admin-actions";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
   const isUserAdmin = await isAdmin();
+  const pendingCount = isUserAdmin ? await getPendingFeedbackCount() : 0;
 
   const {
     data: { user },
@@ -271,8 +272,15 @@ export default async function SettingsPage() {
             <div className="glass-panel p-5 rounded-[2rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl hover:scale-[1.02] active:scale-95 transition-all cursor-pointer group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-[1.2rem] bg-white/20 flex items-center justify-center shadow-inner backdrop-blur-md">
+                  <div className="h-12 w-12 rounded-[1.2rem] bg-white/20 flex items-center justify-center shadow-inner backdrop-blur-md relative">
                     <ShieldCheck className="h-6 w-6 text-white" />
+                    {pendingCount > 0 && (
+                      <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg animate-pulse">
+                        <span className="text-[10px] font-black text-white">
+                          {pendingCount > 9 ? "9+" : pendingCount}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="font-bold text-lg text-white flex items-center gap-2">
@@ -280,6 +288,11 @@ export default async function SettingsPage() {
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-black uppercase">
                         Admin
                       </span>
+                      {pendingCount > 0 && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-black animate-pulse">
+                          {pendingCount}개 신규
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-white/70 font-medium">
                       사용자 피드백 및 앱 설정 관리
@@ -293,6 +306,9 @@ export default async function SettingsPage() {
             </div>
           </Link>
         )}
+
+        {/* Spacing between Admin Console and App Install */}
+        {isUserAdmin && <div className="h-4" />}
 
         {/* Utilities */}
         <div className="glass-panel p-5 rounded-[2rem] bg-gradient-to-br from-gray-900 to-gray-800 text-white border-none shadow-xl">

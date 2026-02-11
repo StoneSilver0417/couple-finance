@@ -56,3 +56,23 @@ export async function updateFeedbackAnswer(
   revalidatePath("/admin/feedbacks");
   revalidatePath("/settings"); // 사용자 탭 갱신
 }
+
+export async function getPendingFeedbackCount() {
+  const isUserAdmin = await isAdmin();
+  if (!isUserAdmin) return 0;
+
+  const supabase = await createClient();
+
+  // 답변이 없는(admin_comment가 null) 피드백 개수 조회
+  const { count, error } = await supabase
+    .from("feedbacks")
+    .select("*", { count: "exact", head: true })
+    .is("admin_comment", null);
+
+  if (error) {
+    console.error("Error fetching pending feedback count:", error);
+    return 0;
+  }
+
+  return count || 0;
+}
