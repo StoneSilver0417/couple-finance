@@ -3,19 +3,21 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-const ADMIN_EMAILS = [
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "admin@example.com",
-  "waterdrop11@naver.com",
-];
-
 export async function isAdmin() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user?.email) return false;
-  return ADMIN_EMAILS.includes(user.email);
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  return !!profile?.is_admin;
 }
 
 export async function getAllFeedbacks() {

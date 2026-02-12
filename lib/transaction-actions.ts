@@ -42,16 +42,19 @@ export async function createTransaction(formData: FormData) {
 
   try {
     // RPC 함수로 INSERT (RLS 우회)
-    const { data: transactionId, error } = await supabase.rpc("create_transaction", {
-      p_household_id: profile.household_id,
-      p_user_id: user.id,
-      p_type: type,
-      p_amount: amount,
-      p_category_id: categoryId,
-      p_transaction_date: transactionDate,
-      p_expense_type: expenseType,
-      p_memo: memo,
-    });
+    const { data: transactionId, error } = await supabase.rpc(
+      "create_transaction",
+      {
+        p_household_id: profile.household_id,
+        p_user_id: user.id,
+        p_type: type,
+        p_amount: amount,
+        p_category_id: categoryId,
+        p_transaction_date: transactionDate,
+        p_expense_type: expenseType,
+        p_memo: memo,
+      },
+    );
 
     if (error) throw error;
 
@@ -69,7 +72,7 @@ export async function createTransaction(formData: FormData) {
     await createActivityLog(
       "CREATE",
       "TRANSACTION",
-      `${typeLabel} ₩${amountStr} 추가${memo ? ` - ${memo}` : ""}`
+      `${typeLabel} ₩${amountStr} 추가${memo ? ` - ${memo}` : ""}`,
     );
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
@@ -98,6 +101,21 @@ export async function deleteTransaction(transactionId: string) {
       .eq("id", transactionId)
       .single();
 
+    if (!tx) {
+      return { error: "거래를 찾을 수 없습니다." };
+    }
+
+    // 소유권 확인 (IDOR 방지)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.household_id || tx.household_id !== profile.household_id) {
+      return { error: "해당 거래를 삭제할 권한이 없습니다." };
+    }
+
     const { error } = await supabase
       .from("transactions")
       .delete()
@@ -120,7 +138,7 @@ export async function deleteTransaction(transactionId: string) {
       await createActivityLog(
         "DELETE",
         "TRANSACTION",
-        `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`
+        `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`,
       );
     }
 

@@ -21,14 +21,20 @@ export async function updateTransaction(
   }
 
   // 1. Validate ownership & Get old data for balance sync
-  const { data: oldTx, error: fetchError } = await supabase
-    .from("transactions")
-    .select("household_id, transaction_date")
-    .eq("id", transactionId)
-    .single();
+  const [txResult, profileResult] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select("household_id, transaction_date")
+      .eq("id", transactionId)
+      .single(),
+    supabase.from("profiles").select("household_id").eq("id", user.id).single(),
+  ]);
 
-  if (fetchError || !oldTx) {
-    return { error: "거래 정보를 찾을 수 없거나 권한이 없습니다." };
+  const oldTx = txResult.data;
+  const profile = profileResult.data;
+
+  if (!oldTx || !profile || oldTx.household_id !== profile.household_id) {
+    return { error: "거래 정보를 찾을 수 없거나 수정 권한이 없습니다." };
   }
 
   const householdId = oldTx.household_id;
@@ -89,7 +95,7 @@ export async function updateTransaction(
     await createActivityLog(
       "UPDATE",
       "TRANSACTION",
-      `${typeLabel} ₩${amountStr} 수정${memo ? ` - ${memo}` : ""}`
+      `${typeLabel} ₩${amountStr} 수정${memo ? ` - ${memo}` : ""}`,
     );
 
     revalidatePath("/transactions");

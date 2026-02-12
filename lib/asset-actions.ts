@@ -46,7 +46,7 @@ async function saveAssetSnapshot(householdId: string) {
         total_net_worth: totalNetWorth,
         breakdown_data: breakdown,
       },
-      { onConflict: "household_id,record_date" }
+      { onConflict: "household_id,record_date" },
     );
   } catch (error) {
     console.error("자산 스냅샷 저장 실패:", error);
@@ -105,7 +105,7 @@ export async function createAsset(formData: FormData) {
     await createActivityLog(
       "CREATE",
       "ASSET",
-      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")} 추가`
+      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")} 추가`,
     );
 
     // 자산 스냅샷 저장
@@ -164,7 +164,8 @@ export async function updateAsset(assetId: string, formData: FormData) {
         child_name: ownerType === "CHILD" ? childName : null,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", assetId);
+      .eq("id", assetId)
+      .eq("household_id", profile.household_id);
 
     if (error) throw error;
 
@@ -173,7 +174,7 @@ export async function updateAsset(assetId: string, formData: FormData) {
     await createActivityLog(
       "UPDATE",
       "ASSET",
-      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")}으로 수정`
+      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")}으로 수정`,
     );
 
     // 자산 스냅샷 저장
@@ -208,14 +209,22 @@ export async function deleteAsset(assetId: string) {
   }
 
   try {
-    // Get asset details before deletion
+    // Get asset details before deletion (with ownership check)
     const { data: asset } = await supabase
       .from("assets")
-      .select("name, current_amount, is_liability")
+      .select("name, current_amount, is_liability, household_id")
       .eq("id", assetId)
       .single();
 
-    const { error } = await supabase.from("assets").delete().eq("id", assetId);
+    if (!asset || asset.household_id !== profile.household_id) {
+      return { error: "자산 정보를 찾을 수 없거나 삭제 권한이 없습니다." };
+    }
+
+    const { error } = await supabase
+      .from("assets")
+      .delete()
+      .eq("id", assetId)
+      .eq("household_id", profile.household_id);
 
     if (error) throw error;
 
@@ -225,7 +234,7 @@ export async function deleteAsset(assetId: string) {
       await createActivityLog(
         "DELETE",
         "ASSET",
-        `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`
+        `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
       );
     }
 

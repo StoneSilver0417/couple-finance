@@ -82,6 +82,16 @@ export async function updateCategory(categoryId: string, formData: FormData) {
   }
 
   try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.household_id) {
+      return { error: "가구 정보가 없습니다." };
+    }
+
     const { error } = await supabase
       .from("categories")
       .update({
@@ -89,7 +99,8 @@ export async function updateCategory(categoryId: string, formData: FormData) {
         icon,
         color,
       })
-      .eq("id", categoryId);
+      .eq("id", categoryId)
+      .eq("household_id", profile.household_id);
 
     if (error) throw error;
 
@@ -114,23 +125,47 @@ export async function deleteCategory(categoryId: string) {
   }
 
   try {
-    // 삭제 전 이름 조회
+    // 1. 유저의 가구 ID 조회
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.household_id) {
+      return { error: "가구 정보가 없습니다." };
+    }
+
+    // 2. 삭제 전 이름 조회 및 소유권 확인
     const { data: cat } = await supabase
       .from("categories")
-      .select("name")
+      .select("name, household_id")
       .eq("id", categoryId)
       .single();
 
-    // 소프트 삭제: is_hidden = true (기본/커스텀 모두 가능)
+    if (!cat) {
+      return { error: "카테고리를 찾을 수 없습니다." };
+    }
+
+    if (cat.household_id !== profile.household_id) {
+      return { error: "카테고리 삭제 권한이 없습니다." };
+    }
+
+    // 3. 소프트 삭제: is_hidden = true
     const { error } = await supabase
       .from("categories")
       .update({ is_hidden: true })
-      .eq("id", categoryId);
+      .eq("id", categoryId)
+      .eq("household_id", profile.household_id);
 
     if (error) throw error;
 
     if (cat) {
-      await createActivityLog("DELETE", "CATEGORY", `카테고리 "${cat.name}" 삭제`);
+      await createActivityLog(
+        "DELETE",
+        "CATEGORY",
+        `카테고리 "${cat.name}" 삭제`,
+      );
     }
 
     revalidatePath("/settings/categories");
@@ -153,21 +188,40 @@ export async function restoreCategory(categoryId: string) {
   }
 
   try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.household_id) {
+      return { error: "가구 정보가 없습니다." };
+    }
+
     const { data: cat } = await supabase
       .from("categories")
-      .select("name")
+      .select("name, household_id")
       .eq("id", categoryId)
       .single();
+
+    if (!cat || cat.household_id !== profile.household_id) {
+      return { error: "카테고리 복원 권한이 없습니다." };
+    }
 
     const { error } = await supabase
       .from("categories")
       .update({ is_hidden: false })
-      .eq("id", categoryId);
+      .eq("id", categoryId)
+      .eq("household_id", profile.household_id);
 
     if (error) throw error;
 
     if (cat) {
-      await createActivityLog("UPDATE", "CATEGORY", `카테고리 "${cat.name}" 복원`);
+      await createActivityLog(
+        "UPDATE",
+        "CATEGORY",
+        `카테고리 "${cat.name}" 복원`,
+      );
     }
 
     revalidatePath("/settings/categories");

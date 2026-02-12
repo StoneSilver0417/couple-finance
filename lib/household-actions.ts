@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 
-// Generate a random 8-character invite code
+import crypto from "crypto";
+
+// Generate a random 8-character invite code (cryptographically secure)
 function generateInviteCode(): string {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
+  return crypto.randomBytes(4).toString("hex").toUpperCase();
 }
 
 export async function createHousehold(formData: FormData) {
@@ -35,7 +37,6 @@ export async function createHousehold(formData: FormData) {
     const { data: householdId, error: rpcError } = await supabase.rpc(
       "create_household_with_owner",
       {
-        p_user_id: user.id,
         p_user_email: user.email!,
         p_user_name: userName,
         p_household_name: householdName,
@@ -47,9 +48,18 @@ export async function createHousehold(formData: FormData) {
       console.error("[createHousehold] RPC 에러:", rpcError.message);
 
       // RPC 함수가 없으면 직접 INSERT 시도 (폴백)
-      if (rpcError.message?.includes("could not find") || rpcError.code === "PGRST202") {
+      if (
+        rpcError.message?.includes("could not find") ||
+        rpcError.code === "PGRST202"
+      ) {
         console.log("[createHousehold] RPC 함수 없음, 직접 INSERT 시도");
-        return await createHouseholdDirect(supabase, user, householdName, userName, inviteCode);
+        return await createHouseholdDirect(
+          supabase,
+          user,
+          householdName,
+          userName,
+          inviteCode,
+        );
       }
       throw rpcError;
     }
@@ -107,23 +117,35 @@ async function createHouseholdDirect(
     }
 
     // 3. 기본 카테고리 생성
-    const { error: categoryError } = await supabase.rpc("create_default_categories", {
-      p_household_id: household.id,
-    });
+    const { error: categoryError } = await supabase.rpc(
+      "create_default_categories",
+      {
+        p_household_id: household.id,
+      },
+    );
 
     if (categoryError) {
-      console.error("[createHouseholdDirect] RPC 카테고리 생성 실패, 직접 INSERT 시도:", categoryError.message);
+      console.error(
+        "[createHouseholdDirect] RPC 카테고리 생성 실패, 직접 INSERT 시도:",
+        categoryError.message,
+      );
       // RPC 함수가 없으면 직접 INSERT
       await insertDefaultCategories(supabase, household.id);
     }
 
     // 4. 기본 결제 수단 생성
-    const { error: paymentError } = await supabase.rpc("create_default_payment_methods", {
-      p_household_id: household.id,
-    });
+    const { error: paymentError } = await supabase.rpc(
+      "create_default_payment_methods",
+      {
+        p_household_id: household.id,
+      },
+    );
 
     if (paymentError) {
-      console.error("[createHouseholdDirect] 결제수단 생성 실패:", paymentError);
+      console.error(
+        "[createHouseholdDirect] 결제수단 생성 실패:",
+        paymentError,
+      );
     }
 
     console.log("[createHouseholdDirect] 성공:", household.id);
@@ -159,7 +181,6 @@ export async function joinHousehold(formData: FormData) {
     const { data: result, error: rpcError } = await supabase.rpc(
       "join_household_as_member",
       {
-        p_user_id: user.id,
         p_user_email: user.email!,
         p_user_name: userName,
         p_invite_code: inviteCode,
@@ -170,7 +191,10 @@ export async function joinHousehold(formData: FormData) {
       console.error("[joinHousehold] RPC 에러:", rpcError.message);
 
       // RPC 함수가 없으면 직접 처리 (폴백)
-      if (rpcError.message?.includes("could not find") || rpcError.code === "PGRST202") {
+      if (
+        rpcError.message?.includes("could not find") ||
+        rpcError.code === "PGRST202"
+      ) {
         console.log("[joinHousehold] RPC 함수 없음, 직접 처리 시도");
         return await joinHouseholdDirect(supabase, user, userName, inviteCode);
       }
@@ -254,33 +278,201 @@ async function insertDefaultCategories(
 ) {
   const defaultCategories = [
     // 수입 카테고리
-    { name: "월급", type: "income", expense_category: null, color: "#10B981", icon: "💰", display_order: 1 },
-    { name: "상여", type: "income", expense_category: null, color: "#10B981", icon: "🎁", display_order: 2 },
-    { name: "수당", type: "income", expense_category: null, color: "#10B981", icon: "💵", display_order: 3 },
-    { name: "기타 수입", type: "income", expense_category: null, color: "#10B981", icon: "💸", display_order: 4 },
+    {
+      name: "월급",
+      type: "income",
+      expense_category: null,
+      color: "#10B981",
+      icon: "💰",
+      display_order: 1,
+    },
+    {
+      name: "상여",
+      type: "income",
+      expense_category: null,
+      color: "#10B981",
+      icon: "🎁",
+      display_order: 2,
+    },
+    {
+      name: "수당",
+      type: "income",
+      expense_category: null,
+      color: "#10B981",
+      icon: "💵",
+      display_order: 3,
+    },
+    {
+      name: "기타 수입",
+      type: "income",
+      expense_category: null,
+      color: "#10B981",
+      icon: "💸",
+      display_order: 4,
+    },
     // 고정 지출
-    { name: "대출상환", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏦", display_order: 1 },
-    { name: "임차료", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏠", display_order: 2 },
-    { name: "아파트관리비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🏢", display_order: 3 },
-    { name: "공과금", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "💡", display_order: 4 },
-    { name: "통신비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "📱", display_order: 5 },
-    { name: "교육비", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "📚", display_order: 6 },
-    { name: "보험료", type: "expense", expense_category: "fixed", color: "#EF4444", icon: "🛡️", display_order: 7 },
+    {
+      name: "대출상환",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "🏦",
+      display_order: 1,
+    },
+    {
+      name: "임차료",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "🏠",
+      display_order: 2,
+    },
+    {
+      name: "아파트관리비",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "🏢",
+      display_order: 3,
+    },
+    {
+      name: "공과금",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "💡",
+      display_order: 4,
+    },
+    {
+      name: "통신비",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "📱",
+      display_order: 5,
+    },
+    {
+      name: "교육비",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "📚",
+      display_order: 6,
+    },
+    {
+      name: "보험료",
+      type: "expense",
+      expense_category: "fixed",
+      color: "#EF4444",
+      icon: "🛡️",
+      display_order: 7,
+    },
     // 변동 지출
-    { name: "식비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🍚", display_order: 1 },
-    { name: "외식비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🍔", display_order: 2 },
-    { name: "생필품", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🧴", display_order: 3 },
-    { name: "건강/의료", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "💊", display_order: 4 },
-    { name: "아기", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "👶", display_order: 5 },
-    { name: "교통비", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🚗", display_order: 6 },
-    { name: "문화/여가", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🎬", display_order: 7 },
-    { name: "쇼핑", type: "expense", expense_category: "variable", color: "#F59E0B", icon: "🛍️", display_order: 8 },
+    {
+      name: "식비",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🍚",
+      display_order: 1,
+    },
+    {
+      name: "외식비",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🍔",
+      display_order: 2,
+    },
+    {
+      name: "생필품",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🧴",
+      display_order: 3,
+    },
+    {
+      name: "건강/의료",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "💊",
+      display_order: 4,
+    },
+    {
+      name: "아기",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "👶",
+      display_order: 5,
+    },
+    {
+      name: "교통비",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🚗",
+      display_order: 6,
+    },
+    {
+      name: "문화/여가",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🎬",
+      display_order: 7,
+    },
+    {
+      name: "쇼핑",
+      type: "expense",
+      expense_category: "variable",
+      color: "#F59E0B",
+      icon: "🛍️",
+      display_order: 8,
+    },
     // 비정기 지출
-    { name: "경조사비", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "💐", display_order: 1 },
-    { name: "세금", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📋", display_order: 2 },
-    { name: "자동차", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "🚙", display_order: 3 },
-    { name: "대형구매", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📦", display_order: 4 },
-    { name: "기타", type: "expense", expense_category: "irregular", color: "#8B5CF6", icon: "📝", display_order: 5 },
+    {
+      name: "경조사비",
+      type: "expense",
+      expense_category: "irregular",
+      color: "#8B5CF6",
+      icon: "💐",
+      display_order: 1,
+    },
+    {
+      name: "세금",
+      type: "expense",
+      expense_category: "irregular",
+      color: "#8B5CF6",
+      icon: "📋",
+      display_order: 2,
+    },
+    {
+      name: "자동차",
+      type: "expense",
+      expense_category: "irregular",
+      color: "#8B5CF6",
+      icon: "🚙",
+      display_order: 3,
+    },
+    {
+      name: "대형구매",
+      type: "expense",
+      expense_category: "irregular",
+      color: "#8B5CF6",
+      icon: "📦",
+      display_order: 4,
+    },
+    {
+      name: "기타",
+      type: "expense",
+      expense_category: "irregular",
+      color: "#8B5CF6",
+      icon: "📝",
+      display_order: 5,
+    },
   ];
 
   const categoriesWithHousehold = defaultCategories.map((cat) => ({
@@ -290,10 +482,15 @@ async function insertDefaultCategories(
     is_hidden: false,
   }));
 
-  const { error } = await supabase.from("categories").insert(categoriesWithHousehold);
+  const { error } = await supabase
+    .from("categories")
+    .insert(categoriesWithHousehold);
 
   if (error) {
-    console.error("[insertDefaultCategories] 카테고리 INSERT 실패:", error.message);
+    console.error(
+      "[insertDefaultCategories] 카테고리 INSERT 실패:",
+      error.message,
+    );
   } else {
     console.log("[insertDefaultCategories] 기본 카테고리 생성 완료");
   }

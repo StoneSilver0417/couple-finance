@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-02-12
+
+### v0.6.0 - 보안 아키텍처 대규모 강화
+
+- **RPC 함수 보안 취약점 해결 (High)**
+  - `create_household_with_owner`, `join_household_as_member` 함수 인자에서 유저 ID 제거
+  - SQL 내부에서 `auth.uid()`를 직접 참조하도록 변경하여 인자 조작을 통한 권한 탈취 원천 차단
+- **초대 코드 생성 보안 강화 (Medium)**
+  - `Math.random()`을 암호학적으로 안전한 `crypto.randomBytes`로 교체
+- **서버 단 이중 소유권 검증 도입 (Defense in Depth)**
+  - 거래(Transaction), 카테고리(Category), 자산(Asset)의 수정/삭제 시 서버 액션에서 가구 ID 일치 여부를 명시적으로 재검증
+  - DB RLS와 애플리케이션 계층의 이중 보안 체계 구축
+- **코드 품질 및 안정성 개선**
+  - Next.js Server Actions의 타입 안전성 및 가독성 향상
+
 ## 2026-02-10
 
 ### v0.5.5 - 관리자용 피드백 답변 시스템 완료
