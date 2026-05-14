@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, createContext, useContext, ReactNode } from "react";
+import { useState, useCallback, useRef, createContext, useContext, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 import { Button } from "./button";
@@ -30,24 +30,28 @@ export function useConfirm() {
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
-  const [resolveRef, setResolveRef] = useState<((value: boolean) => void) | null>(null);
+  // useState에 함수를 저장하면 React가 "함수형 업데이트"로 해석해 즉시 실행하므로,
+  // useRef를 사용해 함수 참조를 직접 보관한다.
+  const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
   const confirm = useCallback((opts: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {
       setOptions(opts);
-      setResolveRef(() => resolve);
+      resolveRef.current = resolve;
       setIsOpen(true);
     });
   }, []);
 
   const handleConfirm = () => {
     setIsOpen(false);
-    resolveRef?.(true);
+    resolveRef.current?.(true);
+    resolveRef.current = null;
   };
 
   const handleCancel = () => {
     setIsOpen(false);
-    resolveRef?.(false);
+    resolveRef.current?.(false);
+    resolveRef.current = null;
   };
 
   const variantStyles = {

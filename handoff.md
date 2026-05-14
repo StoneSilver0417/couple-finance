@@ -2,9 +2,9 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.0 (Security Patch)
+- **버전**: v0.6.1 (Transaction Delete Bug Fix)
 - **빌드 상태**: 성공
-- **배포 상태**: 프로덕션 배포 완료 (v0.5.5 기준, v0.6.0 마이그레이션 필요)
+- **배포 상태**: 로컬 수정 완료, Vercel 재배포 필요
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **관리자 계정**: waterdrop11@naver.com
 
@@ -23,7 +23,8 @@
 
 ## 최근 작업
 
-- **보안 아키텍처 강화**: 웹 취약점 점검 결과에 따른 대규모 보안 패치 수행
+- **거래 삭제 버그 수정**: `components/ui/confirm-dialog.tsx`의 `resolveRef`를 `useState` → `useRef`로 교체
+  - 원인: `useState`의 setter에 함수를 전달하면 React가 "함수형 업데이트"로 해석해 `resolve()`를 즉시 실행하고 null을 저장함 → 확인 버튼 클릭 시 Promise가 영원히 pending → 삭제 불가
 
 ## 알려진 이슈
 
@@ -32,6 +33,7 @@
 
 ## 다음 TODO
 
-1. [ ] Supabase Dashboard에서 신규 SQL 마이그레이션 실행
-2. [ ] 보안 패치 이후 전체 기능(가구 생성/참여, 거래 수정/삭제) 정상 동작 테스트
-3. [ ] 관리자 페이지 기능 고도화 (통계 등)
+1. [ ] Vercel에 v0.6.1 배포
+2. [ ] Supabase Dashboard에서 신규 SQL 마이그레이션 실행
+3. [ ] 보안 패치 이후 전체 기능(가구 생성/참여, 거래 수정/삭제) 정상 동작 테스트
+4. [ ] 관리자 페이지 기능 고도화 (통계 등)

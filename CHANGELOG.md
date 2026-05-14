@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-14
+
+### v0.6.1 - 거래 삭제 버그 수정
+
+- **`ConfirmDialog` Promise 미해결 버그 수정 (Critical)**
+  - 파일: `components/ui/confirm-dialog.tsx`
+  - 원인: `useState`의 setter(`setResolveRef(() => resolve)`)에 함수를 전달하면 React가 이를 "함수형 업데이트(functional update)"로 해석, `resolve`를 state setter의 인자로 **즉시 호출**하고 반환값(`undefined`)을 state에 저장함
+  - 결과: `resolveRef`가 항상 `null`이므로 확인/취소 버튼 클릭 시 `Promise`가 영원히 pending 상태 → `await confirm()`이 반환되지 않아 `deleteTransaction` 등 후속 삭제 로직이 절대 실행되지 않음
+  - 수정: `useState` → `useRef`로 교체. `resolveRef.current`에 함수 참조를 직접 저장하여 React의 함수형 업데이트 해석을 우회
+
 ## 2026-02-12
 
 ### v0.6.0 - 보안 아키텍처 대규모 강화
