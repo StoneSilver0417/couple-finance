@@ -16,10 +16,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
+import { useRouter } from "next/navigation";
 import TransactionFormComponent, {
   TransactionFormData,
 } from "./transaction-form-component";
@@ -41,6 +42,18 @@ export default function TransactionsListClient({
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const confirm = useConfirm();
+  const router = useRouter();
+
+  const handleCopy = (tx: Transaction) => {
+    const params = new URLSearchParams();
+    params.set("type", tx.type);
+    params.set("amount", tx.amount.toString());
+    if (tx.category_id) params.set("category_id", tx.category_id);
+    if (tx.memo) params.set("memo", tx.memo);
+    if (tx.expense_type) params.set("expense_type", tx.expense_type);
+    
+    router.push(`/transactions/new?${params.toString()}`);
+  };
 
   async function handleDelete(id: string) {
     const confirmed = await confirm({
@@ -131,6 +144,12 @@ export default function TransactionsListClient({
               align="end"
               className="rounded-2xl border-white/60 bg-white shadow-xl p-1"
             >
+              <DropdownMenuItem
+                onClick={() => handleCopy(tx)}
+                className="gap-2 rounded-xl focus:bg-black/5 font-medium cursor-pointer"
+              >
+                <Copy className="h-4 w-4" /> 복사
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setEditingTx(tx)}
                 className="gap-2 rounded-xl focus:bg-black/5 font-medium cursor-pointer"

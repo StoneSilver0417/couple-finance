@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.1 (Transaction Delete Bug Fix)
+- **버전**: v0.6.2 (Transaction Copy Feature)
 - **빌드 상태**: 성공
 - **배포 상태**: 로컬 수정 완료, Vercel 재배포 필요
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
@@ -23,8 +23,12 @@
 
 ## 최근 작업
 
-- **거래 삭제 버그 수정**: `components/ui/confirm-dialog.tsx`의 `resolveRef`를 `useState` → `useRef`로 교체
-  - 원인: `useState`의 setter에 함수를 전달하면 React가 "함수형 업데이트"로 해석해 `resolve()`를 즉시 실행하고 null을 저장함 → 확인 버튼 클릭 시 Promise가 영원히 pending → 삭제 불가
+- **(NEW) 거래 내역 복사 기능 추가 (v0.6.2)**:
+  - 기존 등록된 수입/지출 거래를 간편하게 복사하여 새로 추가할 수 있도록 구현.
+  - 거래 목록(메인, 일별 모달)의 드롭다운 메뉴에 '복사' 추가.
+  - 선택 시 `transaction-form`으로 이동하며 금액, 카테고리, 메모 등의 기존 정보를 자동으로 채워줌.
+- **거래 삭제 버그 수정 (v0.6.1)**: `components/ui/confirm-dialog.tsx`의 `resolveRef`를 `useState` → `useRef`로 교체하여 React 함수형 업데이트 오류 해결.
+- **포커스 충돌 해결 (v0.6.1)**: 삭제 모달을 커스텀 `motion.div`에서 Radix UI의 `DialogPortal` 기반으로 변경.
 
 ## 알려진 이슈
 
@@ -33,7 +37,7 @@
 
 ## 다음 TODO
 
-1. [ ] Vercel에 v0.6.1 배포
-2. [ ] Supabase Dashboard에서 신규 SQL 마이그레이션 실행
-3. [ ] 보안 패치 이후 전체 기능(가구 생성/참여, 거래 수정/삭제) 정상 동작 테스트
+1. [ ] v0.6.2 GitHub Commit & Push
+2. [ ] Vercel 프로덕션 환경에 v0.6.2 배포
+3. [ ] (필요시) Supabase Dashboard에서 신규 SQL 마이그레이션 실행
 4. [ ] 관리자 페이지 기능 고도화 (통계 등)

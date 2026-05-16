@@ -14,10 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
+import { useRouter } from "next/navigation";
 import TransactionFormComponent from "@/app/(app)/transactions/transaction-form-component";
 import { Transaction, Category } from "@/types";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -42,6 +43,19 @@ export default function DayTransactionsModal({
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const confirm = useConfirm();
+  const router = useRouter();
+
+  const handleCopy = (tx: Transaction) => {
+    const params = new URLSearchParams();
+    params.set("type", tx.type);
+    params.set("amount", tx.amount.toString());
+    if (tx.category_id) params.set("category_id", tx.category_id);
+    if (tx.memo) params.set("memo", tx.memo);
+    if (tx.expense_type) params.set("expense_type", tx.expense_type);
+    
+    onClose(); // 모달 닫기
+    router.push(`/transactions/new?${params.toString()}`);
+  };
 
   const dateObj = new Date(date + "T00:00:00");
   const formattedDate = dateObj.toLocaleDateString("ko-KR", {
@@ -206,6 +220,12 @@ export default function DayTransactionsModal({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl">
+                    <DropdownMenuItem
+                      onClick={() => handleCopy(tx)}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" /> 복사
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setEditingTx(tx)}
                       className="gap-2"

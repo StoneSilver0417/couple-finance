@@ -20,7 +20,8 @@ interface TransactionFormProps {
 export default function TransactionForm({
   categories,
   initialDate,
-}: TransactionFormProps) {
+  initialData,
+}: TransactionFormProps & { initialData?: TransactionFormData }) {
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -65,11 +66,11 @@ export default function TransactionForm({
           <TransactionFormComponent
             categories={categories}
             initialData={
-              initialDate
+              initialData || (initialDate
                 ? ({
                     transaction_date: initialDate,
                   } as Partial<TransactionFormData> as TransactionFormData)
-                : undefined
+                : undefined)
             }
             onSubmit={handleSubmit}
             isLoading={isLoading}

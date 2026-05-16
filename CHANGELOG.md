@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-16
+
+### v0.6.2 - 거래 복사 기능 추가
+
+- **거래 복사 기능 (Copy & Paste Transactions)**
+  - 파일: `app/(app)/transactions/transactions-list-client.tsx`, `components/calendar/day-transactions-modal.tsx`, `app/(app)/transactions/new/page.tsx`
+  - 내용: 기존 거래 항목(메인 목록 및 캘린더 모달)에 '복사' 메뉴 추가. 클릭 시 기존 거래의 금액, 카테고리, 메모 등의 정보를 URL 쿼리스트링에 담아 새 거래 추가 폼에 자동으로 채워주는 기능 구현. 매월 반복되거나 비슷한 거래를 빠르게 입력 가능.
 ## 2026-05-14
 
 ### v0.6.1 - 거래 삭제 버그 수정

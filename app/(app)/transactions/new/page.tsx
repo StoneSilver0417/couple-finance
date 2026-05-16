@@ -6,7 +6,21 @@ import { ensureDefaultCategories } from "@/lib/household-actions";
 export default async function NewTransactionPage({
   searchParams,
 }: {
-  searchParams: { date?: string } | Promise<{ date?: string }>;
+  searchParams: { 
+    date?: string;
+    type?: string;
+    amount?: string;
+    category_id?: string;
+    memo?: string;
+    expense_type?: string;
+  } | Promise<{ 
+    date?: string;
+    type?: string;
+    amount?: string;
+    category_id?: string;
+    memo?: string;
+    expense_type?: string;
+  }>;
 }) {
   const supabase = await createClient();
 
@@ -35,6 +49,15 @@ export default async function NewTransactionPage({
       ? resolvedParams.date
       : undefined;
 
+  const initialData = resolvedParams?.type ? {
+    type: resolvedParams.type as "income" | "expense",
+    amount: resolvedParams.amount ? parseFloat(resolvedParams.amount) : 0,
+    category_id: resolvedParams.category_id || "",
+    memo: resolvedParams.memo || "",
+    expense_type: resolvedParams.expense_type as "fixed" | "variable" | "irregular" | null,
+    transaction_date: initialDate || new Date().toISOString().split("T")[0]
+  } : undefined;
+
   // Fetch categories
   // 가계부 등록 시에는 숨김 처리된 카테고리는 노출하지 않는다.
   let { data: categories } = await supabase
@@ -62,6 +85,6 @@ export default async function NewTransactionPage({
   }
 
   return (
-    <TransactionForm categories={categories || []} initialDate={initialDate} />
+    <TransactionForm categories={categories || []} initialDate={initialDate} initialData={initialData} />
   );
 }
