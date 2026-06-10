@@ -1,14 +1,23 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { createActivityLog } from "./activity-log-actions";
+import {
+  getHouseholdContext,
+  type ServerSupabaseClient,
+} from "@/lib/supabase/household-context";
+import { logActivity } from "./activity-log";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import {
+  getTrimmedString,
+  isAssetOwnerType,
+  parseNonNegativeAmount,
+} from "@/lib/validation";
 
-// 자산 스냅샷 저장 (자산 변경 시 호출)
-async function saveAssetSnapshot(householdId: string) {
-  const supabase = await createClient();
-
+// 자산 스냅샷 저장 (자산 변경 시 내부 호출 — 공개 액션 아님)
+async function saveAssetSnapshot(
+  supabase: ServerSupabaseClient,
+  householdId: string,
+) {
   try {
     // 순자산 계산
     const { data: assets } = await supabase
@@ -53,42 +62,27 @@ async function saveAssetSnapshot(householdId: string) {
   }
 }
 
-export async function createAsset(formData: FormData) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다." };
-  }
-
-  const name = formData.get("name") as string;
-  const type = formData.get("type") as string;
-  const currentAmount = parseFloat(formData.get("current_amount") as string);
+// FormData에서 자산 입력값을 검증해 추출 (생성/수정 공통)
+function parseAssetForm(formData: FormData) {
+  const name = getTrimmedString(formData.get("name"), 100);
+  const type = getTrimmedString(formData.get("type"), 50);
+  const currentAmount = parseNonNegativeAmount(formData.get("current_amount"));
   const isLiability = formData.get("is_liability") === "true";
-  const ownerType = (formData.get("owner_type") as string) || "JOINT";
-  const ownerProfileId = formData.get("owner_profile_id") as string | null;
-  const childName = formData.get("child_name") as string | null;
+  const rawOwnerType = formData.get("owner_type") || "JOINT";
+  const ownerType = isAssetOwnerType(rawOwnerType) ? rawOwnerType : null;
+  const ownerProfileId = getTrimmedString(formData.get("owner_profile_id"), 64);
+  const childName = getTrimmedString(formData.get("child_name"), 50);
 
-  if (!name || !type || isNaN(currentAmount)) {
-    return { error: "필수 항목을 모두 입력해주세요." };
+  if (!name || !type || currentAmount === null) {
+    return { error: "필수 항목을 모두 입력해주세요." as const };
+  }
+  if (!ownerType) {
+    return { error: "소유 구분이 올바르지 않습니다." as const };
   }
 
-  try {
-    const { error } = await supabase.from("assets").insert({
-      household_id: profile.household_id,
+  return {
+    error: null,
+    values: {
       name,
       type,
       current_amount: currentAmount,
@@ -96,20 +90,40 @@ export async function createAsset(formData: FormData) {
       owner_type: ownerType,
       owner_profile_id: ownerType === "INDIVIDUAL" ? ownerProfileId : null,
       child_name: ownerType === "CHILD" ? childName : null,
+    },
+  };
+}
+
+export async function createAsset(formData: FormData) {
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
+
+  const parsed = parseAssetForm(formData);
+  if (parsed.error !== null) return { error: parsed.error };
+  const { values } = parsed;
+
+  try {
+    const { error } = await supabase.from("assets").insert({
+      household_id: householdId,
+      ...values,
     });
 
     if (error) throw error;
 
-    // Log activity
-    const label = isLiability ? "부채" : "자산";
-    await createActivityLog(
+    // 활동 기록
+    const label = values.is_liability ? "부채" : "자산";
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
       "CREATE",
       "ASSET",
-      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")} 추가`,
+      `${label} "${values.name}" ₩${Math.round(values.current_amount).toLocaleString("ko-KR")} 추가`,
     );
 
     // 자산 스냅샷 저장
-    await saveAssetSnapshot(profile.household_id);
+    await saveAssetSnapshot(supabase, householdId);
 
     revalidatePath("/assets");
     return { success: true };
@@ -119,66 +133,39 @@ export async function createAsset(formData: FormData) {
 }
 
 export async function updateAsset(assetId: string, formData: FormData) {
-  const supabase = await createClient();
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다." };
-  }
-
-  const name = formData.get("name") as string;
-  const type = formData.get("type") as string;
-  const currentAmount = parseFloat(formData.get("current_amount") as string);
-  const isLiability = formData.get("is_liability") === "true";
-  const ownerType = (formData.get("owner_type") as string) || "JOINT";
-  const ownerProfileId = formData.get("owner_profile_id") as string | null;
-  const childName = formData.get("child_name") as string | null;
-
-  if (!name || !type || isNaN(currentAmount)) {
-    return { error: "필수 항목을 모두 입력해주세요." };
-  }
+  const parsed = parseAssetForm(formData);
+  if (parsed.error !== null) return { error: parsed.error };
+  const { values } = parsed;
 
   try {
     const { error } = await supabase
       .from("assets")
       .update({
-        name,
-        type,
-        current_amount: currentAmount,
-        is_liability: isLiability,
-        owner_type: ownerType,
-        owner_profile_id: ownerType === "INDIVIDUAL" ? ownerProfileId : null,
-        child_name: ownerType === "CHILD" ? childName : null,
+        ...values,
         updated_at: new Date().toISOString(),
       })
       .eq("id", assetId)
-      .eq("household_id", profile.household_id);
+      .eq("household_id", householdId);
 
     if (error) throw error;
 
-    // Log activity
-    const label = isLiability ? "부채" : "자산";
-    await createActivityLog(
+    // 활동 기록
+    const label = values.is_liability ? "부채" : "자산";
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
       "UPDATE",
       "ASSET",
-      `${label} "${name}" ₩${Math.round(currentAmount).toLocaleString("ko-KR")}으로 수정`,
+      `${label} "${values.name}" ₩${Math.round(values.current_amount).toLocaleString("ko-KR")}으로 수정`,
     );
 
     // 자산 스냅샷 저장
-    await saveAssetSnapshot(profile.household_id);
+    await saveAssetSnapshot(supabase, householdId);
 
     revalidatePath("/assets");
     return { success: true };
@@ -188,35 +175,19 @@ export async function updateAsset(assetId: string, formData: FormData) {
 }
 
 export async function deleteAsset(assetId: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다." };
-  }
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
 
   try {
-    // Get asset details before deletion (with ownership check)
+    // 삭제 전 자산 정보 조회 + 소유권 확인 (IDOR 방지)
     const { data: asset } = await supabase
       .from("assets")
       .select("name, current_amount, is_liability, household_id")
       .eq("id", assetId)
       .single();
 
-    if (!asset || asset.household_id !== profile.household_id) {
+    if (!asset || asset.household_id !== householdId) {
       return { error: "자산 정보를 찾을 수 없거나 삭제 권한이 없습니다." };
     }
 
@@ -224,22 +195,23 @@ export async function deleteAsset(assetId: string) {
       .from("assets")
       .delete()
       .eq("id", assetId)
-      .eq("household_id", profile.household_id);
+      .eq("household_id", householdId);
 
     if (error) throw error;
 
-    // Log activity
-    if (asset) {
-      const label = asset.is_liability ? "부채" : "자산";
-      await createActivityLog(
-        "DELETE",
-        "ASSET",
-        `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
-      );
-    }
+    // 활동 기록
+    const label = asset.is_liability ? "부채" : "자산";
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
+      "DELETE",
+      "ASSET",
+      `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
+    );
 
     // 자산 스냅샷 저장
-    await saveAssetSnapshot(profile.household_id);
+    await saveAssetSnapshot(supabase, householdId);
 
     revalidatePath("/assets");
     return { success: true };
@@ -250,38 +222,25 @@ export async function deleteAsset(assetId: string) {
 
 // 자산 히스토리 조회 (차트용)
 export async function getAssetHistory(months: number = 6) {
-  const supabase = await createClient();
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error, data: null };
+  const { supabase, householdId } = ctx;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다.", data: null };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다.", data: null };
-  }
+  // 외부에서 조작 가능한 인자이므로 조회 범위 제한 (1개월 ~ 10년)
+  const safeMonths = Math.min(Math.max(Math.trunc(months) || 6, 1), 120);
 
   const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - months);
+  startDate.setMonth(startDate.getMonth() - safeMonths);
 
   const { data, error } = await supabase
     .from("asset_history")
     .select("*")
-    .eq("household_id", profile.household_id)
+    .eq("household_id", householdId)
     .gte("record_date", startDate.toISOString().split("T")[0])
     .order("record_date", { ascending: true });
 
   if (error) {
-    return { error: error.message, data: null };
+    return { error: getKoreanErrorMessage(error), data: null };
   }
 
   return { error: null, data };

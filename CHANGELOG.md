@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-06-11
+
+### v0.6.3 - 서버 액션 전면 보안 리팩토링
+
+- **공개 엔드포인트 격리 (High)**
+  - `lib/balance-actions.ts`: `syncMonthlyBalance`가 공개 서버 액션으로 노출되어 인증 없이 임의 가구 ID로 호출 가능했던 문제 → `"use server"` 제거, 호출자의 Supabase 클라이언트를 전달받는 서버 내부 모듈로 전환
+  - `lib/activity-log.ts` (신규): 기존 `createActivityLog` 공개 액션으로 누구나 활동 로그를 위조 삽입할 수 있던 문제 → 내부 함수 `logActivity`로 격리, `activity-log-actions.ts`는 조회/삭제 액션만 유지
+- **공통 모듈 추출 (리팩토링)**
+  - `lib/supabase/household-context.ts` (신규): 로그인 확인 + 가구 ID 조회를 `getHouseholdContext()` 단일 진입점으로 통합. 액션마다 중복되던 인증/소속 확인 보일러플레이트 제거 (13개 파일, 약 -565줄)
+  - `lib/validation.ts` (신규): 금액(상한 1천억, 유한성), 날짜(YYYY-MM-DD), 연/월 범위, 문자열 길이, 거래/자산 유형 화이트리스트 등 외부 입력 검증 유틸 집중화
+- **외부 입력 검증 강화 (Medium)**
+  - 모든 서버 액션에서 `formData.get(...) as string` 무검증 캐스팅 제거
+  - `feedback-actions.ts`: 피드백 유형 화이트리스트, 내용 5,000자 제한, `deviceInfo` JSON 안전 파싱(2,000자 제한)
+  - `admin-actions.ts`: 피드백 상태값 화이트리스트, 답변 길이 제한
+  - `household-actions.ts`: 가구명/사용자명 50자 제한, 초대 코드 null 입력 시 `.toUpperCase()` 크래시 방어
+  - `auth-actions.ts`: 이메일/비밀번호 존재·길이 검증 추가 (비밀번호 6자 미만 사전 차단)
+- **보안 헤더 및 빌드 설정 개선 (Medium)**
+  - `next.config.ts`: 프로덕션 CSP에서 `'unsafe-eval'` 제거 (개발 모드 HMR에서만 허용)
+  - 폐기된 `X-XSS-Protection` 헤더를 `Referrer-Policy: strict-origin-when-cross-origin`으로 교체
+  - `typescript.ignoreBuildErrors: true` 제거 → 빌드 시 타입 오류 강제 검출
+
 ## 2026-05-16
 
 ### v0.6.2 - 거래 복사 기능 추가

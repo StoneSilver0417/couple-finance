@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { getTrimmedString } from "@/lib/validation";
 
 import crypto from "crypto";
 
@@ -23,11 +24,11 @@ export async function createHousehold(formData: FormData) {
     return { error: "로그인이 필요합니다." };
   }
 
-  const householdName = formData.get("household_name") as string;
-  const userName = formData.get("user_name") as string;
+  const householdName = getTrimmedString(formData.get("household_name"), 50);
+  const userName = getTrimmedString(formData.get("user_name"), 50);
 
   if (!householdName || !userName) {
-    return { error: "모든 항목을 입력해주세요." };
+    return { error: "모든 항목을 입력해주세요. (각 50자 이내)" };
   }
 
   const inviteCode = generateInviteCode();
@@ -169,12 +170,15 @@ export async function joinHousehold(formData: FormData) {
     return { error: "로그인이 필요합니다." };
   }
 
-  const inviteCode = (formData.get("invite_code") as string).toUpperCase();
-  const userName = formData.get("user_name") as string;
+  // null/비문자열 입력으로 .toUpperCase() 크래시가 나지 않도록 안전하게 추출
+  const rawInviteCode = getTrimmedString(formData.get("invite_code"), 16);
+  const userName = getTrimmedString(formData.get("user_name"), 50);
 
-  if (!inviteCode || !userName) {
+  if (!rawInviteCode || !userName) {
     return { error: "모든 항목을 입력해주세요." };
   }
+
+  const inviteCode = rawInviteCode.toUpperCase();
 
   try {
     // 먼저 RPC 함수 시도

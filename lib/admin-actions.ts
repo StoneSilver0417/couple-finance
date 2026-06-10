@@ -36,6 +36,14 @@ export async function getAllFeedbacks() {
   return data || [];
 }
 
+// 피드백 상태 화이트리스트 (components/admin/feedback-admin-list.tsx의 STATUS_CONFIG와 일치)
+const FEEDBACK_STATUSES = [
+  "pending",
+  "in_progress",
+  "resolved",
+  "closed",
+] as const;
+
 export async function updateFeedbackAnswer(
   id: string,
   comment: string,
@@ -44,12 +52,21 @@ export async function updateFeedbackAnswer(
   const isUserAdmin = await isAdmin();
   if (!isUserAdmin) throw new Error("Unauthorized");
 
+  // 외부 입력 검증: 상태 화이트리스트 + 답변 길이 제한
+  if (!FEEDBACK_STATUSES.includes(status as (typeof FEEDBACK_STATUSES)[number])) {
+    throw new Error("유효하지 않은 상태값입니다.");
+  }
+  const trimmedComment = comment?.trim();
+  if (!trimmedComment || trimmedComment.length > 5000) {
+    throw new Error("답변 내용이 비어있거나 너무 깁니다. (최대 5,000자)");
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
     .from("feedbacks")
     .update({
-      admin_comment: comment,
+      admin_comment: trimmedComment,
       status: status,
     })
     .eq("id", id);

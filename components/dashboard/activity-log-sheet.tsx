@@ -18,7 +18,8 @@ import {
   Tag,
   RotateCcw,
 } from "lucide-react";
-import { getActivityLogs, clearActivityLogs, ActivityLog } from "@/lib/activity-log-actions";
+import { getActivityLogs, clearActivityLogs } from "@/lib/activity-log-actions";
+import type { ActivityLog } from "@/lib/activity-log";
 
 const ACTION_ICONS = {
   CREATE: <Plus className="w-3 h-3" />,

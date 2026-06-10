@@ -1,9 +1,10 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
-import { createActivityLog } from "./activity-log-actions";
+import { logActivity } from "./activity-log";
+import { isValidAmount, isValidYearMonth } from "@/lib/validation";
 
 export async function updateBudget(
   categoryId: string,
@@ -11,30 +12,22 @@ export async function updateBudget(
   month: number,
   amount: number,
 ) {
-  const supabase = await createClient();
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
+  // 서버 액션 인자는 외부 입력이므로 검증
+  if (!categoryId || !isValidYearMonth(year, month)) {
+    return { error: "예산 설정 정보가 올바르지 않습니다." };
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다." };
+  if (!isValidAmount(amount)) {
+    return { error: "예산 금액이 올바르지 않습니다." };
   }
 
   try {
     const { error } = await supabase.from("budgets").upsert(
       {
-        household_id: profile.household_id,
+        household_id: householdId,
         category_id: categoryId,
         year,
         month,
@@ -48,11 +41,14 @@ export async function updateBudget(
 
     if (error) throw error;
 
-    // 활동기록 로깅
-    await createActivityLog(
+    // 활동 기록
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
       "UPDATE",
       "BUDGET",
-      `${year}년 ${month}월 예산 ₩${Math.round(amount).toLocaleString("ko-KR")} 설정`
+      `${year}년 ${month}월 예산 ₩${Math.round(amount).toLocaleString("ko-KR")} 설정`,
     );
 
     revalidatePath("/settings/budgets");

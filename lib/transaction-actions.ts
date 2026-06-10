@@ -1,75 +1,80 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { syncMonthlyBalance } from "./balance-actions";
-import { createActivityLog } from "./activity-log-actions";
+import { logActivity } from "./activity-log";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import {
+  getTrimmedString,
+  isExpenseType,
+  isTransactionType,
+  isValidDateString,
+  parsePositiveAmount,
+} from "@/lib/validation";
 
 export async function createTransaction(formData: FormData) {
-  const supabase = await createClient();
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // 외부 입력 검증: 금액(양수/상한), 거래 유형, 날짜 형식
+  const type = formData.get("type");
+  const amount = parsePositiveAmount(formData.get("amount"));
+  const categoryId = getTrimmedString(formData.get("category_id"), 64);
+  const transactionDate = formData.get("transaction_date");
+  const memo = getTrimmedString(formData.get("memo"), 500);
 
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
+  if (!isTransactionType(type)) {
+    return { error: "거래 유형이 올바르지 않습니다." };
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.household_id) {
-    return { error: "가구 정보가 없습니다." };
+  if (amount === null) {
+    return { error: "금액은 0보다 큰 정상적인 값이어야 합니다." };
   }
-
-  const type = formData.get("type") as "income" | "expense";
-  const amount = parseFloat(formData.get("amount") as string);
-  const categoryId = formData.get("category_id") as string;
-  const transactionDate = formData.get("transaction_date") as string;
-  const memo = (formData.get("memo") as string) || null;
-  const expenseType =
-    type === "expense" ? (formData.get("expense_type") as string) : null;
-
-  if (!amount || !categoryId || !transactionDate) {
+  if (!categoryId || !isValidDateString(transactionDate)) {
     return { error: "필수 항목을 모두 입력해주세요." };
+  }
+
+  const rawExpenseType = formData.get("expense_type");
+  const expenseType =
+    type === "expense" && isExpenseType(rawExpenseType) ? rawExpenseType : null;
+
+  if (type === "expense" && !expenseType) {
+    return { error: "지출 유형이 올바르지 않습니다." };
   }
 
   try {
     // RPC 함수로 INSERT (RLS 우회)
-    const { data: transactionId, error } = await supabase.rpc(
-      "create_transaction",
-      {
-        p_household_id: profile.household_id,
-        p_user_id: user.id,
-        p_type: type,
-        p_amount: amount,
-        p_category_id: categoryId,
-        p_transaction_date: transactionDate,
-        p_expense_type: expenseType,
-        p_memo: memo,
-      },
-    );
+    const { error } = await supabase.rpc("create_transaction", {
+      p_household_id: householdId,
+      p_user_id: user.id,
+      p_type: type,
+      p_amount: amount,
+      p_category_id: categoryId,
+      p_transaction_date: transactionDate,
+      p_expense_type: expenseType,
+      p_memo: memo,
+    });
 
     if (error) throw error;
 
-    // Sync monthly balance
+    // 월별 잔액 동기화
     const date = new Date(transactionDate);
     await syncMonthlyBalance(
-      profile.household_id,
+      supabase,
+      householdId,
       date.getFullYear(),
       date.getMonth() + 1,
     );
 
-    // Log activity
+    // 활동 기록
     const typeLabel = type === "income" ? "수입" : "지출";
     const amountStr = Math.round(amount).toLocaleString("ko-KR");
-    await createActivityLog(
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
       "CREATE",
       "TRANSACTION",
       `${typeLabel} ₩${amountStr} 추가${memo ? ` - ${memo}` : ""}`,
@@ -83,64 +88,51 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function deleteTransaction(transactionId: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "로그인이 필요합니다." };
-  }
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, user, householdId } = ctx;
 
   try {
-    // Get transaction details before deletion to sync balance later
+    // 삭제 전 거래 정보 조회 (잔액 동기화 및 소유권 확인용)
     const { data: tx } = await supabase
       .from("transactions")
       .select("household_id, transaction_date, type, amount, memo")
       .eq("id", transactionId)
       .single();
 
-    if (!tx) {
-      return { error: "거래를 찾을 수 없습니다." };
-    }
-
     // 소유권 확인 (IDOR 방지)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("household_id")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.household_id || tx.household_id !== profile.household_id) {
-      return { error: "해당 거래를 삭제할 권한이 없습니다." };
+    if (!tx || tx.household_id !== householdId) {
+      return { error: "거래를 찾을 수 없거나 삭제 권한이 없습니다." };
     }
 
     const { error } = await supabase
       .from("transactions")
       .delete()
-      .eq("id", transactionId);
+      .eq("id", transactionId)
+      .eq("household_id", householdId);
 
     if (error) throw error;
 
-    // Sync monthly balance if tx existed
-    if (tx) {
-      const date = new Date(tx.transaction_date);
-      await syncMonthlyBalance(
-        tx.household_id,
-        date.getFullYear(),
-        date.getMonth() + 1,
-      );
+    // 월별 잔액 동기화
+    const date = new Date(tx.transaction_date);
+    await syncMonthlyBalance(
+      supabase,
+      householdId,
+      date.getFullYear(),
+      date.getMonth() + 1,
+    );
 
-      // Log activity
-      const typeLabel = tx.type === "income" ? "수입" : "지출";
-      const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");
-      await createActivityLog(
-        "DELETE",
-        "TRANSACTION",
-        `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`,
-      );
-    }
+    // 활동 기록
+    const typeLabel = tx.type === "income" ? "수입" : "지출";
+    const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
+      "DELETE",
+      "TRANSACTION",
+      `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`,
+    );
 
     revalidatePath("/transactions");
     return { success: true };
