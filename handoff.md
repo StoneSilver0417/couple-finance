@@ -41,7 +41,7 @@
 
 ## 다음 TODO
 
-1. [ ] 실제 브라우저에서 프로덕션 동작 확인 (Playwright MCP 활용 — CSP `unsafe-eval` 제거로 인한 콘솔 오류 여부)
+1. [x] 프로덕션 브라우저 검증 완료 (2026-06-11, Playwright MCP) — 콘솔 오류 0건, CSP 정상, 로그인 액션·오류 토스트·비로그인 리다이렉트 정상. 단, 로그인 후 대시보드 영역은 자격증명이 없어 미검증
 2. [ ] (필요시) Supabase Dashboard에서 신규 SQL 마이그레이션 실행 (`20260212000000_security_rpc_fix.sql`)
 3. [ ] 기존 lint 오류 정리 (UI 컴포넌트 setState-in-effect, any 타입 등)
 4. [ ] 관리자 페이지 기능 고도화 (통계 등)
