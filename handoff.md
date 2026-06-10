@@ -4,7 +4,9 @@
 
 - **버전**: v0.6.3 (서버 액션 전면 보안 리팩토링)
 - **빌드 상태**: 성공 (`npm run build` / `tsc --noEmit` 모두 통과)
-- **배포 상태**: 로컬 작업 완료, **커밋/푸시 대기 중** → Vercel 재배포 필요
+- **배포 상태**: 프로덕션 배포 완료 (2026-06-11, 커밋 `2da10e3`, Vercel `dpl_BQUtd5VGANZEBz7F2DwDX1SaPtdC`)
+  - 보안 헤더 검증 완료: CSP에서 `unsafe-eval` 제거 확인, `Referrer-Policy` 적용 확인
+  - 문제 발생 시 롤백: `vercel rollback` (직전 배포로 즉시 전환) 또는 `git revert 2da10e3` 후 푸시
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **관리자 계정**: waterdrop11@naver.com
 
@@ -30,10 +32,16 @@
 - **[주의]** 마이그레이션(`20260212000000_security_rpc_fix.sql`)을 실제 Supabase DB에 적용해야 RPC 보안이 활성화됨
 - `npm run lint`에 기존 UI 코드의 오류 다수 잔존 (react-hooks/set-state-in-effect, no-explicit-any 등 — 이번 리팩토링과 무관, 빌드에는 영향 없음)
 
+## 개발 도구 (MCP)
+
+- **Playwright MCP**: 설치 완료 (로컬 스코프) — 배포된 앱의 브라우저 검증(CSP 깨짐, 콘솔 오류)에 사용. 다음 세션부터 도구 사용 가능
+- **Supabase MCP**: 미설치 — 개인 액세스 토큰(PAT) 필요. https://supabase.com/dashboard/account/tokens 에서 발급 후 아래 명령으로 설치:
+  `claude mcp add supabase --env SUPABASE_ACCESS_TOKEN=<토큰> -- cmd /c npx -y @supabase/mcp-server-supabase@latest --read-only --project-ref=bgevpihfcvraxososcll`
+- **Vercel**: CLI 설치·인증 완료 (v50.9.6) — 배포 확인/롤백에 사용, MCP 불필요
+
 ## 다음 TODO
 
-1. [ ] v0.6.3 변경분 GitHub Commit & Push (13개 수정 + 3개 신규 파일)
-2. [ ] Vercel 프로덕션 배포 후 CSP 변경(`unsafe-eval` 제거)로 인한 화면 깨짐 여부 확인
-3. [ ] (필요시) Supabase Dashboard에서 신규 SQL 마이그레이션 실행
-4. [ ] 기존 lint 오류 정리 (UI 컴포넌트 setState-in-effect, any 타입 등)
-5. [ ] 관리자 페이지 기능 고도화 (통계 등)
+1. [ ] 실제 브라우저에서 프로덕션 동작 확인 (Playwright MCP 활용 — CSP `unsafe-eval` 제거로 인한 콘솔 오류 여부)
+2. [ ] (필요시) Supabase Dashboard에서 신규 SQL 마이그레이션 실행 (`20260212000000_security_rpc_fix.sql`)
+3. [ ] 기존 lint 오류 정리 (UI 컴포넌트 setState-in-effect, any 타입 등)
+4. [ ] 관리자 페이지 기능 고도화 (통계 등)
