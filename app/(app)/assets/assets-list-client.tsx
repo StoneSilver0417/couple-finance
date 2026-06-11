@@ -4,22 +4,12 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Edit2, Trash2, PiggyBank, Baby, TrendingUp, Banknote, CreditCard } from 'lucide-react'
+import { MoreVertical, Edit2, Trash2, PiggyBank, Baby, TrendingUp, Banknote, CreditCard, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteAsset } from '@/lib/asset-actions'
 import AssetDialog from './asset-dialog'
 import { useConfirm } from '@/components/ui/confirm-dialog'
-
-interface Asset {
-  id: string
-  name: string
-  type: string
-  current_amount: number
-  is_liability: boolean
-  owner_type?: string
-  owner_profile_id?: string | null
-  child_name?: string | null
-}
+import type { Asset } from '@/types'
 
 interface Member {
   id: string
@@ -32,7 +22,7 @@ interface AssetsListClientProps {
   currentUserId?: string
 }
 
-const ASSET_TYPE_CONFIG: Record<string, { icon: any; label: string; color: string }> = {
+const ASSET_TYPE_CONFIG: Record<string, { icon: LucideIcon; label: string; color: string }> = {
   // 대문자 타입 (PRD 표준)
   CASH: { icon: Banknote, label: '현금', color: '#8B5CF6' },
   SAVINGS: { icon: PiggyBank, label: '저금', color: '#10B981' },

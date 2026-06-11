@@ -282,7 +282,7 @@ export default function AssetsPageClient({
                 className="bg-white/40 rounded-[2rem] p-1 border border-white/40"
               >
                 <AssetsListClient
-                  assets={filteredAssets as any}
+                  assets={filteredAssets}
                   members={members}
                   currentUserId={currentUserId}
                 />

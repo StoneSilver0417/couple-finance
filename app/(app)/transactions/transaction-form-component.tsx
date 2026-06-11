@@ -61,8 +61,6 @@ export default function TransactionFormComponent({
     await onSubmit(formData);
   }
 
-  const today = new Date().toISOString().split("T")[0];
-
   return (
     <Tabs
       value={transactionType}
@@ -88,7 +86,9 @@ export default function TransactionFormComponent({
       <TabsContent value="expense" className="space-y-6">
         <Tabs
           value={expenseType}
-          onValueChange={(v) => setExpenseType(v as any)}
+          onValueChange={(v) =>
+            setExpenseType(v as "fixed" | "variable" | "irregular")
+          }
         >
           <TabsList className="grid w-full grid-cols-3 bg-white/30 border border-white/60 h-10 rounded-xl shadow-soft backdrop-blur-md">
             <TabsTrigger

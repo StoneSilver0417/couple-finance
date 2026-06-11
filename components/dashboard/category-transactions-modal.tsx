@@ -8,9 +8,16 @@ export interface TransactionItem {
   amount: number;
   memo: string | null;
   transaction_date: string;
+  type?: "income" | "expense";
+  // RPC 평탄화 결과 (category_*)와 일반 조인 결과 (categories) 양쪽 모두 지원
   category_name?: string;
   category_icon?: string;
   category_color?: string;
+  categories?: {
+    name: string;
+    icon: string;
+    color: string;
+  } | null;
 }
 
 interface CategoryTransactionsModalProps {

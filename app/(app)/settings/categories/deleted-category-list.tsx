@@ -5,9 +5,10 @@ import { restoreCategory } from "@/lib/category-actions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
+import type { Category } from "@/types";
 
 interface DeletedCategoryListProps {
-  categories: any[];
+  categories: Category[];
 }
 
 const EXPENSE_CATEGORY_LABELS: Record<string, string> = {
@@ -54,7 +55,9 @@ export function DeletedCategoryList({ categories }: DeletedCategoryListProps) {
             <p className="text-[10px] text-text-secondary">
               {cat.type === "income"
                 ? "수입"
-                : EXPENSE_CATEGORY_LABELS[cat.expense_category] || "지출"}
+                : (cat.expense_category &&
+                    EXPENSE_CATEGORY_LABELS[cat.expense_category]) ||
+                  "지출"}
             </p>
           </div>
 

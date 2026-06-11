@@ -2,8 +2,6 @@
 
 import { useMemo } from "react";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -117,8 +115,8 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
               padding: "10px 14px",
             }}
             labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
-            formatter={(value: any) => [
-              `₩${(Number(value) * 10000).toLocaleString()}`,
+            formatter={(value: number | string | undefined) => [
+              `₩${(Number(value ?? 0) * 10000).toLocaleString()}`,
               "금액",
             ]}
           />

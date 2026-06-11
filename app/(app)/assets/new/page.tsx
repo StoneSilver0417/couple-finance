@@ -6,7 +6,6 @@ import { createAsset } from "@/lib/asset-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -80,9 +79,6 @@ export default function NewAssetPage() {
       router.push("/assets");
     }
   }
-
-  const selectedTypeConfig =
-    ASSET_TYPES.find((t) => t.value === selectedType) || ASSET_TYPES[0];
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">

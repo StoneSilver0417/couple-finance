@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createAsset, updateAsset } from "@/lib/asset-actions";
 import {
   Dialog,
@@ -73,6 +73,45 @@ export default function AssetDialog({
   members = [],
   currentUserId = "",
 }: AssetDialogProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="rounded-3xl max-w-md bg-white border-none shadow-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {assetToEdit ? "자산 수정" : "새 자산 추가"}
+          </DialogTitle>
+          <DialogDescription>
+            {assetToEdit
+              ? "자산 정보를 수정합니다."
+              : "보유하고 있는 자산을 등록하세요."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Dialog가 닫히면 콘텐츠가 언마운트되고, 대상 자산이 바뀌면 key로
+            리마운트되므로 effect 없이도 폼 상태가 항상 새로 초기화된다 */}
+        <AssetForm
+          key={assetToEdit?.id ?? "new"}
+          assetToEdit={assetToEdit}
+          members={members}
+          currentUserId={currentUserId}
+          onClose={onClose}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AssetForm({
+  assetToEdit,
+  members,
+  currentUserId,
+  onClose,
+}: {
+  assetToEdit?: Asset | null;
+  members: Member[];
+  currentUserId: string;
+  onClose: () => void;
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(
     assetToEdit?.type || "savings",
@@ -89,24 +128,6 @@ export default function AssetDialog({
   const [childName, setChildName] = useState(
     assetToEdit?.child_name || "",
   );
-
-  useEffect(() => {
-    if (isOpen) {
-      if (assetToEdit) {
-        setSelectedType(assetToEdit.type);
-        setIsLiability(assetToEdit.is_liability);
-        setOwnerType(assetToEdit.owner_type || "JOINT");
-        setOwnerProfileId(assetToEdit.owner_profile_id || currentUserId);
-        setChildName(assetToEdit.child_name || "");
-      } else {
-        setSelectedType("savings");
-        setIsLiability(false);
-        setOwnerType("JOINT");
-        setOwnerProfileId(currentUserId);
-        setChildName("");
-      }
-    }
-  }, [isOpen, assetToEdit, currentUserId]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -140,24 +161,7 @@ export default function AssetDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-3xl max-w-md bg-white border-none shadow-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {assetToEdit ? "자산 수정" : "새 자산 추가"}
-          </DialogTitle>
-          <DialogDescription>
-            {assetToEdit
-              ? "자산 정보를 수정합니다."
-              : "보유하고 있는 자산을 등록하세요."}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form
-          key={assetToEdit?.id || "new"}
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+    <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label>자산 유형 *</Label>
             <div className="grid grid-cols-2 gap-3">
@@ -303,8 +307,6 @@ export default function AssetDialog({
               )}
             </Button>
           </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    </form>
   );
 }

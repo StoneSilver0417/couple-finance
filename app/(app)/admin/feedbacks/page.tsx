@@ -44,7 +44,7 @@ export default async function AdminFeedbacksPage() {
             <p className="font-bold mb-1">관리자 모드입니다.</p>
             <p>
               사용자들이 남긴 소중한 피드백을 확인하고 답변을 남겨보세요. 답변
-              시 사용자 앱의 '내 문의함'에 즉시 반영됩니다.
+              시 사용자 앱의 &apos;내 문의함&apos;에 즉시 반영됩니다.
             </p>
           </div>
         </div>

@@ -49,7 +49,6 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
   }
 
   // Calculate prev/next
-  const date = new Date(year, month - 1, 1);
   const prevDate = new Date(year, month - 2, 1);
   const nextDate = new Date(year, month, 1);
 
@@ -121,7 +120,9 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
 
       <div className="px-6 space-y-6">
         <div className="glass-panel w-full rounded-[2.5rem] p-6 shadow-glass border border-white/60">
+          {/* 월이 바뀌면 key로 리마운트되어 입력 상태가 새 예산값으로 초기화됨 */}
           <BudgetClient
+            key={`${year}-${month}`}
             currentBudget={currentBudget}
             year={year}
             month={month}

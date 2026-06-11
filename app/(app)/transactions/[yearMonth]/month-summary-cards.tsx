@@ -36,8 +36,8 @@ export default function MonthSummaryCards({
   const incomeByCategory = useMemo(() => {
     const groups: Record<string, CategoryData> = {};
     transactions
-      .filter((tx: any) => tx.type === "income")
-      .forEach((tx: any) => {
+      .filter((tx) => tx.type === "income")
+      .forEach((tx) => {
         const name = tx.category_name || tx.categories?.name || "미분류";
         const color = tx.category_color || tx.categories?.color || "#10B981";
         const icon = tx.category_icon || tx.categories?.icon || "💰";
@@ -50,8 +50,8 @@ export default function MonthSummaryCards({
   const expenseByCategory = useMemo(() => {
     const groups: Record<string, CategoryData> = {};
     transactions
-      .filter((tx: any) => tx.type === "expense")
-      .forEach((tx: any) => {
+      .filter((tx) => tx.type === "expense")
+      .forEach((tx) => {
         const name = tx.category_name || tx.categories?.name || "미분류";
         const color = tx.category_color || tx.categories?.color || "#EF4444";
         const icon = tx.category_icon || tx.categories?.icon || "💸";
@@ -65,7 +65,7 @@ export default function MonthSummaryCards({
     setExpandedType((prev) => (prev === type ? null : type));
   };
 
-  const handleCategoryClick = (cat: CategoryData, type: "income" | "expense") => {
+  const handleCategoryClick = (cat: CategoryData) => {
     setSelectedCategory(cat);
     setIsModalOpen(true);
   };
@@ -76,7 +76,7 @@ export default function MonthSummaryCards({
   // 모달용 거래 필터링
   const filteredTransactions = selectedCategory
     ? transactions.filter(
-        (tx: any) =>
+        (tx) =>
           (tx.category_name || tx.categories?.name) === selectedCategory.name
       )
     : [];
@@ -169,7 +169,7 @@ export default function MonthSummaryCards({
                   return (
                     <button
                       key={cat.name}
-                      onClick={() => handleCategoryClick(cat, expandedType)}
+                      onClick={() => handleCategoryClick(cat)}
                       className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-colors text-left hover:opacity-80"
                       style={{ backgroundColor: cat.color ? `${cat.color}12` : "#f9fafb" }}
                     >

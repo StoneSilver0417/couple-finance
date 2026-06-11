@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AssetsPageClient from "./assets-page-client";
+import type { Asset, AssetHistory } from "@/types";
 
 export default async function AssetsPage() {
   const supabase = await createClient();
@@ -53,17 +54,18 @@ export default async function AssetsPage() {
         .order("record_date", { ascending: true }),
     ]);
 
-  const assets = assetsResult.data;
+  // Supabase 쿼리 결과는 스키마 타입 미생성 상태이므로 경계에서 한 번만 명시 캐스팅
+  const assets = (assetsResult.data ?? []) as Asset[];
   const members = membersResult.data;
   const todaySnapshot = todaySnapshotResult.data;
-  const assetHistory = assetHistoryResult.data;
+  const assetHistory = (assetHistoryResult.data ?? []) as AssetHistory[];
 
   // 오늘 스냅샷이 없고 자산이 있으면 생성
-  if (!todaySnapshot && assets && assets.length > 0) {
+  if (!todaySnapshot && assets.length > 0) {
     let totalNetWorth = 0;
     const breakdown: Record<string, number> = {};
 
-    assets.forEach((asset: any) => {
+    assets.forEach((asset) => {
       const amount = asset.is_liability
         ? -Number(asset.current_amount)
         : Number(asset.current_amount);
@@ -87,10 +89,10 @@ export default async function AssetsPage() {
 
   return (
     <AssetsPageClient
-      assets={(assets || []) as any}
+      assets={assets}
       members={members || []}
       currentUserId={user.id}
-      assetHistory={assetHistory || []}
+      assetHistory={assetHistory}
     />
   );
 }

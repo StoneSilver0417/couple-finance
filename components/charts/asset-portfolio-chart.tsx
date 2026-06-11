@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  type PieLabelRenderProps,
+} from "recharts";
 import { PiggyBank } from "lucide-react";
 
 interface AssetChartProps {
@@ -106,15 +112,16 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                 e?.stopPropagation();
                 setSelectedIndex((prev) => (prev === index ? null : index));
               }}
-              label={({
-                cx,
-                cy,
-                midAngle,
-                innerRadius,
-                outerRadius,
-                percent,
-                index,
-              }: any) => {
+              label={(props: PieLabelRenderProps) => {
+                // recharts 라벨 props는 string | number | undefined 이므로 숫자로 정규화
+                const cx = Number(props.cx ?? 0);
+                const cy = Number(props.cy ?? 0);
+                const midAngle = Number(props.midAngle ?? 0);
+                const innerRadius = Number(props.innerRadius ?? 0);
+                const outerRadius = Number(props.outerRadius ?? 0);
+                const percent = Number(props.percent ?? 0);
+                const index = props.index;
+
                 const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                 const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                 const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));

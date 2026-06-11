@@ -14,10 +14,10 @@ import {
   Clock,
   CheckCircle2,
   User,
-  Mail,
   Monitor,
   ChevronDown,
   ChevronUp,
+  type LucideIcon,
 } from "lucide-react";
 import { updateFeedbackAnswer } from "@/lib/admin-actions";
 import { toast } from "sonner";
@@ -30,14 +30,14 @@ interface Feedback {
   created_at: string;
   admin_comment?: string;
   contact_email?: string;
-  device_info?: any;
+  device_info?: Record<string, unknown> | null;
   profiles?: {
     full_name: string;
     email: string;
   };
 }
 
-const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
+const TYPE_CONFIG: Record<string, { label: string; icon: LucideIcon; color: string }> =
   {
     bug: { label: "버그", icon: Bug, color: "text-red-500 bg-red-50" },
     suggestion: {
@@ -59,7 +59,7 @@ const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: any }
+  { label: string; color: string; icon: LucideIcon }
 > = {
   pending: { label: "대기중", color: "bg-gray-100 text-gray-600", icon: Clock },
   in_progress: {
@@ -109,7 +109,7 @@ export function FeedbackAdminList({
       );
       setReplyingId(null);
       setComment("");
-    } catch (error) {
+    } catch {
       toast.error("오류가 발생했습니다.");
     } finally {
       setLoading(false);

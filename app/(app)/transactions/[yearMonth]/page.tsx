@@ -9,6 +9,7 @@ import {
 import { calculateSummary } from "@/lib/calculations/finance";
 import CalendarViewClient from "./calendar-view-client";
 import MonthSummaryCards from "./month-summary-cards";
+import type { Category, Transaction, TransactionRpcRow } from "@/types";
 
 export default async function MonthDetailPage({
   params,
@@ -61,21 +62,27 @@ export default async function MonthDetailPage({
   ]);
 
 
-  // RPC 결과를 기존 형식에 맞게 변환
-  const transactions = (transactionsResult.data || []).map((t: any) => ({
-    ...t,
-    amount: Number(t.amount),
-    transaction_date: typeof t.transaction_date === 'string'
-      ? t.transaction_date
-      : new Date(t.transaction_date).toISOString().split('T')[0],
-    categories: t.category_id ? {
-      name: t.category_name,
-      icon: t.category_icon,
-      color: t.category_color,
-    } : null,
-  }));
-  const categories = categoriesResult.data;
-  const summary = calculateSummary((transactions || []) as unknown as any[]);
+  // RPC 결과를 기존 형식에 맞게 변환.
+  // RPC가 transactions 전체 컬럼을 반환하므로 경계에서 한 번만 캐스팅한다
+  const transactions = ((transactionsResult.data ?? []) as TransactionRpcRow[]).map(
+    (t) => ({
+      ...t,
+      amount: Number(t.amount),
+      transaction_date:
+        typeof t.transaction_date === "string"
+          ? t.transaction_date
+          : new Date(t.transaction_date).toISOString().split("T")[0],
+      categories: t.category_id
+        ? {
+            name: t.category_name ?? "미분류",
+            icon: t.category_icon ?? "💰",
+            color: t.category_color ?? "#cbd5e1",
+          }
+        : undefined,
+    }),
+  ) as unknown as Transaction[];
+  const categories = (categoriesResult.data ?? []) as Category[];
+  const summary = calculateSummary(transactions);
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -114,17 +121,14 @@ export default async function MonthDetailPage({
 
       <div className="px-6 space-y-6">
         {/* Month Summary Cards - 클릭 시 카테고리별 상세 표시 */}
-        <MonthSummaryCards
-          summary={summary}
-          transactions={(transactions || []) as any}
-        />
+        <MonthSummaryCards summary={summary} transactions={transactions} />
 
         {/* Calendar View */}
         <CalendarViewClient
           year={year}
           month={month}
-          transactions={(transactions || []) as any}
-          categories={categories || []}
+          transactions={transactions}
+          categories={categories}
         />
       </div>
 

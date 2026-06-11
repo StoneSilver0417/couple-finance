@@ -39,11 +39,8 @@ export function BudgetClient({
   const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // props(currentBudget)가 변경될 때 state 동기화
-  useEffect(() => {
-    setRawValue(currentBudget || 0);
-    setDisplayValue(currentBudget > 0 ? formatNumber(currentBudget) : "");
-  }, [currentBudget, year, month]);
+  // 월 변경 시 상태 동기화는 부모(page.tsx)에서 key={`${year}-${month}`}로
+  // 리마운트시켜 처리하므로 별도 effect가 필요 없다
 
   // 키보드가 올라올 때 입력 필드가 보이도록 스크롤
   useEffect(() => {

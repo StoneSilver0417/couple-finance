@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Asset, Profile } from "@/types";
+import { Asset } from "@/types";
 
 interface Member {
   id: string;

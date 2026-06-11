@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { calculateSummary } from "@/lib/calculations/finance";
-import { Transaction } from "@/types";
+import { Transaction, TransactionRpcRow } from "@/types";
 import {
   ArrowDown,
   ArrowUp,
@@ -93,7 +93,9 @@ export default async function DashboardPage() {
   ]);
 
   // RPC 결과를 기존 형식에 맞게 변환
-  const currentMonthTxs: Transaction[] = (transactionsResult.data || []).map((t: any) => ({
+  const currentMonthTxs: Transaction[] = (
+    (transactionsResult.data ?? []) as TransactionRpcRow[]
+  ).map((t) => ({
     id: t.id,
     type: t.type,
     amount: Number(t.amount),

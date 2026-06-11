@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,9 +20,7 @@ import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
 import { useRouter } from "next/navigation";
-import TransactionFormComponent, {
-  TransactionFormData,
-} from "./transaction-form-component";
+import TransactionFormComponent from "./transaction-form-component";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
 import { Transaction, Category } from "@/types";

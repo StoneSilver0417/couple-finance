@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-06-12
+
+### v0.6.4 - 클라이언트/UI 계층 전면 리팩토링 (lint 101개 문제 → 0개)
+
+- **타입 안전성 확보 (`any` 35건 제거)**
+  - `types/index.ts`에 `TransactionRpcRow` 공유 타입 신설 — RPC `get_transactions_by_month` 평탄화 행을 3개 페이지(대시보드, 월별, 분석)에서 중복 정의하던 것을 통일
+  - 카테고리/자산/피드백 컴포넌트들이 로컬 `any` 대신 `@/types`의 `Category`, `Asset` 공유 타입 사용
+  - 아이콘 타입 `any` → `LucideIcon`, recharts 콜백 `any` → `PieLabelRenderProps`/유니언 타입
+  - Supabase 쿼리 결과는 경계에서 한 번만 명시 캐스팅하는 패턴으로 정리
+- **React 19 권장 패턴 적용 (setState-in-effect 8건 제거)**
+  - `asset-dialog`, `category-dialog`: 폼을 내부 컴포넌트로 추출 + `key` 리마운트로 effect 기반 상태 초기화 제거 (Radix Dialog는 닫히면 언마운트되는 점 활용)
+  - `budget-client`: 부모 페이지에서 `key={year-month}` 리마운트로 동기화 effect 제거
+  - `feedback-dialog`: 성공/오류 토스트를 effect → `useActionState` 액션 래퍼로 이동, 기기 정보를 상태+hidden input → 제출 시점 수집으로 변경, 문의함 조회를 effect → 탭/오픈 이벤트로 이동
+  - `activity-log-sheet`: 데이터 로딩을 effect → Sheet 오픈 이벤트로 이동
+  - `pwa-install-button`: iOS/standalone 감지를 effect 내 setState → `useSyncExternalStore`로 교체
+- **잠재 버그 수정**
+  - `categories-client`: `?mode=add` 딥링크 처리 시 `history.replaceState`가 Next 라우터의 searchParams를 갱신하지 않아 탭 전환 시 다이얼로그가 재오픈될 수 있던 버그 → "이전 렌더 mode 비교" 패턴 + `router.replace`로 수정
+- **죽은 코드 제거**
+  - 미사용 `components/charts/category-chart.tsx` 파일 삭제
+  - 미사용 임포트/변수 약 30건 정리 (`formatFullAmount`, `KAKAO_OPEN_CHAT_URL` 등)
+- **검증**: `tsc --noEmit` 통과, `eslint` 0 오류 0 경고, `next build` 성공, 로컬 로그인 페이지 브라우저 렌더링 정상(콘솔 오류 0)
+
 ## 2026-06-11
 
 ### v0.6.3 - 서버 액션 전면 보안 리팩토링

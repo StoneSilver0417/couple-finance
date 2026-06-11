@@ -12,10 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import type { Category } from "@/types";
 
 interface CategoryCardProps {
-  category: any;
-  onEdit: (category: any) => void;
+  category: Category;
+  onEdit: (category: Category) => void;
 }
 
 export function CategoryCard({ category, onEdit }: CategoryCardProps) {

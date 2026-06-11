@@ -58,6 +58,23 @@ export interface Transaction {
   };
 }
 
+/**
+ * RPC get_transactions_by_month 반환 행.
+ * 카테고리 조인 결과가 category_* 컬럼으로 평탄화되어 내려온다.
+ */
+export interface TransactionRpcRow {
+  id: string;
+  type: TransactionType;
+  expense_type: ExpenseCategory | null;
+  amount: number | string;
+  transaction_date: string | Date;
+  memo: string | null;
+  category_id: string | null;
+  category_name: string | null;
+  category_icon: string | null;
+  category_color: string | null;
+}
+
 export interface Budget {
   id: string;
   household_id: string;

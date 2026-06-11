@@ -49,10 +49,6 @@ function formatAmount(amount: number): string {
   return amount.toLocaleString();
 }
 
-function formatFullAmount(amount: number): string {
-  return `₩${amount.toLocaleString()}`;
-}
-
 export function BudgetAnalysisClient({
   data,
   transactions = [],
@@ -400,7 +396,7 @@ export function BudgetAnalysisClient({
                 <LabelList
                   dataKey="value"
                   position="right"
-                  formatter={(value: any) => formatAmount(Number(value))}
+                  formatter={(value: unknown) => formatAmount(Number(value))}
                   style={{ fontSize: 13, fontWeight: 700, fill: "#374151" }}
                 />
               </Bar>

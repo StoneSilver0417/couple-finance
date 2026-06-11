@@ -4,25 +4,26 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Bug,
   Lightbulb,
   MessageSquare,
   Clock,
   CheckCircle2,
+  type LucideIcon,
 } from "lucide-react";
 
-interface Feedback {
+export interface Feedback {
   id: string;
   type: string;
   content: string;
   status: string;
   created_at: string;
-  admin_comment?: string;
+  admin_comment?: string | null;
 }
 
-const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
+const TYPE_CONFIG: Record<string, { label: string; icon: LucideIcon; color: string }> =
   {
     bug: { label: "버그", icon: Bug, color: "text-red-500 bg-red-50" },
     suggestion: {
@@ -44,7 +45,7 @@ const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: any }
+  { label: string; color: string; icon: LucideIcon }
 > = {
   pending: {
     label: "접수완료",

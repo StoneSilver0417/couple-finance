@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import { BudgetAnalysisClient } from "./budget-analysis-client";
+import type { TransactionRpcRow } from "@/types";
 
 export default async function BudgetAnalysisPage({
   params,
@@ -50,37 +51,39 @@ export default async function BudgetAnalysisPage({
     p_end_date: endOfMonth,
   });
 
-  const transactions = (transactionsData || []).map((t: any) => ({
-    id: t.id,
-    type: t.type,
-    expense_type: t.expense_type,
-    amount: Number(t.amount),
-    memo: t.memo,
-    transaction_date:
-      typeof t.transaction_date === "string"
-        ? t.transaction_date
-        : new Date(t.transaction_date).toISOString().split("T")[0],
-    category_name: t.category_name,
-    category_icon: t.category_icon,
-    category_color: t.category_color,
-  }));
+  const transactions = ((transactionsData ?? []) as TransactionRpcRow[]).map(
+    (t) => ({
+      id: t.id,
+      type: t.type,
+      expense_type: t.expense_type,
+      amount: Number(t.amount),
+      memo: t.memo,
+      transaction_date:
+        typeof t.transaction_date === "string"
+          ? t.transaction_date
+          : new Date(t.transaction_date).toISOString().split("T")[0],
+      category_name: t.category_name ?? undefined,
+      category_icon: t.category_icon ?? undefined,
+      category_color: t.category_color ?? undefined,
+    }),
+  );
 
   // 항목별 집계
   const income = transactions
-    .filter((t: any) => t.type === "income")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const fixedExpense = transactions
-    .filter((t: any) => t.type === "expense" && t.expense_type === "fixed")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
+    .filter((t) => t.type === "expense" && t.expense_type === "fixed")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const variableExpense = transactions
-    .filter((t: any) => t.type === "expense" && t.expense_type === "variable")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
+    .filter((t) => t.type === "expense" && t.expense_type === "variable")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const irregularExpense = transactions
-    .filter((t: any) => t.type === "expense" && t.expense_type === "irregular")
-    .reduce((sum: number, t: any) => sum + t.amount, 0);
+    .filter((t) => t.type === "expense" && t.expense_type === "irregular")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = fixedExpense + variableExpense + irregularExpense;
 

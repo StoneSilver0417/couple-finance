@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { CategoryCard } from "./category-card";
 import { CategoryDialog } from "./category-dialog";
 import { DeletedCategoryList } from "./deleted-category-list";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, TrendingDown, TrendingUp, Trash2, ChevronDown } from "lucide-react";
+import type { Category, ExpenseCategory } from "@/types";
 
 interface CategoriesClientProps {
-  incomeCategories: any[];
-  fixedExpenseCategories: any[];
-  variableExpenseCategories: any[];
-  irregularExpenseCategories: any[];
-  deletedCategories: any[];
+  incomeCategories: Category[];
+  fixedExpenseCategories: Category[];
+  variableExpenseCategories: Category[];
+  irregularExpenseCategories: Category[];
+  deletedCategories: Category[];
 }
 
 export function CategoriesClient(props: CategoriesClientProps) {
@@ -37,45 +38,54 @@ function CategoriesClientInner({
   const [dialogExpenseCategory, setDialogExpenseCategory] = useState<
     "fixed" | "variable" | "irregular"
   >("variable");
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [activeTab, setActiveTab] = useState("income");
   const [showDeleted, setShowDeleted] = useState(false);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const mode = searchParams.get("mode");
 
-  useEffect(() => {
+  const openCreateDialog = useCallback(
+    (type: "income" | "expense", expenseCategory?: ExpenseCategory) => {
+      setDialogType(type);
+      if (expenseCategory) {
+        setDialogExpenseCategory(expenseCategory);
+      }
+      setEditingCategory(null);
+      setDialogOpen(true);
+    },
+    [],
+  );
+
+  // ?mode=add 딥링크 처리: 이전 렌더의 mode와 비교해 진입 시점에만
+  // 렌더 중 상태 조정으로 다이얼로그를 연다 (effect 내 setState 회피)
+  // 초기값을 null로 두어 첫 렌더(딥링크 직접 진입)에서도 처리되도록 한다
+  const [prevMode, setPrevMode] = useState<string | null>(null);
+  if (mode !== prevMode) {
+    setPrevMode(mode);
     if (mode === "add") {
       const type = activeTab === "income" ? "income" : "expense";
-      const expenseCat =
-        activeTab === "fixed"
-          ? "fixed"
-          : activeTab === "variable"
-            ? "variable"
-            : activeTab === "irregular"
-              ? "irregular"
-              : undefined;
-
+      const expenseCat: ExpenseCategory | undefined =
+        activeTab === "fixed" ||
+        activeTab === "variable" ||
+        activeTab === "irregular"
+          ? activeTab
+          : undefined;
       openCreateDialog(type, expenseCat);
-
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
     }
-  }, [mode]);
-
-  function openCreateDialog(
-    type: "income" | "expense",
-    expenseCategory?: "fixed" | "variable" | "irregular",
-  ) {
-    setDialogType(type);
-    if (expenseCategory) {
-      setDialogExpenseCategory(expenseCategory);
-    }
-    setEditingCategory(null);
-    setDialogOpen(true);
   }
 
-  function openEditDialog(category: any) {
+  // URL 정리는 부수효과이므로 effect에서 수행.
+  // history.replaceState는 Next 라우터의 searchParams를 갱신하지 않으므로 router.replace 사용
+  useEffect(() => {
+    if (mode === "add") {
+      router.replace(pathname, { scroll: false });
+    }
+  }, [mode, router, pathname]);
+
+  function openEditDialog(category: Category) {
     setDialogType(category.type);
     if (category.expense_category) {
       setDialogExpenseCategory(category.expense_category);

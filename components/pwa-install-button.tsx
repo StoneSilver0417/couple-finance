@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Check, Smartphone } from "lucide-react";
 
@@ -9,23 +9,34 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// 변하지 않는 브라우저 값이므로 구독은 빈 함수로 충분
+const emptySubscribe = () => () => {};
+
+/** SSR에서는 false, 클라이언트에서는 실제 브라우저 값을 읽는다 (effect 내 setState 회피) */
+function useIsIOS(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+    () => false,
+  );
+}
+
+function useIsStandalone(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => window.matchMedia("(display-mode: standalone)").matches,
+    () => false,
+  );
+}
+
 export function PWAInstallButton() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [installedViaPrompt, setInstalledViaPrompt] = useState(false);
+  const isIOS = useIsIOS();
+  const isInstalled = useIsStandalone() || installedViaPrompt;
 
+  // Android/Desktop용 설치 프롬프트 이벤트 캡처 (외부 시스템 구독)
   useEffect(() => {
-    // iOS 체크
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    setIsIOS(isIOSDevice);
-
-    // 이미 설치되어 있는지 체크
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setIsInstalled(true);
-      return;
-    }
-
-    // Android/Desktop용 설치 프롬프트 이벤트 캡처
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
@@ -45,7 +56,7 @@ export function PWAInstallButton() {
     const result = await installPrompt.userChoice;
 
     if (result.outcome === "accepted") {
-      setIsInstalled(true);
+      setInstalledViaPrompt(true);
     }
     setInstallPrompt(null);
   };
@@ -71,8 +82,8 @@ export function PWAInstallButton() {
         </div>
         <ol className="text-xs text-gray-400 space-y-2 pl-4">
           <li>1. Safari 하단의 <span className="text-white font-bold">공유 버튼</span> (□↑) 탭</li>
-          <li>2. <span className="text-white font-bold">"홈 화면에 추가"</span> 선택</li>
-          <li>3. <span className="text-white font-bold">"추가"</span> 버튼 탭</li>
+          <li>2. <span className="text-white font-bold">&quot;홈 화면에 추가&quot;</span> 선택</li>
+          <li>3. <span className="text-white font-bold">&quot;추가&quot;</span> 버튼 탭</li>
         </ol>
       </div>
     );

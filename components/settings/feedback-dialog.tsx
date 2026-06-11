@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState, useEffect } from "react";
+import { useState, useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   Dialog,
@@ -24,22 +24,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { submitFeedback, getMyFeedbacks } from "@/lib/feedback-actions";
 import { toast } from "sonner";
 import {
-  MessageCircle,
-  Mail,
   Send,
   Loader2,
   Bug,
   Lightbulb,
   MessageSquare,
 } from "lucide-react";
-import { motion } from "framer-motion";
-import { MyFeedbackList } from "@/components/settings/my-feedback-list";
+import {
+  MyFeedbackList,
+  type Feedback,
+} from "@/components/settings/my-feedback-list";
 
-// 오픈채팅방 링크 (추후 실제 링크로 교체 필요)
-const KAKAO_OPEN_CHAT_URL = "";
-// 개발자 이메일 (환경변수 설정 필요)
-const EMAIL_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "admin@example.com";
+interface ContactFormState {
+  error?: string;
+  success?: boolean;
+}
+
+// 버그 분석에 필요한 기기 정보를 제출 시점에 수집
+function collectDeviceInfo(): string {
+  return JSON.stringify({
+    userAgent: window.navigator.userAgent,
+    platform: window.navigator.platform,
+    language: window.navigator.language,
+    screenSize: `${window.screen.width}x${window.screen.height}`,
+    url: window.location.href,
+  });
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -67,56 +77,51 @@ function SubmitButton() {
 
 export function FeedbackDialog({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [state, formAction] = useActionState(submitFeedback, {}); // React 19: useActionState
-  const [deviceInfo, setDeviceInfo] = useState("");
-  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [activeTab, setActiveTab] = useState("inquiry");
 
-  useEffect(() => {
-    if (state.success) {
-      toast.success("소중한 의견 감사합니다! 꼼꼼히 확인하겠습니다.", {
-        duration: 3000,
-        icon: "💌",
-      });
-      setIsOpen(false);
-      // 성공 후 목록 갱신을 위해 탭 초기화 등 필요한 조치
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state]);
+  // 성공/실패 후처리를 effect 대신 액션 안에서 직접 수행 (React 19 useActionState)
+  const [, formAction] = useActionState(
+    async (prev: ContactFormState, formData: FormData) => {
+      formData.set("deviceInfo", collectDeviceInfo());
+      const result = await submitFeedback(prev, formData);
+
+      if (result.success) {
+        toast.success("소중한 의견 감사합니다! 꼼꼼히 확인하겠습니다.", {
+          duration: 3000,
+          icon: "💌",
+        });
+        setIsOpen(false);
+      } else if (result.error) {
+        toast.error(result.error);
+      }
+      return result;
+    },
+    {} as ContactFormState,
+  );
 
   const fetchFeedbacks = async () => {
     try {
       const data = await getMyFeedbacks();
       setFeedbacks(data);
     } catch (error) {
-      console.error("Failed to fetch feedbacks:", error);
+      console.error("문의 내역 조회 실패:", error);
     }
   };
 
-  // 탭 변경 시 로딩
-  useEffect(() => {
-    if (activeTab === "history" && isOpen) {
-      fetchFeedbacks();
-    }
-  }, [activeTab, isOpen]);
+  // 데이터 로딩은 effect 대신 탭 전환/다이얼로그 오픈 이벤트에서 직접 수행
+  function handleTabChange(tab: string) {
+    setActiveTab(tab);
+    if (tab === "history") void fetchFeedbacks();
+  }
 
-  // 기기 정보 수집
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const info = {
-        userAgent: window.navigator.userAgent,
-        platform: window.navigator.platform,
-        language: window.navigator.language,
-        screenSize: `${window.screen.width}x${window.screen.height}`,
-        url: window.location.href,
-      };
-      setDeviceInfo(JSON.stringify(info));
-    }
-  }, []);
+  function handleOpenChange(nextOpen: boolean) {
+    setIsOpen(nextOpen);
+    if (nextOpen && activeTab === "history") void fetchFeedbacks();
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md rounded-[2rem] p-0 overflow-hidden border-none bg-white/95 backdrop-blur-xl shadow-2xl">
         <DialogHeader className="p-6 pb-2">
@@ -128,7 +133,7 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="px-6 mb-4">
             <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/50 p-1">
               <TabsTrigger
@@ -158,8 +163,6 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
             className="p-6 pt-2 focus-visible:ring-0 outline-none"
           >
             <form action={formAction} className="space-y-4">
-              <input type="hidden" name="deviceInfo" value={deviceInfo} />
-
               <div className="space-y-2">
                 <Label
                   htmlFor="type"

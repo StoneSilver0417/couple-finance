@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -77,12 +77,6 @@ export default function ActivityLogSheet() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      loadLogs();
-    }
-  }, [open]);
-
   async function loadLogs() {
     setLoading(true);
     const result = await getActivityLogs(30);
@@ -90,6 +84,14 @@ export default function ActivityLogSheet() {
       setLogs(result.data);
     }
     setLoading(false);
+  }
+
+  // 데이터 로딩은 effect 대신 시트가 열리는 이벤트에서 직접 수행
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (nextOpen) {
+      void loadLogs();
+    }
   }
 
   async function handleClear() {
@@ -103,7 +105,7 @@ export default function ActivityLogSheet() {
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <button className="group flex items-center justify-center h-11 w-11 rounded-full bg-white/60 hover:bg-white transition-all duration-300 backdrop-blur-sm border border-white/50 shadow-candy text-text-secondary relative">
           <Bell className="w-5 h-5 group-hover:scale-110 transition-transform text-primary-dark fill-current" />
