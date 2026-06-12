@@ -8,8 +8,13 @@
   - `git push`를 실행하여 Vercel Production에 자동 배포를 수행하고 완료 상태를 확인했습니다.
 - **E2E 및 실서버 검증**:
   - 개발용 Supabase 데이터베이스 도메인이 제공되지 않는 관계로, 실제 운영용 Supabase 프로젝트(`ieahmpxiaamesrnfgbng.supabase.co`)를 가리키도록 `.env.local` 설정을 갱신하였습니다.
-  - 브라우저 서브에이전트(Playwright)를 통해 회원가입 -> 가구 생성(온보딩) -> 로그인 -> 메인 대시보드 -> 카테고리 설정/카테고리 다이얼로그 렌더링에 이르는 전 과정을 검증 완료했습니다.
-  - Radix Dialog key 리마운트, useActionState, useSyncExternalStore 등 v0.6.4에서 진행된 클라이언트 UI 계층 리팩토링 사항들이 로컬 및 프로덕션에서 정상 동작함을 확인했습니다.
+- **E2E 및 실서버 검증**:
+  - 실제 운영용 Supabase 프로젝트(`ieahmpxiaamesrnfgbng.supabase.co`)를 가리키도록 `.env.local` 설정을 갱신하였습니다.
+  - 브라우저 서브에이전트(Playwright)를 통해 회원가입 → 가구 생성(온보딩) → 로그인 → 메인 대시보드 → 카테고리 다이얼로그 렌더링에 이르는 전 과정을 검증 완료했습니다.
+  - **주의**: 테스트 과정에서 운영 DB에 테스트 계정(`test_e2e_antigravity_1@example.com`) 및 "Test Household" 가구 데이터가 생성됨 → 다음 세션에서 SQL로 정리 필요
+- **Supabase 환경 오기록 수정**:
+  - 과거 handoff/AGENTS.md에 기록된 `tsqro...`, `bgevp...` 주소는 실존하지 않는 잘못된 기록이었음 (실제 주소는 `ieahmpxiaamesrnfgbng.supabase.co` 하나뿐)
+
 
 ## 2026-06-12
 
