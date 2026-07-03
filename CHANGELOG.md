@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-03
+
+### fix - 거래 삭제 확인창 버튼 여러 번 눌러야 반응하는 문제 (커밋 `b177c5a`)
+
+- **증상**: 거래 삭제(드롭다운 메뉴 > 삭제 > 확인창 > 삭제) 버튼이 첫 클릭에 반응하지 않고 여러 번 눌러야 삭제되는 문제 (사용자 프로덕션 스크린샷 제보)
+- **원인**: Radix UI DropdownMenu는 열려있는 동안 `document.body.style.pointerEvents = "none"`을 걸어 배경 클릭을 막는데, 이 잠금은 메뉴가 닫히는 애니메이션이 끝나야(약 150~200ms) 해제됨. `components/ui/confirm-dialog.tsx`의 삭제 확인창은 Radix 컴포넌트가 아닌 자체 구현(motion.div)이라 잠금 해제 대상에서 빠져있어, 드롭다운이 닫히는 도중 뜬 확인창 버튼도 body의 `pointer-events: none`을 그대로 상속받아 클릭이 씹혔음
+- **수정**: 확인창 최상위 오버레이에 `style={{ pointerEvents: "auto" }}`를 명시해 body의 잠금을 무시하도록 함 (Radix 자신의 오버레이 레이어가 쓰는 것과 동일한 해법). `useConfirm()`을 쓰는 모든 삭제 확인창(거래/카테고리/자산 등)에 공통 적용됨
+- **검증**: 프로덕션에서 Playwright로 재현 — 삭제 메뉴 클릭 직후 `document.body.style.pointerEvents`가 실제로 `"none"`임을 확인했고, 수정 후 확인창 오버레이의 computed `pointer-events`는 `"auto"`로 이를 무시함을 확인. 확인창 삭제 버튼 단일 클릭으로 거래가 정상 삭제되는 것을 end-to-end로 검증 완료 (테스트 계정/데이터는 handoff.md 정리 TODO에 추가)
+
 ## 2026-06-13
 
 ### v0.6.4 배포 및 검증 완료
