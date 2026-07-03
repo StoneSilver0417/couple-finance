@@ -2,9 +2,10 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.4 + 거래 삭제 버튼 버그 수정
-- **빌드 상태**: 성공 (`tsc --noEmit` 통과, `eslint` 0 오류 0 경고)
-- **배포 상태**: 배포 완료 (2026-07-03, 커밋 `b177c5a`) — 프로덕션에 Playwright로 직접 검증 완료
+- **버전**: v0.6.4 + 거래 삭제 버튼 버그 수정 + 자산 변동 기록 차트 개선
+- **빌드 상태**: 성공 (`tsc --noEmit` 통과, `eslint` 0 오류 0 경고, `next build` 성공)
+- **배포 상태**: 배포 완료 (2026-07-03, 커밋 `cd1a3d2`) — 프로덕션에 Playwright로 직접 검증 완료
+- **참고**: 로컬 DNS 문제는 해소됨 — 과거 handoff에 남아있던 옛(존재하지 않는) Supabase 주소가 원인이었고, 실제 운영 프로젝트(`ieahmpxiaamesrnfgbng`)는 로컬에서도 정상 연결됨
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **관리자 계정**: waterdrop11@naver.com
 
@@ -17,6 +18,10 @@
 
 ## 최근 작업
 
+- **(완료) 자산 변동 기록 차트 개선 (2026-07-03, 커밋 `cd1a3d2`)**: 상세 내역은 CHANGELOG.md 참고
+  - 증상: 점(dot)과 X축 날짜 라벨이 데이터가 쌓일수록 겹쳐 보임
+  - 수정: dot 제거(hover 강조점만 유지), X축 라벨 최대 6개로 제한하는 interval 계산식 적용, Y축 눈금 4개 제한, 1/3/6개월·전체 기간 탭 추가(기본 3개월)
+  - 검증: 프로덕션에서 탭 전환·단일 데이터 케이스 무오류 확인. **다수 데이터 포인트 시각 확인은 못함** — 앱이 하루 1 스냅샷만 허용해 테스트 계정에서 다일(多日) 이력을 재현할 수 없었음. 실사용 계정(과거 이력 있는)에서 육안 확인 권장
 - **(완료) 거래 삭제 확인창 클릭 버그 수정 및 배포 (2026-07-03)**: 상세 내역은 CHANGELOG.md 참고
   - 원인: Radix DropdownMenu가 닫히는 동안 걸어두는 `body.pointerEvents:none` 잠금을 커스텀 확인창(`confirm-dialog.tsx`)이 상속받아 첫 클릭이 씹히던 문제
   - 수정: 확인창 오버레이에 `pointerEvents: "auto"` 명시 → 커밋 `b177c5a` → 푸시 → Vercel 프로덕션 배포 완료
@@ -30,7 +35,7 @@
 - Next.js 16 middleware → proxy 경고 (기능상 영향 없음)
 - **[주의] 테스트 데이터 정리 필요**: E2E 테스트 과정에서 실제 운영 DB에 테스트 데이터가 생성됨 (아래 2개 계정 모두 정리 필요)
   - 계정 1: `test_e2e_antigravity_1@example.com` / 가구명: "Test Household"
-  - 계정 2: `cf-fixverify-1783040957@gmail.com` / 가구명: "버그검증 가계부" (거래 1건은 검증 중 직접 삭제함, 계정·가구만 남음)
+  - 계정 2: `cf-fixverify-1783040957@gmail.com` / 가구명: "버그검증 가계부" (자산 1건 "테스트 적금" 100만원 존재, 가구 삭제 시 CASCADE로 함께 정리됨)
   - 정리 방법 (Supabase SQL Editor):
     ```sql
     -- 1. 가구 삭제 (categories 등 CASCADE 자동 삭제)
