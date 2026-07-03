@@ -53,15 +53,22 @@ export default function AssetsPageClient({
   currentUserId,
   assetHistory,
 }: AssetsPageClientProps) {
-  const [filteredAssets, setFilteredAssets] = useState<Asset[]>(assets);
   const [activeFilterId, setActiveFilterId] = useState("ALL");
   const [trendPeriodMonths, setTrendPeriodMonths] = useState(3);
 
-  // 필터 변경 핸들러
-  const handleFilterChange = (filtered: Asset[], filterId?: string) => {
-    setFilteredAssets(filtered);
-    if (filterId) setActiveFilterId(filterId);
-  };
+  // 선택된 필터에 맞춰 assets props에서 직접 파생시킨다.
+  // (assets를 useState로 복사해두면 자산 수정 후 router.refresh()로 새 props가
+  //  내려와도 마운트 시점 값에 고정돼 화면이 갱신되지 않는 문제가 있었음)
+  const filteredAssets = useMemo(() => {
+    if (activeFilterId === "ALL") return assets;
+    if (activeFilterId === "JOINT")
+      return assets.filter((a) => a.owner_type === "JOINT");
+    if (activeFilterId === "CHILD")
+      return assets.filter((a) => a.owner_type === "CHILD");
+    return assets.filter(
+      (a) => a.owner_type === "INDIVIDUAL" && a.owner_profile_id === activeFilterId,
+    );
+  }, [assets, activeFilterId]);
 
   // Calculate totals for filtered assets
   const totalAssets = useMemo(
@@ -163,7 +170,7 @@ export default function AssetsPageClient({
           assets={assets}
           members={members}
           currentUserId={currentUserId}
-          onFilterChange={handleFilterChange}
+          onFilterChange={setActiveFilterId}
         />
 
         {/* Net Worth Card */}

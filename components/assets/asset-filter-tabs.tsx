@@ -13,7 +13,7 @@ interface AssetFilterTabsProps {
   assets: Asset[];
   members: Member[];
   currentUserId: string;
-  onFilterChange: (filteredAssets: Asset[], filterId?: string) => void;
+  onFilterChange: (filterId: string) => void;
 }
 
 export default function AssetFilterTabs({
@@ -51,26 +51,9 @@ export default function AssetFilterTabs({
     return tabList;
   }, [currentUserId, hasSpouse, hasChildAssets, spouse]);
 
-  // Filter assets based on selected tab
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-
-    let filtered: Asset[];
-
-    if (tabId === "ALL") {
-      filtered = assets;
-    } else if (tabId === "JOINT") {
-      filtered = assets.filter((a) => a.owner_type === "JOINT");
-    } else if (tabId === "CHILD") {
-      filtered = assets.filter((a) => a.owner_type === "CHILD");
-    } else {
-      // Individual user's assets
-      filtered = assets.filter(
-        (a) => a.owner_type === "INDIVIDUAL" && a.owner_profile_id === tabId
-      );
-    }
-
-    onFilterChange(filtered, tabId);
+    onFilterChange(tabId);
   };
 
   return (
