@@ -43,17 +43,18 @@ function niceNum(range: number, round: boolean) {
 }
 
 function getNiceTicks(rawMin: number, rawMax: number, targetTickCount = 4) {
-  let min = rawMin;
-  let max = rawMax;
-  // 전 구간 값이 동일(평평한 선)하면 값 크기에 비례해 여백을 둬야 눈금이 의미 있게 나뉨
-  if (min === max) {
-    const delta = Math.abs(min) * 0.1 || 10;
-    min -= delta;
-    max += delta;
-  }
+  // 실제 변동폭이 자산 규모에 비해 너무 작으면 축을 과도하게 확대해
+  // 사소한 변동도 급락처럼 보이므로, 최소 폭(자산 규모의 15%)을 강제한다
+  const magnitude = Math.max(Math.abs(rawMax), Math.abs(rawMin)) || 10;
+  const minSpan = magnitude * 0.15;
+  const span = Math.max(rawMax - rawMin, minSpan);
+  const center = (rawMax + rawMin) / 2;
+  const min = center - span / 2;
+  const max = center + span / 2;
 
   const range = niceNum(max - min, false);
-  const step = niceNum(range / (targetTickCount - 1), true);
+  // "만" 단위 정수로 표시하므로 step이 1 미만이면 눈금 라벨이 중복돼 보임
+  const step = Math.max(niceNum(range / (targetTickCount - 1), true), 1);
   const niceMin = Math.floor(min / step) * step;
   const niceMax = Math.ceil(max / step) * step;
 

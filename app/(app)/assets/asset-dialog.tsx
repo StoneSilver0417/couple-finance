@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createAsset, updateAsset } from "@/lib/asset-actions";
 import {
   Dialog,
@@ -112,6 +113,7 @@ function AssetForm({
   currentUserId: string;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(
     assetToEdit?.type || "savings",
@@ -157,6 +159,7 @@ function AssetForm({
       );
       setIsLoading(false);
       onClose();
+      router.refresh();
     }
   }
 

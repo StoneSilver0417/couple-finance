@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -39,6 +40,7 @@ const ASSET_TYPE_CONFIG: Record<string, { icon: LucideIcon; label: string; color
 }
 
 export default function AssetsListClient({ assets, members = [], currentUserId = "" }: AssetsListClientProps) {
+  const router = useRouter()
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const confirm = useConfirm()
@@ -57,6 +59,7 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
       toast.error(result.error)
     } else {
       toast.success('자산이 삭제되었습니다.')
+      router.refresh()
     }
   }
 
