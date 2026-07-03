@@ -73,6 +73,9 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
   const maxValue = Math.max(...chartData.map((d) => d.displayValue));
   const padding = (maxValue - minValue) * 0.1 || 10;
 
+  // 점이 많아도 X축 라벨은 최대 6개 정도만 남도록 간격을 계산
+  const xAxisInterval = Math.max(0, Math.ceil(chartData.length / 6) - 1);
+
   return (
     <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -97,6 +100,8 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
             tickLine={false}
             tick={{ fontSize: 10, fill: "#9ca3af" }}
             dy={10}
+            interval={xAxisInterval}
+            minTickGap={20}
           />
           <YAxis
             axisLine={false}
@@ -105,6 +110,7 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
             tickFormatter={(value) => `${value}만`}
             domain={[minValue - padding, maxValue + padding]}
             width={45}
+            tickCount={4}
           />
           <Tooltip
             contentStyle={{
@@ -126,7 +132,7 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
             stroke="#fb6f92"
             strokeWidth={3}
             fill="url(#colorValue)"
-            dot={{ fill: "#fb6f92", strokeWidth: 2, r: 4 }}
+            dot={false}
             activeDot={{ r: 6, fill: "#fb6f92" }}
           />
         </AreaChart>

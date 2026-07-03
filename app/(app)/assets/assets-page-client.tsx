@@ -40,6 +40,13 @@ const ASSET_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   debt: { label: "부채", color: "#EF4444" },
 };
 
+const TREND_PERIOD_OPTIONS = [
+  { label: "1개월", months: 1 },
+  { label: "3개월", months: 3 },
+  { label: "6개월", months: 6 },
+  { label: "전체", months: 12 },
+] as const;
+
 export default function AssetsPageClient({
   assets,
   members,
@@ -48,6 +55,7 @@ export default function AssetsPageClient({
 }: AssetsPageClientProps) {
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>(assets);
   const [activeFilterId, setActiveFilterId] = useState("ALL");
+  const [trendPeriodMonths, setTrendPeriodMonths] = useState(3);
 
   // 필터 변경 핸들러
   const handleFilterChange = (filtered: Asset[], filterId?: string) => {
@@ -95,28 +103,34 @@ export default function AssetsPageClient({
     }));
   }, [filteredAssets]);
 
-  // 자산 추이 차트 데이터 (필터별)
+  // 자산 추이 차트 데이터 (필터·기간별)
   const trendData = useMemo(() => {
-    return assetHistory.map((h) => {
-      let value = h.total_net_worth;
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - trendPeriodMonths);
+    const cutoffStr = cutoff.toISOString().split("T")[0];
 
-      // 필터가 ALL이 아닌 경우 breakdown_data에서 해당 값 사용
-      if (activeFilterId !== "ALL" && h.breakdown_data) {
-        const breakdown = h.breakdown_data as Record<string, number>;
-        value = breakdown[activeFilterId] ?? 0;
-      }
+    return assetHistory
+      .filter((h) => h.record_date >= cutoffStr)
+      .map((h) => {
+        let value = h.total_net_worth;
 
-      // 날짜 포맷 (MM/DD)
-      const date = new Date(h.record_date);
-      const label = `${date.getMonth() + 1}/${date.getDate()}`;
+        // 필터가 ALL이 아닌 경우 breakdown_data에서 해당 값 사용
+        if (activeFilterId !== "ALL" && h.breakdown_data) {
+          const breakdown = h.breakdown_data as Record<string, number>;
+          value = breakdown[activeFilterId] ?? 0;
+        }
 
-      return {
-        date: h.record_date,
-        label,
-        value: Number(value),
-      };
-    });
-  }, [assetHistory, activeFilterId]);
+        // 날짜 포맷 (MM/DD)
+        const date = new Date(h.record_date);
+        const label = `${date.getMonth() + 1}/${date.getDate()}`;
+
+        return {
+          date: h.record_date,
+          label,
+          value: Number(value),
+        };
+      });
+  }, [assetHistory, activeFilterId, trendPeriodMonths]);
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -216,7 +230,7 @@ export default function AssetsPageClient({
 
         {/* Asset Trend Chart - 자산 추이 */}
         <AnimatePresence mode="wait">
-          {trendData.length > 0 && (
+          {assetHistory.length > 0 && (
             <motion.div
               key={`trend-${activeFilterId}`}
               initial={{ opacity: 0, y: 20 }}
@@ -226,10 +240,28 @@ export default function AssetsPageClient({
               className="glass-panel p-5 rounded-[2rem] border border-white/60"
             >
               <div className="px-2 mb-4">
-                <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
-                  <LineChart className="h-5 w-5 text-primary" />
-                  자산 변동 기록
-                </h3>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
+                    <LineChart className="h-5 w-5 text-primary" />
+                    자산 변동 기록
+                  </h3>
+                  <div className="flex items-center gap-1 bg-black/5 rounded-full p-1">
+                    {TREND_PERIOD_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.months}
+                        type="button"
+                        onClick={() => setTrendPeriodMonths(opt.months)}
+                        className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+                          trendPeriodMonths === opt.months
+                            ? "bg-white text-primary shadow-sm"
+                            : "text-text-secondary hover:text-text-main"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="mt-2 flex items-start gap-2 bg-blue-50/80 rounded-xl p-3 border border-blue-100">
                   <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
                   <div className="text-[11px] text-blue-700 leading-relaxed space-y-1">
