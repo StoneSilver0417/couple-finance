@@ -47,6 +47,10 @@ const TREND_PERIOD_OPTIONS = [
   { label: "전체", months: 12 },
 ] as const;
 
+// 일별 스냅샷이 많이 쌓인 긴 기간(6개월/전체)을 볼 때 선이 지글거리지
+// 않도록, 점 개수가 이 값을 넘으면 구간별 최신 값으로 다운샘플링한다
+const MAX_TREND_POINTS = 30;
+
 export default function AssetsPageClient({
   assets,
   members,
@@ -116,7 +120,7 @@ export default function AssetsPageClient({
     cutoff.setMonth(cutoff.getMonth() - trendPeriodMonths);
     const cutoffStr = cutoff.toISOString().split("T")[0];
 
-    return assetHistory
+    const filtered = assetHistory
       .filter((h) => h.record_date >= cutoffStr)
       .map((h) => {
         let value = h.total_net_worth;
@@ -137,6 +141,17 @@ export default function AssetsPageClient({
           value: Number(value),
         };
       });
+
+    if (filtered.length <= MAX_TREND_POINTS) return filtered;
+
+    // 구간별로 나눠 각 구간의 마지막(가장 최신) 값만 남겨 선을 매끈하게 만든다
+    const bucketSize = Math.ceil(filtered.length / MAX_TREND_POINTS);
+    const bucketed: typeof filtered = [];
+    for (let i = 0; i < filtered.length; i += bucketSize) {
+      const bucket = filtered.slice(i, i + bucketSize);
+      bucketed.push(bucket[bucket.length - 1]);
+    }
+    return bucketed;
   }, [assetHistory, activeFilterId, trendPeriodMonths]);
 
   return (
