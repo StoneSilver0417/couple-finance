@@ -88,6 +88,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            style={{ pointerEvents: "auto" }}
           >
             <div
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
