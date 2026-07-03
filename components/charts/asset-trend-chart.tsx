@@ -21,6 +21,50 @@ interface AssetTrendChartProps {
   data: TrendDataPoint[];
 }
 
+// 축이 딱 떨어지는 값을 갖도록 하는 "nice number" 계산 (Heckbert 알고리즘)
+function niceNum(range: number, round: boolean) {
+  const exponent = Math.floor(Math.log10(range));
+  const fraction = range / 10 ** exponent;
+  let niceFraction: number;
+
+  if (round) {
+    if (fraction < 1.5) niceFraction = 1;
+    else if (fraction < 3) niceFraction = 2;
+    else if (fraction < 7) niceFraction = 5;
+    else niceFraction = 10;
+  } else {
+    if (fraction <= 1) niceFraction = 1;
+    else if (fraction <= 2) niceFraction = 2;
+    else if (fraction <= 5) niceFraction = 5;
+    else niceFraction = 10;
+  }
+
+  return niceFraction * 10 ** exponent;
+}
+
+function getNiceTicks(rawMin: number, rawMax: number, targetTickCount = 4) {
+  let min = rawMin;
+  let max = rawMax;
+  // 전 구간 값이 동일(평평한 선)하면 값 크기에 비례해 여백을 둬야 눈금이 의미 있게 나뉨
+  if (min === max) {
+    const delta = Math.abs(min) * 0.1 || 10;
+    min -= delta;
+    max += delta;
+  }
+
+  const range = niceNum(max - min, false);
+  const step = niceNum(range / (targetTickCount - 1), true);
+  const niceMin = Math.floor(min / step) * step;
+  const niceMax = Math.ceil(max / step) * step;
+
+  const ticks: number[] = [];
+  for (let v = niceMin; v <= niceMax + step * 0.5; v += step) {
+    ticks.push(Math.round(v) || 0); // -0 방지
+  }
+
+  return { min: niceMin, max: niceMax, ticks };
+}
+
 export default function AssetTrendChart({ data }: AssetTrendChartProps) {
   const chartData = useMemo(() => {
     return data.map((d) => ({
@@ -71,13 +115,28 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
 
   const minValue = Math.min(...chartData.map((d) => d.displayValue));
   const maxValue = Math.max(...chartData.map((d) => d.displayValue));
-  const padding = (maxValue - minValue) * 0.1 || 10;
+  const { min: niceMin, max: niceMax, ticks: niceTicks } = getNiceTicks(
+    minValue,
+    maxValue,
+  );
 
   // 점이 많아도 X축 라벨은 최대 6개 정도만 남도록 간격을 계산
   const xAxisInterval = Math.max(0, Math.ceil(chartData.length / 6) - 1);
 
   return (
-    <div className="h-[200px] w-full">
+    <div className="relative trend-chart h-[200px] w-full">
+      <style>{`
+        .trend-chart svg,
+        .trend-chart svg *,
+        .trend-chart .recharts-wrapper,
+        .trend-chart .recharts-surface,
+        .trend-chart .recharts-area,
+        .trend-chart .recharts-layer {
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+          box-shadow: none !important;
+        }
+      `}</style>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
@@ -107,10 +166,10 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 10, fill: "#9ca3af" }}
-            tickFormatter={(value) => `${value}만`}
-            domain={[minValue - padding, maxValue + padding]}
-            width={45}
-            tickCount={4}
+            tickFormatter={(value) => `${(value || 0).toLocaleString()}만`}
+            domain={[niceMin, niceMax]}
+            ticks={niceTicks}
+            width={52}
           />
           <Tooltip
             contentStyle={{
