@@ -9,6 +9,7 @@
 - 관리자 화면 공통 2-pill 탭을 추가해 `/admin/feedbacks`와 `/admin/users` 사이를 이동할 수 있게 했다. 비관리자는 기존 `isAdmin()` 게이트로 `/settings`에 리다이렉트한다.
 - 설정의 관리자 콘솔 설명을 `피드백 답변 · 사용자 현황 관리`로 갱신했다.
 - 사용자가 운영 Supabase Dashboard SQL Editor에서 마이그레이션 실행을 완료했다. 자동 브라우저에 관리자 로그인 세션이 없어 인증 후 런타임 E2E 검증은 실사용 확인으로 남겼다.
+- 기능 커밋 `3a3b073`을 `master`에 푸시했고 Vercel 프로덕션 배포 `dpl_45u363NbrrDGNLzsRVoaVDZoieys`가 `Ready` 상태로 운영 별칭에 연결됐다. 비로그인 `/admin/users` 접근이 `/login`으로 리다이렉트되는 것을 확인했다.
 - 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
 
 ### feat - AI 보고서 진입점을 분석 화면으로 이전
@@ -17,6 +18,7 @@
 - 미래월 분석 화면에서는 Asia/Seoul 기준 현재월로 보고서 링크를 클램프해 보고서 페이지의 리다이렉트 없이 자연스럽게 이동한다.
 - 설정 메뉴 그리드의 `AI 월간 보고서` 항목과 전용 아이콘을 제거하고, 현재월 계산 헬퍼를 단순화했다. AI 키 관리 다이얼로그 안의 `이번 달 보고서 보러가기` 링크는 유지했다.
 - 커밋: `d8382d0`.
+- `master`에 푸시하고 위 관리자 사용자 현황 기능과 함께 프로덕션 배포했다.
 - 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
 
 ### fix - 월간 보고서 모바일 가독성 개선
