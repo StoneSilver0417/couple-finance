@@ -2,6 +2,14 @@
 
 ## 2026-07-15
 
+### feat - 부부 공동 가계부 신규 앱 아이콘 적용
+
+- 사용자가 제공한 정사각형 일러스트를 내용 변경 없이 앱 아이콘 원본으로 채택했다.
+- `public/icon-192.png`, `public/icon-512.png`를 실제 명시 크기의 PNG로 교체하고 `public/apple-touch-icon.png`, `app/icon.png`, `app/apple-icon.png`를 추가했다.
+- 브라우저 탭용 `app/favicon.ico`와 `public/favicon.ico`를 48px 아이콘으로 교체했다.
+- PWA manifest에 `purpose: "any maskable"`을 추가하고 Next.js metadata가 favicon·192px·180px Apple 아이콘을 각 용도에 맞게 참조하도록 갱신했다.
+- 검증: 모든 파일의 실제 픽셀 크기 확인, 512px 결과 육안 확인, `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### docs - 홍보용 README 전면 재작성 및 사용법 가이드(USAGE.md) 신설
 
 - **README.md**: create-next-app 기본 템플릿을 홍보용 문서로 전면 교체 — 타이틀/태그라인("함께 관리하는 똑똑한 자산 관리"), 기술 뱃지, 핵심 가치 4가지(투명성/협업/접근성/보안성), 주요 기능 7종(달력 가계부, 고정·변동·비정기 지출 구분, 예산 실적 분석, Flow/Stock 분리 자산 관리, AI 월간 보고서, 거래 복사, PWA), 스크린샷 갤러리(3×2), 기술 스택 표, 시작하기 3단계, 개발자용 로컬 실행 안내.
