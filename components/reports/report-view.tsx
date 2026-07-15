@@ -63,21 +63,27 @@ function StatCard({
   value,
   icon: Icon,
   tone,
+  valueTone = "text-slate-950",
+  cardTone = "border-slate-100 bg-white/90",
 }: {
   label: string;
   value: string;
   icon: typeof BanknoteArrowDown;
   tone: string;
+  valueTone?: string;
+  cardTone?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow-sm">
+    <div className={`rounded-2xl border p-4 shadow-sm ${cardTone}`}>
       <div className="mb-2.5 flex items-center gap-2">
         <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${tone}`}>
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
         <span className="text-sm font-extrabold text-slate-600">{label}</span>
       </div>
-      <p className="break-words text-[1.0625rem] font-black leading-tight tracking-tight text-slate-950">
+      <p
+        className={`break-words text-[1.125rem] font-black leading-tight tracking-tight ${valueTone}`}
+      >
         {value}
       </p>
     </div>
@@ -112,6 +118,8 @@ export function ReportView({ content }: { content: unknown }) {
           value: formatWon(income),
           icon: BanknoteArrowDown,
           tone: "bg-emerald-50 text-emerald-600",
+          valueTone: "text-emerald-700",
+          cardTone: "border-emerald-100 bg-gradient-to-br from-emerald-50/80 to-white",
         }
       : null,
     expense !== null
@@ -120,6 +128,8 @@ export function ReportView({ content }: { content: unknown }) {
           value: formatWon(expense),
           icon: BanknoteArrowUp,
           tone: "bg-rose-50 text-rose-600",
+          valueTone: "text-rose-700",
+          cardTone: "border-rose-100 bg-gradient-to-br from-rose-50/80 to-white",
         }
       : null,
     balance !== null

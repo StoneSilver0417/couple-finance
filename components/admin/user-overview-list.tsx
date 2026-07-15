@@ -21,7 +21,6 @@ const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
 
 const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul",
-  year: "numeric",
   month: "2-digit",
   day: "2-digit",
   hour: "2-digit",
@@ -57,32 +56,32 @@ export function UserOverviewList({ rows }: UserOverviewListProps) {
             key={row.user_id}
             className="rounded-3xl border border-slate-100 bg-white/95 p-5 shadow-sm"
           >
-            <div className="flex min-w-0 items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate text-base font-black text-slate-950">
-                    {getDisplayName(row)}
-                  </h3>
-                  {row.is_admin && (
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-blue-700">
-                      ADMIN
-                    </span>
-                  )}
-                  {row.role === "OWNER" && (
-                    <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">
-                      가구장
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 truncate text-sm text-slate-600">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="truncate text-lg font-black text-slate-950">
+                  {getDisplayName(row)}
+                </h3>
+                {row.is_admin && (
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-blue-700">
+                    ADMIN
+                  </span>
+                )}
+                {row.role === "OWNER" && (
+                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                    가구장
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 flex min-w-0 items-center justify-between gap-3">
+                <p className="min-w-0 truncate text-sm text-slate-600">
                   {row.email ?? "이메일 없음"}
                 </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-600">
-                <Home className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="max-w-24 truncate">
-                  {row.household_name ?? "가구 미설정"}
-                </span>
+                <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-600">
+                  <Home className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="max-w-24 truncate">
+                    {row.household_name ?? "가구 미설정"}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -120,12 +119,14 @@ function MetaRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <dt className="flex items-center gap-2 font-medium text-slate-600">
-        <Icon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+    <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-center gap-x-3">
+      <dt className="flex items-center gap-2 font-semibold text-slate-600">
+        <Icon className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
         {label}
       </dt>
-      <dd className="text-right font-semibold text-slate-800">{value}</dd>
+      <dd className="whitespace-nowrap text-right text-[13px] font-bold tabular-nums text-slate-800 sm:text-sm">
+        {value}
+      </dd>
     </div>
   );
 }

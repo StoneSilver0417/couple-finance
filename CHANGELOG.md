@@ -2,6 +2,13 @@
 
 ## 2026-07-15
 
+### fix - 관리자 가입일·카드 정렬 및 보고서 요약 금액 강조
+
+- 사용자 스크린샷에서 관리자 사용자 카드의 가입일이 `1970. 01. 01.`로 표시되는 문제를 확인했다. 기존 RPC가 신뢰할 수 없는 `profiles.created_at`을 사용한 것이 원인이므로, 실제 Supabase Auth 계정 생성일인 `auth.users.created_at`을 우선 반환하는 교정 마이그레이션을 추가했다.
+- 사용자 카드 상단은 이름·역할 배지와 이메일·가구명을 두 행으로 정돈하고, 가입일·마지막 로그인·마지막 활동은 고정 라벨 열과 우측 정렬 값 열로 재배치했다. 로그인·활동 시각은 연도를 생략해 모바일 폭에서 겹치지 않게 했다.
+- 월간 보고서의 수입·지출 요약 금액을 각각 초록·분홍으로 강조하고 같은 계열의 옅은 배경과 테두리를 적용했다.
+- 사용자가 가입일 교정 SQL을 운영 DB에 적용했다. 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### feat - 관리자 사용자 현황 페이지 구현
 
 - `supabase/migrations/20260715100000_admin_user_overview.sql`에 관리자 전용 `admin_get_user_overview()` RPC를 추가했다. `SECURITY DEFINER`로 `auth.users.last_sign_in_at`을 조회하되 함수 첫머리에서 호출자의 `profiles.is_admin`을 검사하고, PUBLIC·anon 실행 권한을 회수했다.
