@@ -154,6 +154,29 @@ export function AiSettingsDialog({
                 이번 달 보고서 보러가기
               </Link>
 
+              <form
+                action={saveAction}
+                className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="replace-gemini-api-key" className="font-bold">
+                    새 키로 교체
+                  </Label>
+                  <Input
+                    id="replace-gemini-api-key"
+                    name="apiKey"
+                    type="password"
+                    required
+                    minLength={20}
+                    maxLength={200}
+                    autoComplete="off"
+                    placeholder="새 Google AI Studio API 키"
+                    className="h-12 rounded-xl bg-white"
+                  />
+                </div>
+                <SaveButton />
+              </form>
+
               <form action={deleteAction} className="flex justify-center">
                 <DeleteButton />
               </form>

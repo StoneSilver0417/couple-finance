@@ -2,6 +2,14 @@
 
 ## 2026-07-15
 
+### fix - Gemini 무료 한도 오류 완화 및 키 교체 UX 개선
+
+- 사용자가 다른 Google 계정의 신규 키를 적용해도 429 무료 한도 오류가 지속된다고 보고했다.
+- 월간 보고서는 짧은 구조화 JSON 생성이므로 기본 Gemini 모델을 `gemini-2.0-flash`에서 `gemini-2.0-flash-lite`로 변경해 무료 한도 소모를 줄였다.
+- 설정 다이얼로그에서 키가 이미 등록된 상태에도 새 키를 바로 입력해 교체 저장할 수 있도록 폼을 추가했다. 기존에는 등록 상태에서 삭제 버튼만 보여 실제로 새 키가 반영되지 않았을 가능성이 있었다.
+- 429 오류 문구를 “잠시 후 재시도”만 안내하지 않고 AI Studio 프로젝트 한도 확인까지 안내하도록 바꿨다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### fix - Gemini 신규 Auth key 형식 지원
 
 - Google AI Studio 공식 문서(2026-07-13 기준)에서 신규 API 키가 기본적으로 Authorization/Auth key로 생성되며, 기존 `AIza` prefix만 보장되지 않는 것을 확인했다.

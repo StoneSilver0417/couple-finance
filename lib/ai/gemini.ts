@@ -2,7 +2,7 @@ import "server-only";
 
 import type { ReportAiContent } from "@/types/report";
 
-export const GEMINI_MODEL = "gemini-2.0-flash";
+export const GEMINI_MODEL = "gemini-2.0-flash-lite";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const GENERATION_TIMEOUT_MS = 45_000;
@@ -158,7 +158,7 @@ function getGeminiErrorMessage(status: number): string {
     return "Gemini API 키가 유효하지 않습니다. 설정에서 키를 다시 확인해주세요.";
   }
   if (status === 429) {
-    return "무료 사용량 한도에 도달했습니다. 잠시 후(약 1분) 다시 시도해주세요.";
+    return "Gemini 무료 사용량 한도에 도달했습니다. 잠시 후 다시 시도하거나, AI Studio에서 해당 프로젝트의 한도를 확인해주세요.";
   }
   return "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
 }
