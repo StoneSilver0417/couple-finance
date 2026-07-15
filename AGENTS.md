@@ -6,7 +6,7 @@
 ## 개요
 - 부부가 함께 쓰는 공동 가계부 웹 앱 (PRD: `PRD_부부공동가계부_v2.0.md`)
 - 프로덕션 URL: https://couple-finance-roan.vercel.app
-- 관리자 계정: waterdrop11@naver.com
+- 관리자 계정: (공개 저장소이므로 이메일 비공개 — `profiles.is_admin=true`로 식별)
 
 ## 기술 스택
 - Next.js (App Router) + TypeScript + Tailwind CSS + shadcn/ui

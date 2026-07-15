@@ -64,9 +64,10 @@ CREATE INDEX IF NOT EXISTS idx_assets_household_id ON public.assets(household_id
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
 
 -- 기존 관리자 계정 권한 부여
-UPDATE public.profiles 
-SET is_admin = TRUE 
-WHERE email IN ('waterdrop11@naver.com', 'admin@example.com');
+-- 2026-07-15: 공개 저장소 전환에 따라 실제 관리자 이메일을 마스킹
+UPDATE public.profiles
+SET is_admin = TRUE
+WHERE email IN ('<REDACTED_ADMIN_EMAIL>', 'admin@example.com');
 
 -- 5. feedbacks 테이블 RLS 정책을 이메일 조회 대신 is_admin 필드 기반으로 고도화
 DROP POLICY IF EXISTS "Admins can view all feedbacks" ON public.feedbacks;
@@ -85,6 +86,9 @@ CREATE POLICY "Admins can update feedbacks"
     );
 
 -- 6. 새 사용자 가입 시 프로필 자동 생성 트리거 (보안 강화)
+-- 2026-07-15: 공개 저장소 전환에 따라 실제 관리자 이메일을 마스킹.
+-- 이 함수 정의는 20260715200000_remove_admin_email_backdoor.sql에서
+-- 이메일 기반 자동 관리자 부여 로직이 제거되며 대체됨 (보안 취약점 수정).
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -94,7 +98,7 @@ BEGIN
         NEW.email,
         NEW.raw_user_meta_data->>'full_name',
         NEW.raw_user_meta_data->>'avatar_url',
-        CASE WHEN NEW.email IN ('waterdrop11@naver.com', 'admin@example.com') THEN TRUE ELSE FALSE END
+        CASE WHEN NEW.email IN ('<REDACTED_ADMIN_EMAIL>', 'admin@example.com') THEN TRUE ELSE FALSE END
     )
     ON CONFLICT (id) DO NOTHING;
     RETURN NEW;

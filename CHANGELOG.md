@@ -2,6 +2,16 @@
 
 ## 2026-07-15
 
+### security - 깃허브 저장소 공개 전환 대비 보안 점검 및 정리
+
+- **점검 범위**: 전체 git 히스토리(모든 커밋)와 현재 추적 파일에서 `.env` 파일, Supabase 서비스 롤 키, Gemini API 키, GitHub 토큰, JWT 등 실제 비밀값이 노출된 적이 있는지 검색 — 히스토리 포함 전부 노출 이력 없음 확인.
+- **[치명적] 신규 가입 시 특정 이메일 자동 관리자 권한 부여 백도어 발견 및 수정**: `20260212000001_db_optimization.sql`의 `handle_new_user()` 트리거가 운영자 이메일 또는 `admin@example.com`으로 가입하는 계정에 `is_admin=TRUE`를 자동 부여하고 있었고, 이후 이를 재정의한 마이그레이션이 없어 운영 DB에 그대로 적용돼 있을 가능성이 높았다. 저장소를 공개하면 정확한 우회 이메일이 그대로 노출되는 상황이라 `supabase/migrations/20260715200000_remove_admin_email_backdoor.sql`을 추가해 이메일 기반 자동 부여 로직을 제거하고, `admin@example.com`으로 이미 권한을 획득한 계정이 있다면 회수하도록 했다.
+- **관리자 실제 이메일 마스킹**: `AGENTS.md`, `CHANGELOG.md`, 과거 마이그레이션 2개 파일(`20260210000001_admin_policy.sql`, `20260212000001_db_optimization.sql`)에 하드코딩돼 있던 운영자 실제 이메일을 `<REDACTED_ADMIN_EMAIL>` 또는 일반화된 문구로 교체 (기능에는 영향 없음, 텍스트만 정리).
+- **테스트/데모 계정 이메일 정리**: `handoff.md`, `CHANGELOG.md`에 남아있던 E2E 테스트 계정·데모 계정 이메일 주소를 제거하고 일반화된 설명으로 대체.
+- **`.gitignore` 보강**: `.codex-remote-attachments/`(사용자가 AI 도구에 업로드한 실제 스크린샷 원본 포함 가능), `.agents/`(로컬 스킬 데이터)를 무시 목록에 추가 — 둘 다 히스토리에 커밋된 적은 없으나, 공개 전환 후 실수로 커밋되는 것을 예방.
+- **문제 없음으로 확인된 항목**: 현재 `isAdmin()`은 이메일이 아닌 `profiles.is_admin` 컬럼만 사용, `USING (true)` 같은 과도하게 허용적인 RLS 정책 없음, 초대 코드는 `crypto.randomBytes` 기반이라 예측 불가, `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`는 설계상 공개돼도 되는 키(RLS가 실질 방어선).
+- DB 마이그레이션 실행은 Supabase Dashboard SQL Editor에서 수동 적용 필요(이 저장소는 CLI 자동 적용 미사용).
+
 ### fix - AI 보고서 예산 사용률을 홈 지출 분석과 통일
 
 - 홈 지출 분석은 `변동지출 ÷ 설정 예산`을 사용하지만 AI 보고서는 `전체 지출 ÷ 설정 예산`을 사용해 고정·비정기 지출까지 포함되는 불일치를 확인했다.
@@ -22,7 +32,7 @@
 
 - **README.md**: create-next-app 기본 템플릿을 홍보용 문서로 전면 교체 — 타이틀/태그라인("함께 관리하는 똑똑한 자산 관리"), 기술 뱃지, 핵심 가치 4가지(투명성/협업/접근성/보안성), 주요 기능 7종(달력 가계부, 고정·변동·비정기 지출 구분, 예산 실적 분석, Flow/Stock 분리 자산 관리, AI 월간 보고서, 거래 복사, PWA), 스크린샷 갤러리(3×2), 기술 스택 표, 시작하기 3단계, 개발자용 로컬 실행 안내.
 - **docs/USAGE.md** (신설): 처음 쓰는 부부 시점의 단계별 가이드 — 회원가입, 가구 생성·초대 코드, 거래 입력(지출 3분류 설명), 달력 사용법, 예산/분석, 자산 관리, AI 보고서(Google AI Studio 무료 키 발급 절차 포함), PWA 설치(iOS/Android), FAQ 5문항.
-- **docs/images/** (신설, 9종): 데모 가구(`cf-demo-readme@gmail.com`, "도준이네 가계부")를 새로 만들어 거래 14건·자산 4건·예산을 입력한 뒤, 프로덕션에서 Playwright 모바일 뷰포트(390×844)로 직접 촬영. login/onboarding/dashboard/calendar/transaction-new/analysis/assets/settings/report. 각 130~210KB. AI 보고서는 유효 Gemini 키가 없어 "키 등록 안내" 화면으로 캡처.
+- **docs/images/** (신설, 9종): 데모 가구("도준이네 가계부")를 새로 만들어 거래 14건·자산 4건·예산을 입력한 뒤, 프로덕션에서 Playwright 모바일 뷰포트(390×844)로 직접 촬영. login/onboarding/dashboard/calendar/transaction-new/analysis/assets/settings/report. 각 130~210KB. AI 보고서는 유효 Gemini 키가 없어 "키 등록 안내" 화면으로 캡처.
 - 데모 가구는 스크린샷 재촬영용으로 유지하기로 하고 handoff.md 정리 목록에 조건부 기록.
 
 ### fix - 보고서 본문 수입·지출 강조 및 요약 카드 정렬
@@ -184,7 +194,7 @@
 - **E2E 및 실서버 검증**:
   - 실제 운영용 Supabase 프로젝트(`ieahmpxiaamesrnfgbng.supabase.co`)를 가리키도록 `.env.local` 설정을 갱신하였습니다.
   - 브라우저 서브에이전트(Playwright)를 통해 회원가입 → 가구 생성(온보딩) → 로그인 → 메인 대시보드 → 카테고리 다이얼로그 렌더링에 이르는 전 과정을 검증 완료했습니다.
-  - **주의**: 테스트 과정에서 운영 DB에 테스트 계정(`test_e2e_antigravity_1@example.com`) 및 "Test Household" 가구 데이터가 생성됨 → 다음 세션에서 SQL로 정리 필요
+  - **주의**: 테스트 과정에서 운영 DB에 테스트 계정 및 "Test Household" 가구 데이터가 생성됨 → 다음 세션에서 SQL로 정리 필요
 - **Supabase 환경 오기록 수정**:
   - 과거 handoff/AGENTS.md에 기록된 `tsqro...`, `bgevp...` 주소는 실존하지 않는 잘못된 기록이었음 (실제 주소는 `ieahmpxiaamesrnfgbng.supabase.co` 하나뿐)
 
@@ -269,7 +279,7 @@
 ### v0.5.5 - 관리자용 피드백 답변 시스템 완료
 
 - **개발자 전용 관리자 콘솔 추가**
-  - `waterdrop11@naver.com` 계정 전용 관리자 페이지 구축
+  - 지정된 관리자 계정 전용 관리자 페이지 구축
   - 사용자 문의 내역 상세 조회 및 답변(admin_comment) 작성 기능
   - 기기 정보(OS, 브라우저 등) 확인 기능으로 버그 대응력 강화
 - **보안 및 RLS 정책 강화**

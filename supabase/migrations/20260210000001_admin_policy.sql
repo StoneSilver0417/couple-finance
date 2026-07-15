@@ -15,7 +15,9 @@ CREATE POLICY "Admins can view all feedbacks"
     ON public.feedbacks FOR SELECT
     USING (
       auth.uid() IN (
-        SELECT id FROM auth.users WHERE email IN ('waterdrop11@naver.com', 'admin@example.com')
+        -- 2026-07-15: 공개 저장소 전환에 따라 실제 관리자 이메일을 마스킹 (이 정책은
+        -- 20260212000001_db_optimization.sql에서 is_admin 컬럼 기반으로 이미 대체됨)
+        SELECT id FROM auth.users WHERE email IN ('<REDACTED_ADMIN_EMAIL>', 'admin@example.com')
       )
     );
 
@@ -23,6 +25,8 @@ CREATE POLICY "Admins can update feedbacks"
     ON public.feedbacks FOR UPDATE
     USING (
       auth.uid() IN (
-        SELECT id FROM auth.users WHERE email IN ('waterdrop11@naver.com', 'admin@example.com')
+        -- 2026-07-15: 공개 저장소 전환에 따라 실제 관리자 이메일을 마스킹 (이 정책은
+        -- 20260212000001_db_optimization.sql에서 is_admin 컬럼 기반으로 이미 대체됨)
+        SELECT id FROM auth.users WHERE email IN ('<REDACTED_ADMIN_EMAIL>', 'admin@example.com')
       )
     );

@@ -47,3 +47,8 @@ supabase/.temp/
 
 # playwright mcp 세션 산출물
 .playwright-mcp/
+
+# AI 코딩 도구 로컬 산출물 — 사용자가 업로드한 스크린샷 원본(실제 개인 데이터 포함
+# 가능) 등 민감할 수 있는 파일이 들어있어 저장소 공개 전 반드시 무시 처리
+.codex-remote-attachments/
+.agents/
