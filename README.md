@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/icon-192.png" alt="부부 공동 가계부 로고" width="96" />
+<img src="public/icon-512.png" alt="부부 공동 가계부 로고" width="180" />
 
 # 부부 공동 가계부 (Couple Finance)
 
