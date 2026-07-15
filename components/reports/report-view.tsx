@@ -58,6 +58,46 @@ function formatWon(value: number): string {
   return `${new Intl.NumberFormat("ko-KR").format(value)}원`;
 }
 
+function renderHighlightedSummary(
+  text: string,
+  income: number | null,
+  expense: number | null,
+) {
+  const amountTones = new Map<string, string>();
+
+  if (income !== null) {
+    amountTones.set(
+      formatWon(income),
+      "bg-emerald-100/90 text-emerald-800",
+    );
+  }
+  if (expense !== null) {
+    amountTones.set(formatWon(expense), "bg-rose-100/90 text-rose-800");
+  }
+
+  const amounts = [...amountTones.keys()];
+  if (amounts.length === 0) return text;
+
+  const escapedAmounts = amounts.map((amount) =>
+    amount.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  );
+  const parts = text.split(new RegExp(`(${escapedAmounts.join("|")})`, "g"));
+
+  return parts.map((part, index) => {
+    const tone = amountTones.get(part);
+    return tone ? (
+      <mark
+        key={`${part}-${index}`}
+        className={`box-decoration-clone rounded-md px-1 py-0.5 font-extrabold ${tone}`}
+      >
+        {part}
+      </mark>
+    ) : (
+      part
+    );
+  });
+}
+
 function StatCard({
   label,
   value,
@@ -74,15 +114,17 @@ function StatCard({
   cardTone?: string;
 }) {
   return (
-    <div className={`rounded-2xl border p-4 shadow-sm ${cardTone}`}>
-      <div className="mb-2.5 flex items-center gap-2">
+    <div
+      className={`flex min-h-36 flex-col items-center justify-center rounded-2xl border p-4 text-center shadow-sm ${cardTone}`}
+    >
+      <div className="mb-3 flex items-center justify-center gap-2">
         <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${tone}`}>
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
         <span className="text-sm font-extrabold text-slate-600">{label}</span>
       </div>
       <p
-        className={`break-words text-[1.125rem] font-black leading-tight tracking-tight ${valueTone}`}
+        className={`whitespace-nowrap text-[1.125rem] font-black leading-tight tracking-tight tabular-nums ${valueTone}`}
       >
         {value}
       </p>
@@ -167,7 +209,7 @@ export function ReportView({ content }: { content: unknown }) {
               </h2>
               {summaryComment && (
                 <p className="mt-4 text-base leading-7 text-slate-700">
-                  {summaryComment}
+                  {renderHighlightedSummary(summaryComment, income, expense)}
                 </p>
               )}
             </div>
