@@ -2,6 +2,13 @@
 
 ## 2026-07-15
 
+### fix - Gemini 한도 오류 상세 문구 추가
+
+- 사용자가 새 프로젝트/새 키에서도 같은 무료 한도 문구가 뜬다고 보고했다.
+- 기존에는 Gemini 429 응답을 모두 같은 문구로 매핑해 RPD/RPM/TPM/프로젝트 subject 등 실제 원인을 구분할 수 없었다.
+- `lib/ai/gemini.ts`에서 비정상 응답 본문을 파싱해 quota violation detail 또는 Gemini error message를 사용자 오류 문구와 서버 로그에 포함하도록 변경했다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### fix - Gemini 무료 한도 오류 완화 및 키 교체 UX 개선
 
 - 사용자가 다른 Google 계정의 신규 키를 적용해도 429 무료 한도 오류가 지속된다고 보고했다.

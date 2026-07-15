@@ -153,12 +153,45 @@ function extractResponseText(payload: unknown): string | null {
   return textPart?.text ?? null;
 }
 
-function getGeminiErrorMessage(status: number): string {
+function extractGeminiErrorDetail(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const error = (payload as { error?: unknown }).error;
+  if (!error || typeof error !== "object") return null;
+
+  const message = (error as { message?: unknown }).message;
+  const details = (error as { details?: unknown }).details;
+  if (!Array.isArray(details)) {
+    return typeof message === "string" ? message : null;
+  }
+
+  const quotaFailures = details
+    .flatMap((detail) => {
+      if (!detail || typeof detail !== "object") return [];
+      const violations = (detail as { violations?: unknown }).violations;
+      if (!Array.isArray(violations)) return [];
+      return violations
+        .map((violation) => {
+          if (!violation || typeof violation !== "object") return null;
+          const subject = (violation as { subject?: unknown }).subject;
+          const description = (violation as { description?: unknown }).description;
+          return [description, subject].filter(Boolean).join(" / ");
+        })
+        .filter((item): item is string => Boolean(item));
+    })
+    .slice(0, 2);
+
+  if (quotaFailures.length > 0) return quotaFailures.join(", ");
+  return typeof message === "string" ? message : null;
+}
+
+function getGeminiErrorMessage(status: number, detail: string | null): string {
   if (status === 400 || status === 401 || status === 403) {
     return "Gemini API 키가 유효하지 않습니다. 설정에서 키를 다시 확인해주세요.";
   }
   if (status === 429) {
-    return "Gemini 무료 사용량 한도에 도달했습니다. 잠시 후 다시 시도하거나, AI Studio에서 해당 프로젝트의 한도를 확인해주세요.";
+    return detail
+      ? `Gemini 한도에 걸렸습니다: ${detail}`
+      : "Gemini 무료 사용량 한도에 도달했습니다. 잠시 후 다시 시도하거나, AI Studio에서 해당 프로젝트의 한도를 확인해주세요.";
   }
   return "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
 }
@@ -233,7 +266,21 @@ export async function generateReportContent(
     );
 
     if (!response.ok) {
-      return { ok: false, error: getGeminiErrorMessage(response.status) };
+      let errorPayload: unknown = null;
+      try {
+        errorPayload = await response.json();
+      } catch {
+        errorPayload = null;
+      }
+      const detail = extractGeminiErrorDetail(errorPayload);
+      console.error("Gemini 보고서 생성 응답 오류:", {
+        status: response.status,
+        detail,
+      });
+      return {
+        ok: false,
+        error: getGeminiErrorMessage(response.status, detail),
+      };
     }
 
     const responsePayload: unknown = await response.json();
