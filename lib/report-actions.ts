@@ -1,0 +1,428 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { calculateSummary } from "@/lib/calculations/finance";
+import { getKoreanErrorMessage } from "@/lib/error-messages";
+import {
+  GEMINI_MODEL,
+  generateReportContent,
+  validateGeminiKey,
+  type GeminiReportAggregates,
+} from "@/lib/ai/gemini";
+import { getHouseholdContext } from "@/lib/supabase/household-context";
+import { getTrimmedString, isValidYearMonth } from "@/lib/validation";
+import type { TransactionRpcRow } from "@/types";
+import type { MonthlyReportContent, ReportStats } from "@/types/report";
+
+export interface ReportActionState {
+  error?: string;
+  success?: boolean;
+}
+
+interface ReportTransaction {
+  type: "income" | "expense";
+  expenseType: "fixed" | "variable" | "irregular" | null;
+  amount: number;
+  date: string;
+  categoryName: string;
+  categoryIcon: string;
+}
+
+interface CategoryAggregate {
+  name: string;
+  icon: string;
+  amount: number;
+}
+
+function parseYearMonth(value: FormDataEntryValue | null): {
+  year: number;
+  month: number;
+  yearMonth: string;
+} | null {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}$/.test(value)) {
+    return null;
+  }
+
+  const [year, month] = value.split("-").map(Number);
+  if (!isValidYearMonth(year, month)) return null;
+  return { year, month, yearMonth: value };
+}
+
+function getCurrentYearMonthInKorea(): { year: number; month: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  return { year, month };
+}
+
+function getMonthRange(year: number, month: number): {
+  start: string;
+  end: string;
+} {
+  const monthString = String(month).padStart(2, "0");
+  const lastDay = new Date(year, month, 0).getDate();
+  return {
+    start: `${year}-${monthString}-01`,
+    end: `${year}-${monthString}-${String(lastDay).padStart(2, "0")}`,
+  };
+}
+
+function mapTransactions(rows: TransactionRpcRow[]): ReportTransaction[] {
+  return rows.map((row) => ({
+    type: row.type,
+    expenseType: row.expense_type,
+    amount: Number(row.amount) || 0,
+    date:
+      typeof row.transaction_date === "string"
+        ? row.transaction_date
+        : new Date(row.transaction_date).toISOString().split("T")[0],
+    categoryName: row.category_name || "미분류",
+    categoryIcon: row.category_icon || "WalletCards",
+  }));
+}
+
+function aggregateExpenseCategories(
+  transactions: ReportTransaction[],
+): CategoryAggregate[] {
+  const groups = new Map<string, CategoryAggregate>();
+
+  for (const transaction of transactions) {
+    if (transaction.type !== "expense") continue;
+    const existing = groups.get(transaction.categoryName);
+    if (existing) {
+      existing.amount += transaction.amount;
+    } else {
+      groups.set(transaction.categoryName, {
+        name: transaction.categoryName,
+        icon: transaction.categoryIcon,
+        amount: transaction.amount,
+      });
+    }
+  }
+
+  return Array.from(groups.values()).sort((a, b) => b.amount - a.amount);
+}
+
+function sumExpenseType(
+  transactions: ReportTransaction[],
+  expenseType: "fixed" | "variable" | "irregular",
+): number {
+  return transactions
+    .filter(
+      (transaction) =>
+        transaction.type === "expense" &&
+        transaction.expenseType === expenseType,
+    )
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+}
+
+export async function saveGeminiApiKey(
+  _prevState: ReportActionState,
+  formData: FormData,
+): Promise<ReportActionState> {
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+
+  const apiKey = getTrimmedString(formData.get("apiKey"), 200);
+  if (!apiKey || apiKey.length < 20 || !/^AIza/.test(apiKey)) {
+    return { error: "AIza로 시작하는 올바른 Gemini API 키를 입력해주세요." };
+  }
+
+  try {
+    const isValid = await validateGeminiKey(apiKey);
+    if (!isValid) {
+      return {
+        error:
+          "Gemini API 키가 유효하지 않습니다. 키와 네트워크 연결을 확인해주세요.",
+      };
+    }
+
+    const { error } = await ctx.supabase.from("household_ai_settings").upsert(
+      {
+        household_id: ctx.householdId,
+        gemini_api_key: apiKey,
+        created_by: ctx.user.id,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "household_id" },
+    );
+    if (error) throw error;
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Gemini API 키 저장 실패:", error);
+    return { error: getKoreanErrorMessage(error) };
+  }
+}
+
+export async function deleteGeminiApiKey(): Promise<ReportActionState> {
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+
+  try {
+    const { error } = await ctx.supabase
+      .from("household_ai_settings")
+      .delete()
+      .eq("household_id", ctx.householdId);
+    if (error) throw error;
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Gemini API 키 삭제 실패:", error);
+    return { error: getKoreanErrorMessage(error) };
+  }
+}
+
+export async function generateMonthlyReport(
+  _prevState: ReportActionState,
+  formData: FormData,
+): Promise<ReportActionState> {
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+
+  const parsed = parseYearMonth(formData.get("yearMonth"));
+  if (!parsed) {
+    return { error: "연도와 월 정보가 올바르지 않습니다." };
+  }
+
+  const current = getCurrentYearMonthInKorea();
+  if (
+    parsed.year > current.year ||
+    (parsed.year === current.year && parsed.month > current.month)
+  ) {
+    return { error: "미래 월의 보고서는 만들 수 없습니다." };
+  }
+
+  try {
+    const { data: aiSetting, error: aiSettingError } = await ctx.supabase
+      .from("household_ai_settings")
+      .select("gemini_api_key")
+      .eq("household_id", ctx.householdId)
+      .maybeSingle();
+    if (aiSettingError) throw aiSettingError;
+    if (!aiSetting?.gemini_api_key) {
+      return {
+        error:
+          "AI 보고서를 사용하려면 설정에서 Gemini API 키를 등록해주세요.",
+      };
+    }
+
+    const currentRange = getMonthRange(parsed.year, parsed.month);
+    const previousDate = new Date(parsed.year, parsed.month - 2, 1);
+    const previousYear = previousDate.getFullYear();
+    const previousMonth = previousDate.getMonth() + 1;
+    const previousRange = getMonthRange(previousYear, previousMonth);
+
+    const [
+      currentTransactionsResult,
+      previousTransactionsResult,
+      budgetResult,
+      balancesResult,
+      assetHistoryResult,
+    ] = await Promise.all([
+      ctx.supabase.rpc("get_transactions_by_month", {
+        p_household_id: ctx.householdId,
+        p_start_date: currentRange.start,
+        p_end_date: currentRange.end,
+      }),
+      ctx.supabase.rpc("get_transactions_by_month", {
+        p_household_id: ctx.householdId,
+        p_start_date: previousRange.start,
+        p_end_date: previousRange.end,
+      }),
+      ctx.supabase
+        .from("monthly_budgets")
+        .select("total_budget")
+        .eq("household_id", ctx.householdId)
+        .eq("year", parsed.year)
+        .eq("month", parsed.month)
+        .maybeSingle(),
+      ctx.supabase
+        .from("monthly_balances")
+        .select("year, month, income_total, expense_total")
+        .eq("household_id", ctx.householdId)
+        .order("year", { ascending: false })
+        .order("month", { ascending: false })
+        .limit(6),
+      ctx.supabase
+        .from("asset_history")
+        .select("record_date, total_net_worth")
+        .eq("household_id", ctx.householdId)
+        .order("record_date", { ascending: false })
+        .limit(2),
+    ]);
+
+    const queryError = [
+      currentTransactionsResult.error,
+      previousTransactionsResult.error,
+      budgetResult.error,
+      balancesResult.error,
+      assetHistoryResult.error,
+    ].find(Boolean);
+    if (queryError) throw queryError;
+
+    const currentTransactions = mapTransactions(
+      (currentTransactionsResult.data ?? []) as TransactionRpcRow[],
+    );
+    if (currentTransactions.length === 0) {
+      return {
+        error: "해당 월에 기록된 거래가 없어 보고서를 만들 수 없습니다.",
+      };
+    }
+
+    const previousTransactions = mapTransactions(
+      (previousTransactionsResult.data ?? []) as TransactionRpcRow[],
+    );
+    const summary = calculateSummary(currentTransactions);
+    const fixedExpense = sumExpenseType(currentTransactions, "fixed");
+    const variableExpense = sumExpenseType(currentTransactions, "variable");
+    const irregularExpense = sumExpenseType(currentTransactions, "irregular");
+    const totalBudget = Number(budgetResult.data?.total_budget) || 0;
+    const budgetUsagePercent =
+      totalBudget > 0 ? (summary.expense / totalBudget) * 100 : null;
+
+    const currentCategories = aggregateExpenseCategories(currentTransactions);
+    const previousCategories = aggregateExpenseCategories(previousTransactions);
+    const currentCategoryMap = new Map(
+      currentCategories.map((category) => [category.name, category]),
+    );
+    const previousCategoryMap = new Map(
+      previousCategories.map((category) => [category.name, category]),
+    );
+    const categoryNames = new Set([
+      ...currentCategoryMap.keys(),
+      ...previousCategoryMap.keys(),
+    ]);
+    const momCategoryDiffs = Array.from(categoryNames)
+      .map((name) => {
+        const currentCategory = currentCategoryMap.get(name);
+        const previousCategory = previousCategoryMap.get(name);
+        const currentAmount = currentCategory?.amount ?? 0;
+        const previousAmount = previousCategory?.amount ?? 0;
+        return {
+          name,
+          icon: currentCategory?.icon ?? previousCategory?.icon ?? "WalletCards",
+          current: currentAmount,
+          prev: previousAmount,
+          diff: currentAmount - previousAmount,
+        };
+      })
+      .filter((category) => category.diff !== 0)
+      .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+      .slice(0, 5);
+
+    const assetHistory = assetHistoryResult.data ?? [];
+    const netWorth =
+      assetHistory.length > 0
+        ? Number(assetHistory[0].total_net_worth) || 0
+        : null;
+    const previousNetWorth =
+      assetHistory.length > 1
+        ? Number(assetHistory[1].total_net_worth) || 0
+        : null;
+    const netWorthDiff =
+      netWorth !== null && previousNetWorth !== null
+        ? netWorth - previousNetWorth
+        : null;
+
+    const stats: ReportStats = {
+      income: summary.income,
+      expense: summary.expense,
+      balance: summary.balance,
+      fixedExpense,
+      variableExpense,
+      irregularExpense,
+      totalBudget,
+      budgetUsagePercent,
+      momCategoryDiffs,
+      netWorth,
+      netWorthDiff,
+    };
+
+    const categoryExpenses = currentCategories.slice(0, 8).map((category) => ({
+      name: category.name,
+      icon: category.icon,
+      current: category.amount,
+      previous: previousCategoryMap.get(category.name)?.amount ?? 0,
+    }));
+
+    const aggregates: GeminiReportAggregates = {
+      yearMonth: parsed.yearMonth,
+      categoryExpenses,
+      monthOverMonthHighlights: momCategoryDiffs.map((category) => ({
+        name: category.name,
+        current: category.current,
+        previous: category.prev,
+        diff: category.diff,
+      })),
+      expenseTypeTotals: {
+        fixed: fixedExpense,
+        variable: variableExpense,
+        irregular: irregularExpense,
+      },
+      income: summary.income,
+      totalBudget,
+      budgetUsagePercent,
+      monthlyTrend: [...(balancesResult.data ?? [])]
+        .reverse()
+        .map((balance) => ({
+          year: Number(balance.year),
+          month: Number(balance.month),
+          income: Number(balance.income_total) || 0,
+          expense: Number(balance.expense_total) || 0,
+        })),
+      highExpenses: currentTransactions
+        .filter((transaction) => transaction.type === "expense")
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5)
+        .map((transaction) => ({
+          category: transaction.categoryName,
+          amount: transaction.amount,
+          date: transaction.date,
+        })),
+      ...(netWorth !== null
+        ? {
+            assets: {
+              current: netWorth,
+              previous: previousNetWorth,
+              diff: netWorthDiff,
+            },
+          }
+        : {}),
+    };
+
+    const generated = await generateReportContent(
+      aiSetting.gemini_api_key,
+      aggregates,
+    );
+    if (!generated.ok) return { error: generated.error };
+
+    const content: MonthlyReportContent = { stats, ai: generated.ai };
+    const { error: saveError } = await ctx.supabase.from("monthly_reports").upsert(
+      {
+        household_id: ctx.householdId,
+        year: parsed.year,
+        month: parsed.month,
+        content,
+        model: GEMINI_MODEL,
+        generated_by: ctx.user.id,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "household_id,year,month" },
+    );
+    if (saveError) throw saveError;
+
+    revalidatePath(`/reports/${parsed.yearMonth}`);
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("월간 AI 보고서 생성 실패:", error);
+    return { error: getKoreanErrorMessage(error) };
+  }
+}

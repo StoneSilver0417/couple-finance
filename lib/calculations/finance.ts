@@ -10,7 +10,9 @@ export function calculateTotal(transactions: Transaction[]): number {
 /**
  * Groups transactions by type (income/expense) and calculates totals
  */
-export function calculateSummary(transactions: Transaction[]): MonthlySummary {
+export function calculateSummary(
+  transactions: Array<Pick<Transaction, "type" | "amount">>,
+): MonthlySummary {
   const income = transactions
     .filter((tx) => tx.type === "income")
     .reduce((sum, tx) => sum + Number(tx.amount), 0);

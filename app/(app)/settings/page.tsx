@@ -14,12 +14,30 @@ import {
   MessageCircleQuestion,
   ShieldCheck,
   Heart,
+  FileText,
+  Bot,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
 import { LogoutButton } from "./logout-button";
 import { FeedbackDialog } from "@/components/settings/feedback-dialog";
 import { isAdmin, getPendingFeedbackCount } from "@/lib/admin-actions";
+import { AiSettingsDialog } from "@/components/settings/ai-settings-dialog";
+
+function getReportMonths(): { current: string; previous: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  const previousDate = new Date(year, month - 2, 1);
+  return {
+    current: `${year}-${String(month).padStart(2, "0")}`,
+    previous: `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, "0")}`,
+  };
+}
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -91,7 +109,7 @@ export default async function SettingsPage() {
   }
 
   // 병렬 쿼리
-  const [householdResult, membersResult] = await Promise.all([
+  const [householdResult, membersResult, aiSettingResult] = await Promise.all([
     supabase
       .from("households")
       .select("name, invite_code")
@@ -101,10 +119,18 @@ export default async function SettingsPage() {
       .from("profiles")
       .select("full_name, email")
       .eq("household_id", profile.household_id),
+    supabase
+      .from("household_ai_settings")
+      .select("gemini_api_key")
+      .eq("household_id", profile.household_id)
+      .maybeSingle(),
   ]);
 
   const household = householdResult.data;
   const members = membersResult.data || [];
+  const apiKey = aiSettingResult.data?.gemini_api_key;
+  const maskedKey = apiKey ? `AIza…${apiKey.slice(-4)}` : null;
+  const reportMonths = getReportMonths();
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -211,6 +237,14 @@ export default async function SettingsPage() {
               color: "text-emerald-500",
               bg: "bg-emerald-50",
             },
+            {
+              href: `/reports/${reportMonths.previous}`,
+              title: "AI 월간 보고서",
+              desc: "지난달 금융 분석",
+              icon: FileText,
+              color: "text-violet-600",
+              bg: "bg-violet-50",
+            },
           ].map((item, i) => (
             <Link key={i} href={item.href}>
               <div className="glass-panel p-5 rounded-[2rem] flex items-center justify-between cursor-pointer group hover:bg-white/80 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow">
@@ -260,6 +294,35 @@ export default async function SettingsPage() {
                 문의하기
               </Button>
             </FeedbackDialog>
+          </div>
+
+          <div className="my-4 h-px bg-indigo-100/70" />
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.2rem] bg-violet-100/70 text-violet-700 shadow-sm">
+                <Bot className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-text-main">AI 보고서 키</p>
+                <p className="truncate text-xs font-medium text-text-secondary">
+                  {apiKey ? maskedKey : "Gemini 무료 API 키 등록"}
+                </p>
+              </div>
+            </div>
+
+            <AiSettingsDialog
+              registered={Boolean(apiKey)}
+              maskedKey={maskedKey}
+              reportHref={`/reports/${reportMonths.current}`}
+            >
+              <Button
+                size="sm"
+                className="cursor-pointer rounded-xl border border-violet-100 bg-white px-4 font-bold text-violet-700 shadow-sm hover:bg-violet-50"
+              >
+                {apiKey ? "관리" : "등록"}
+              </Button>
+            </AiSettingsDialog>
           </div>
         </div>
 
