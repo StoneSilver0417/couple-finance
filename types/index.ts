@@ -136,3 +136,17 @@ export interface AssetHistory {
   breakdown_data: Record<string, number>; // { "JOINT": 100, "user_id": 50, "CHILD": 10 }
   created_at: string;
 }
+
+// 관리자 사용자 현황 RPC(admin_get_user_overview) 행 타입
+export interface AdminUserOverviewRow {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  household_id: string | null;
+  household_name: string | null;
+  role: string | null;
+  is_admin: boolean;
+  joined_at: string;
+  last_sign_in_at: string | null;
+  last_activity_at: string | null;
+}

@@ -2,33 +2,30 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.4 + 월간 AI 보고서 구현·배포 완료, 보고서 모바일 가독성 개선 반영 중
+- **버전**: v0.6.4 + AI 보고서 진입점 이전 및 관리자 사용자 현황 구현 완료
 - **빌드 상태**: 성공 (`npx tsc --noEmit`, `npx eslint .` 0 오류·0 경고, `npm run build` 통과)
-- **배포 상태**: 직전 프로덕션 배포 완료(2026-07-15, fallback 커밋 `e3b4424`, Vercel `dpl_D8cxNDfAETvhM9j3KsgjinHJ1XAy` `Ready`). 이번 모바일 가독성 개선은 커밋/배포 예정
+- **배포 상태**: 직전 프로덕션 배포 커밋 `f7aed51` Ready. 이번 작업 커밋 2개는 푸시·배포 진행 중
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **Supabase**: 개발/운영 분리 없이 `ieahmpxiaamesrnfgbng.supabase.co` 단일 프로젝트 사용
 
 ## 최근 작업
 
-- **월간 보고서 모바일 가독성 개선 (2026-07-15)**: 사용자 스크린샷 기준으로 상단 인사이트 카드와 전월 대비 변화 카드의 글자 크기/대비/줄간격이 부족했다. 보고서 뷰 카드 배경을 더 불투명하게 바꾸고, 본문을 15~16px와 7 line-height 중심으로 조정했으며, 전월 대비 변화 행을 모바일에서 세로 배치로 바꿔 금액·배지·설명이 겹치지 않게 했다. 페이지 좌우 여백도 모바일에서 `px-4`로 줄여 콘텐츠 폭을 확보했다.
-- **Gemini 한도 초과 fallback 추가 (2026-07-15, `e3b4424`)**: 스크린샷에서 `free_tier_input_token_count`, `free_tier_requests` limit이 0인 것을 확인했다. 결제 연결 없이는 Gemini 생성 호출이 불가능하므로, Gemini 실패 시에도 앱 집계만으로 한국어 보고서 문구를 생성해 저장하도록 `local-fallback`을 추가했다.
-- **Gemini 한도 오류 상세화 (2026-07-15, `add0626`)**: 사용자가 새 프로젝트/새 키에서도 같은 한도 문구가 뜬다고 보고했다. Gemini 비정상 응답 본문을 파싱해 429의 quota violation detail/message를 화면 오류와 서버 로그에 반영하도록 변경했다.
-- **Gemini 무료 한도 완화 대응 (2026-07-15, `cb6a3a6`)**: 사용자가 다른 Google 계정의 신규 키를 적용해도 무료 한도 오류가 지속된다고 보고했다. 월간 보고서는 짧은 JSON 생성이라 기본 모델을 `gemini-2.0-flash`에서 `gemini-2.0-flash-lite`로 낮춰 한도 소모를 줄였고, 등록된 키가 있어도 삭제 없이 새 키로 교체 저장할 수 있도록 설정 다이얼로그에 교체 폼을 추가했다. 429 오류 문구도 AI Studio 프로젝트 한도 확인을 안내하도록 수정했다.
-- **Gemini 신규 API 키 형식 대응 배포 완료 (2026-07-15, `3fe5275`)**: Google AI Studio가 새 키를 Auth key로 생성하면서 `AQ...` 등 `AIza`가 아닌 prefix가 나오는 상태를 확인했다. 앱의 `AIza` prefix 강제 검증을 제거하고 실제 Gemini API 검증 결과로만 저장 여부를 판단하도록 변경했다. Gemini REST 호출은 공식 문서 방식에 맞춰 query string `?key=` 대신 `x-goog-api-key` 헤더를 사용하도록 수정했고, 설정 화면 placeholder와 마스킹도 특정 prefix에 의존하지 않게 바꿨다.
-- **월간 AI 보고서 구현·배포 완료 (2026-07-15, `6974aff`)**: 사용자가 운영 Supabase에 신규 테이블/RLS SQL 적용을 완료했다. 가구별 Gemini 키 관리, 서버 집계·Gemini 구조화 응답, `/reports/[yearMonth]` 보고서 화면, 설정 진입점과 재생성을 구현해 Vercel 프로덕션에 배포했다. 키 원문은 서버에서만 읽고 클라이언트에는 마스킹 값만 전달하며, Gemini에는 메모 없이 집계와 고액 지출 5건만 전송한다.
-- **긴 기간 자산 추이 그래프 개선 (2026-07-03, `d780d70`)**: 30개 초과 포인트를 구간별 최신값으로 다운샘플링해 지글거림을 완화했고 프로덕션 검증까지 완료했다.
+- **AI 보고서 진입점 이전 (2026-07-15, `d8382d0`)**: 분석 페이지 헤더에 해당 월의 `/reports/[yearMonth]`로 이동하는 `AI 보고서` 버튼을 추가했다. 미래월에서는 서울 기준 현재월로 링크를 클램프한다. 설정 메뉴의 `AI 월간 보고서` 항목은 제거하되 AI 키 관리 다이얼로그의 이번 달 보고서 링크는 유지했다.
+- **관리자 사용자 현황 구현 (2026-07-15)**: `/admin/users`에 총 사용자·총 가구·이번 달 신규 집계와 가입일·마지막 로그인·마지막 활동을 표시하는 모바일 카드 목록을 추가했다. `/admin/feedbacks`와 공통 관리자 탭을 사용하며, 비관리자는 `/settings`로 이동한다. `auth.users.last_sign_in_at`은 관리자 검사를 내장한 `SECURITY DEFINER` RPC로만 읽도록 마이그레이션을 작성했다.
 
 ## 알려진 이슈
 
-- **월간 AI 보고서 실사용 E2E 미완료**: 인증 전 `/reports/2026-07` 접근이 `/login`으로 보호되는 것은 확인했다. 브라우저에 로그인 세션과 정상 Gemini API 키가 없어 키 등록·마스킹·생성·재생성·빈 거래 월 토스트는 아직 실사용 검증하지 못했다.
-- **자산 변동 기록 스냅샷 미갱신**: 같은 날 여러 번 자산을 수정하면 `asset_history.total_net_worth`가 최초 값에 고정된다. `saveAssetSnapshot()` upsert는 오류를 내지 않아 RLS UPDATE 경로 확인이 필요하다. 사용자는 Supabase PAT를 발급받았고 조사는 보류 중이다.
-- **운영 DB 테스트 데이터 정리 필요**: `test_e2e_antigravity_1@example.com`("Test Household"), `cf-fixverify-1783040957@gmail.com`("버그검증 가계부") 가구 및 Auth 계정을 삭제해야 한다.
+- **관리자 사용자 현황 인증 E2E 대기**: 사용자가 운영 DB에 `admin_get_user_overview()` 마이그레이션 적용을 완료했다. 자동 브라우저에는 관리자 로그인 세션이 없고 Chrome 연동도 설치돼 있지 않아 인증 후 집계·목록 렌더링은 실사용 검증이 남았다.
+- **월간 AI 보고서 실사용 E2E 미완료**: 인증 보호는 확인했으나 정상 Gemini 키를 통한 생성 성공 경로는 아직 실사용 검증하지 못했다.
+- **자산 변동 기록 스냅샷 미갱신**: 같은 날 여러 번 자산을 수정하면 `asset_history.total_net_worth`가 최초 값에 고정된다. RLS UPDATE 경로 확인이 필요하다.
+- **운영 DB 테스트 데이터 정리 필요**: `test_e2e_antigravity_1@example.com`, `cf-fixverify-1783040957@gmail.com` 관련 Auth·가구 데이터를 삭제해야 한다.
 - Next.js 16 middleware → proxy 경고가 있으나 기능 영향은 없다.
 
 ## 다음 TODO
 
-1. [ ] **(Codex) AI 보고서 진입점 이전 + 관리자 사용자 현황 구현** — 지시서: `docs/tasks/entry-point-and-admin-users.md`. ① 분석 페이지 헤더에 "AI 보고서" 버튼 추가 + 설정 그리드 항목 제거, ② `/admin/users` 신설(SECURITY DEFINER RPC로 auth.users.last_sign_in_at 조회 — 마이그레이션 SQL은 사용자가 Dashboard SQL Editor에서 수동 실행 필요)
-2. [ ] 프로덕션에서 월간 보고서 모바일 가독성 개선이 실제 기기 폭에서 충분한지 확인한다.
-3. [ ] 프로덕션에서 정상 키로 보고서 생성 시간을 측정해 `maxDuration=60` 이내 완료 여부를 확인한다.
-4. [ ] 자산 변동 기록 스냅샷 미갱신 버그를 Supabase 직접 조회로 조사·수정한다.
-5. [ ] 운영 DB 테스트 데이터와 Auth 계정 2개를 정리한다.
+1. [ ] **(사용자)** 배포 후 관리자 계정으로 `/admin/users` 집계·목록·탭 이동을 확인한다.
+2. [ ] **(Codex)** 로그인 가능한 브라우저 세션이 준비되면 비관리자 접근 차단까지 E2E 검증한다.
+3. [ ] 이번 두 커밋의 Vercel 프로덕션 배포 상태를 확인한다.
+4. [ ] 프로덕션에서 월간 보고서 모바일 가독성과 정상 Gemini 키 생성 시간을 실사용 검증한다.
+5. [ ] 자산 변동 기록 스냅샷 미갱신 버그를 Supabase 직접 조회로 조사·수정한다.
+6. [ ] 운영 DB 테스트 데이터와 Auth 계정 2개를 정리한다.

@@ -347,7 +347,7 @@ export default async function SettingsPage() {
                       )}
                     </p>
                     <p className="text-xs text-white/70 font-medium">
-                      사용자 피드백 및 앱 설정 관리
+                      피드백 답변 · 사용자 현황 관리
                     </p>
                   </div>
                 </div>

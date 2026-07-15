@@ -4,6 +4,7 @@ import { ArrowLeft, Inbox, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isAdmin, getAllFeedbacks } from "@/lib/admin-actions";
 import { FeedbackAdminList } from "@/components/admin/feedback-admin-list";
+import { AdminNav } from "@/components/admin/admin-nav";
 
 export default async function AdminFeedbacksPage() {
   const isUserAdmin = await isAdmin();
@@ -38,6 +39,7 @@ export default async function AdminFeedbacksPage() {
       </header>
 
       <main className="px-6">
+        <AdminNav active="feedbacks" />
         <div className="mb-6 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-indigo-500 mt-0.5" />
           <div className="text-xs text-indigo-700 leading-relaxed font-medium">
