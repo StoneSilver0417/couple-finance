@@ -4,6 +4,7 @@
 
 ### feat - 월간 AI 가계부 분석 보고서 구현 완료
 
+- **커밋/배포**: 기능 커밋 `6974aff`를 `master`에 푸시했고 Vercel 프로덕션 배포 `dpl_D5SL7JVy26M4cC9JKnAu7ChpvVPw`가 `Ready` 상태가 됐다. 운영 별칭 `https://couple-finance-roan.vercel.app` 연결과 인증 전 보고서 경로의 로그인 리다이렉트 콘텐츠를 확인했다.
 - 사용자가 운영 Supabase 프로젝트 `ieahmpxiaamesrnfgbng`의 SQL Editor에서 `20260715000000_ai_reports.sql` 적용을 완료했다.
 - `types/report.ts`에 앱 계산 수치와 AI 문구를 분리한 `MonthlyReportContent` 타입을 추가했다. 숫자는 서버에서 계산하고 Gemini는 텍스트 필드만 반환한다.
 - `lib/ai/gemini.ts`에 네이티브 `fetch` 기반 Gemini REST 연동을 추가했다. `gemini-2.0-flash`, JSON response schema, 45초 중단, 상태별 한국어 오류, 필수 필드·문자열 길이·배열 개수 런타임 검증을 적용했다.
