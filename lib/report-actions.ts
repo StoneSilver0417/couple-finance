@@ -12,7 +12,7 @@ import {
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { getTrimmedString, isValidYearMonth } from "@/lib/validation";
 import type { TransactionRpcRow } from "@/types";
-import type { MonthlyReportContent, ReportStats } from "@/types/report";
+import type { MonthlyReportContent, ReportAiContent, ReportStats } from "@/types/report";
 
 export interface ReportActionState {
   error?: string;
@@ -118,6 +118,61 @@ function sumExpenseType(
         transaction.expenseType === expenseType,
     )
     .reduce((sum, transaction) => sum + transaction.amount, 0);
+}
+
+function formatWon(value: number): string {
+  return `${new Intl.NumberFormat("ko-KR").format(Math.round(value))}원`;
+}
+
+function createFallbackReportContent(
+  stats: ReportStats,
+  aggregates: GeminiReportAggregates,
+): ReportAiContent {
+  const balanceTone =
+    stats.balance >= 0
+      ? `수입에서 지출을 제외하고 ${formatWon(stats.balance)}이 남았습니다.`
+      : `지출이 수입보다 ${formatWon(Math.abs(stats.balance))} 많았습니다.`;
+  const biggestExpense = aggregates.categoryExpenses[0];
+  const headline = biggestExpense
+    ? `${biggestExpense.name} 지출을 중심으로 점검이 필요한 달입니다`
+    : "이번 달 가계 흐름을 차분히 점검해볼 달입니다";
+
+  const momComments = aggregates.monthOverMonthHighlights.map((category) => {
+    const direction = category.diff > 0 ? "늘었습니다" : "줄었습니다";
+    return `${category.name} 지출이 전월보다 ${formatWon(Math.abs(category.diff))} ${direction}.`;
+  });
+
+  const budgetFeedback =
+    stats.totalBudget > 0 && stats.budgetUsagePercent !== null
+      ? `이번 달 예산 ${formatWon(stats.totalBudget)} 중 ${stats.budgetUsagePercent.toFixed(1)}%를 사용했습니다. 80%를 넘었다면 남은 기간 변동비를 우선 조절하세요.`
+      : "이번 달 예산이 등록되어 있지 않습니다. 다음 달부터는 월 예산을 먼저 정해두면 지출 속도를 판단하기 쉽습니다.";
+
+  const highExpenseTip = biggestExpense
+    ? `${biggestExpense.name} 항목은 다음 달에 주간 한도를 정해 초과 여부를 확인하세요.`
+    : "다음 달에는 지출 카테고리를 꾸준히 나눠 기록해 흐름을 더 선명하게 보세요.";
+
+  const fixedRatio =
+    stats.expense > 0 ? (stats.fixedExpense / stats.expense) * 100 : 0;
+  const fixedTip =
+    fixedRatio >= 50
+      ? "고정비 비중이 큰 편입니다. 구독, 통신, 보험처럼 매달 반복되는 항목부터 재점검하세요."
+      : "고정비보다 변동비 조정 여지가 큽니다. 외식, 쇼핑, 생활비 항목을 먼저 살펴보세요.";
+
+  return {
+    headline,
+    summaryComment: `이번 달 수입은 ${formatWon(stats.income)}, 지출은 ${formatWon(stats.expense)}입니다. ${balanceTone}`,
+    momComments,
+    budgetFeedback,
+    savingTips: [highExpenseTip, fixedTip],
+    assetComment:
+      stats.netWorth !== null
+        ? `최근 기록 기준 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 달에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
+        : "",
+    praise:
+      stats.balance >= 0
+        ? "수입과 지출을 기록해 남는 금액을 확인한 점이 좋습니다. 이 흐름을 다음 달 예산 설정으로 이어가세요."
+        : "지출 초과를 숫자로 확인한 것만으로도 다음 달 조정의 출발점이 됩니다.",
+  };
 }
 
 export async function saveGeminiApiKey(
@@ -401,16 +456,18 @@ export async function generateMonthlyReport(
       aiSetting.gemini_api_key,
       aggregates,
     );
-    if (!generated.ok) return { error: generated.error };
+    const ai = generated.ok
+      ? generated.ai
+      : createFallbackReportContent(stats, aggregates);
 
-    const content: MonthlyReportContent = { stats, ai: generated.ai };
+    const content: MonthlyReportContent = { stats, ai };
     const { error: saveError } = await ctx.supabase.from("monthly_reports").upsert(
       {
         household_id: ctx.householdId,
         year: parsed.year,
         month: parsed.month,
         content,
-        model: GEMINI_MODEL,
+        model: generated.ok ? GEMINI_MODEL : `${GEMINI_MODEL}+local-fallback`,
         generated_by: ctx.user.id,
         updated_at: new Date().toISOString(),
       },

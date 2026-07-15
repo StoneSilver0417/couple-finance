@@ -2,6 +2,13 @@
 
 ## 2026-07-15
 
+### fix - Gemini 한도 초과 시 로컬 보고서 fallback 추가
+
+- 사용자가 제공한 스크린샷에서 `generate_content_free_tier_input_token_count`, `generate_content_free_tier_requests`가 모두 `limit: 0`으로 확인됐다. 이는 “한도를 다 쓴 상태”라기보다 해당 프로젝트/계정 조합에서 무료 생성 한도가 배정되지 않은 상태다.
+- 결제 연결 없이도 보고서 화면을 쓸 수 있도록 Gemini 생성 실패 시 앱에서 계산한 집계만으로 한국어 보고서 문구를 생성하는 fallback을 추가했다.
+- fallback 보고서는 기존 `MonthlyReportContent` 구조를 그대로 사용해 화면 변경 없이 표시되며, 저장 모델은 `gemini-2.0-flash-lite+local-fallback`으로 남긴다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### fix - Gemini 한도 오류 상세 문구 추가
 
 - 사용자가 새 프로젝트/새 키에서도 같은 무료 한도 문구가 뜬다고 보고했다.
