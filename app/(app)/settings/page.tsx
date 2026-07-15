@@ -129,7 +129,9 @@ export default async function SettingsPage() {
   const household = householdResult.data;
   const members = membersResult.data || [];
   const apiKey = aiSettingResult.data?.gemini_api_key;
-  const maskedKey = apiKey ? `AIza…${apiKey.slice(-4)}` : null;
+  const maskedKey = apiKey
+    ? `${apiKey.slice(0, Math.min(4, apiKey.length))}…${apiKey.slice(-4)}`
+    : null;
   const reportMonths = getReportMonths();
 
   return (

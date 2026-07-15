@@ -128,8 +128,8 @@ export async function saveGeminiApiKey(
   if (!ctx.ok) return { error: ctx.error };
 
   const apiKey = getTrimmedString(formData.get("apiKey"), 200);
-  if (!apiKey || apiKey.length < 20 || !/^AIza/.test(apiKey)) {
-    return { error: "AIza로 시작하는 올바른 Gemini API 키를 입력해주세요." };
+  if (!apiKey || apiKey.length < 20) {
+    return { error: "올바른 Gemini API 키를 입력해주세요." };
   }
 
   try {

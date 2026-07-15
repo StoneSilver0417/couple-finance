@@ -165,10 +165,11 @@ function getGeminiErrorMessage(status: number): string {
 
 export async function validateGeminiKey(key: string): Promise<boolean> {
   try {
-    const response = await fetch(
-      `${GEMINI_API_BASE}/models?key=${encodeURIComponent(key)}`,
-      { method: "GET", cache: "no-store" },
-    );
+    const response = await fetch(`${GEMINI_API_BASE}/models`, {
+      method: "GET",
+      headers: { "x-goog-api-key": key },
+      cache: "no-store",
+    });
     return response.ok;
   } catch (error) {
     console.error("Gemini API 키 검증 요청 실패:", error);
@@ -187,10 +188,13 @@ export async function generateReportContent(
 
   try {
     const response = await fetch(
-      `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`,
+      `${GEMINI_API_BASE}/models/${GEMINI_MODEL}:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": key,
+        },
         cache: "no-store",
         signal: controller.signal,
         body: JSON.stringify({

@@ -2,6 +2,14 @@
 
 ## 2026-07-15
 
+### fix - Gemini 신규 Auth key 형식 지원
+
+- Google AI Studio 공식 문서(2026-07-13 기준)에서 신규 API 키가 기본적으로 Authorization/Auth key로 생성되며, 기존 `AIza` prefix만 보장되지 않는 것을 확인했다.
+- `lib/report-actions.ts`의 `AIza` prefix 강제 검증을 제거하고 길이 확인 후 실제 Gemini API 검증 결과로 저장 여부를 판단하도록 변경했다.
+- `lib/ai/gemini.ts`의 키 검증/보고서 생성 REST 호출을 query string `?key=` 방식에서 `x-goog-api-key` 헤더 방식으로 변경해 신규 Auth key 사용 경로에 맞췄다.
+- 설정 화면 placeholder와 저장된 키 마스킹을 특정 prefix에 의존하지 않도록 수정했다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### feat - 월간 AI 가계부 분석 보고서 구현 완료
 
 - **커밋/배포**: 기능 커밋 `6974aff`를 `master`에 푸시했고 Vercel 프로덕션 배포 `dpl_D5SL7JVy26M4cC9JKnAu7ChpvVPw`가 `Ready` 상태가 됐다. 운영 별칭 `https://couple-finance-roan.vercel.app` 연결과 인증 전 보고서 경로의 로그인 리다이렉트 콘텐츠를 확인했다.

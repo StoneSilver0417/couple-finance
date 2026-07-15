@@ -172,7 +172,7 @@ export function AiSettingsDialog({
                   minLength={20}
                   maxLength={200}
                   autoComplete="off"
-                  placeholder="AIza로 시작하는 키를 입력하세요"
+                  placeholder="Google AI Studio API 키를 입력하세요"
                   className="h-12 rounded-xl bg-white"
                 />
               </div>
