@@ -8,6 +8,7 @@
 - `lib/report-actions.ts`의 `AIza` prefix 강제 검증을 제거하고 길이 확인 후 실제 Gemini API 검증 결과로 저장 여부를 판단하도록 변경했다.
 - `lib/ai/gemini.ts`의 키 검증/보고서 생성 REST 호출을 query string `?key=` 방식에서 `x-goog-api-key` 헤더 방식으로 변경해 신규 Auth key 사용 경로에 맞췄다.
 - 설정 화면 placeholder와 저장된 키 마스킹을 특정 prefix에 의존하지 않도록 수정했다.
+- 커밋 `3fe5275`를 `master`에 푸시했고 Vercel 프로덕션 배포 `dpl_Ge5iXxjrpZWUmtU7soB54LaSEojH`가 `Ready` 상태로 운영 별칭 `https://couple-finance-roan.vercel.app`에 연결됐다.
 - 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
 
 ### feat - 월간 AI 가계부 분석 보고서 구현 완료

@@ -2,15 +2,15 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.4 + 월간 AI 보고서 구현·배포 완료, Gemini 신규 Auth key 형식 대응 반영 중
+- **버전**: v0.6.4 + 월간 AI 보고서 구현·배포 완료, Gemini 신규 Auth key 형식 대응 배포 완료
 - **빌드 상태**: 성공 (`npx tsc --noEmit`, `npx eslint .` 0 오류·0 경고, `npm run build` 통과)
-- **배포 상태**: 직전 프로덕션 배포 완료(2026-07-15, 기능 커밋 `6974aff`, Vercel `Ready`). 이번 Auth key 대응 변경은 커밋/배포 예정
+- **배포 상태**: 프로덕션 배포 완료(2026-07-15, Auth key 대응 커밋 `3fe5275`, Vercel `dpl_Ge5iXxjrpZWUmtU7soB54LaSEojH` `Ready`)
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **Supabase**: 개발/운영 분리 없이 `ieahmpxiaamesrnfgbng.supabase.co` 단일 프로젝트 사용
 
 ## 최근 작업
 
-- **Gemini 신규 API 키 형식 대응 (2026-07-15)**: Google AI Studio가 새 키를 Auth key로 생성하면서 `AQ...` 등 `AIza`가 아닌 prefix가 나오는 상태를 확인했다. 앱의 `AIza` prefix 강제 검증을 제거하고 실제 Gemini API 검증 결과로만 저장 여부를 판단하도록 변경했다. Gemini REST 호출은 공식 문서 방식에 맞춰 query string `?key=` 대신 `x-goog-api-key` 헤더를 사용하도록 수정했고, 설정 화면 placeholder와 마스킹도 특정 prefix에 의존하지 않게 바꿨다.
+- **Gemini 신규 API 키 형식 대응 배포 완료 (2026-07-15, `3fe5275`)**: Google AI Studio가 새 키를 Auth key로 생성하면서 `AQ...` 등 `AIza`가 아닌 prefix가 나오는 상태를 확인했다. 앱의 `AIza` prefix 강제 검증을 제거하고 실제 Gemini API 검증 결과로만 저장 여부를 판단하도록 변경했다. Gemini REST 호출은 공식 문서 방식에 맞춰 query string `?key=` 대신 `x-goog-api-key` 헤더를 사용하도록 수정했고, 설정 화면 placeholder와 마스킹도 특정 prefix에 의존하지 않게 바꿨다. Vercel 배포 `dpl_Ge5iXxjrpZWUmtU7soB54LaSEojH`가 `Ready`이며 운영 별칭 `https://couple-finance-roan.vercel.app`에 연결됐다.
 - **월간 AI 보고서 구현·배포 완료 (2026-07-15, `6974aff`)**: 사용자가 운영 Supabase에 신규 테이블/RLS SQL 적용을 완료했다. 가구별 Gemini 키 관리, 서버 집계·Gemini 구조화 응답, `/reports/[yearMonth]` 보고서 화면, 설정 진입점과 재생성을 구현해 Vercel 프로덕션에 배포했다. 키 원문은 서버에서만 읽고 클라이언트에는 마스킹 값만 전달하며, Gemini에는 메모 없이 집계와 고액 지출 5건만 전송한다.
 - **긴 기간 자산 추이 그래프 개선 (2026-07-03, `d780d70`)**: 30개 초과 포인트를 구간별 최신값으로 다운샘플링해 지글거림을 완화했고 프로덕션 검증까지 완료했다.
 
