@@ -2,15 +2,16 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.4 + 월간 AI 보고서 구현·배포 완료, Gemini 한도 초과 시 로컬 fallback 반영 중
+- **버전**: v0.6.4 + 월간 AI 보고서 구현·배포 완료, 보고서 모바일 가독성 개선 반영 중
 - **빌드 상태**: 성공 (`npx tsc --noEmit`, `npx eslint .` 0 오류·0 경고, `npm run build` 통과)
-- **배포 상태**: 직전 프로덕션 배포 완료(2026-07-15, 한도 오류 상세화 커밋 `add0626`, Vercel `dpl_44N2R5SSzD5Vf4AYi461VeuC1Lvx` `Ready`). 이번 fallback 변경은 커밋/배포 예정
+- **배포 상태**: 직전 프로덕션 배포 완료(2026-07-15, fallback 커밋 `e3b4424`, Vercel `dpl_D8cxNDfAETvhM9j3KsgjinHJ1XAy` `Ready`). 이번 모바일 가독성 개선은 커밋/배포 예정
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **Supabase**: 개발/운영 분리 없이 `ieahmpxiaamesrnfgbng.supabase.co` 단일 프로젝트 사용
 
 ## 최근 작업
 
-- **Gemini 한도 초과 fallback 추가 (2026-07-15)**: 스크린샷에서 `free_tier_input_token_count`, `free_tier_requests` limit이 0인 것을 확인했다. 결제 연결 없이는 Gemini 생성 호출이 불가능하므로, Gemini 실패 시에도 앱 집계만으로 한국어 보고서 문구를 생성해 저장하도록 `local-fallback`을 추가했다. 저장 모델은 `gemini-2.0-flash-lite+local-fallback`으로 표시된다.
+- **월간 보고서 모바일 가독성 개선 (2026-07-15)**: 사용자 스크린샷 기준으로 상단 인사이트 카드와 전월 대비 변화 카드의 글자 크기/대비/줄간격이 부족했다. 보고서 뷰 카드 배경을 더 불투명하게 바꾸고, 본문을 15~16px와 7 line-height 중심으로 조정했으며, 전월 대비 변화 행을 모바일에서 세로 배치로 바꿔 금액·배지·설명이 겹치지 않게 했다. 페이지 좌우 여백도 모바일에서 `px-4`로 줄여 콘텐츠 폭을 확보했다.
+- **Gemini 한도 초과 fallback 추가 (2026-07-15, `e3b4424`)**: 스크린샷에서 `free_tier_input_token_count`, `free_tier_requests` limit이 0인 것을 확인했다. 결제 연결 없이는 Gemini 생성 호출이 불가능하므로, Gemini 실패 시에도 앱 집계만으로 한국어 보고서 문구를 생성해 저장하도록 `local-fallback`을 추가했다.
 - **Gemini 한도 오류 상세화 (2026-07-15, `add0626`)**: 사용자가 새 프로젝트/새 키에서도 같은 한도 문구가 뜬다고 보고했다. Gemini 비정상 응답 본문을 파싱해 429의 quota violation detail/message를 화면 오류와 서버 로그에 반영하도록 변경했다.
 - **Gemini 무료 한도 완화 대응 (2026-07-15, `cb6a3a6`)**: 사용자가 다른 Google 계정의 신규 키를 적용해도 무료 한도 오류가 지속된다고 보고했다. 월간 보고서는 짧은 JSON 생성이라 기본 모델을 `gemini-2.0-flash`에서 `gemini-2.0-flash-lite`로 낮춰 한도 소모를 줄였고, 등록된 키가 있어도 삭제 없이 새 키로 교체 저장할 수 있도록 설정 다이얼로그에 교체 폼을 추가했다. 429 오류 문구도 AI Studio 프로젝트 한도 확인을 안내하도록 수정했다.
 - **Gemini 신규 API 키 형식 대응 배포 완료 (2026-07-15, `3fe5275`)**: Google AI Studio가 새 키를 Auth key로 생성하면서 `AQ...` 등 `AIza`가 아닌 prefix가 나오는 상태를 확인했다. 앱의 `AIza` prefix 강제 검증을 제거하고 실제 Gemini API 검증 결과로만 저장 여부를 판단하도록 변경했다. Gemini REST 호출은 공식 문서 방식에 맞춰 query string `?key=` 대신 `x-goog-api-key` 헤더를 사용하도록 수정했고, 설정 화면 placeholder와 마스킹도 특정 prefix에 의존하지 않게 바꿨다.
@@ -26,7 +27,7 @@
 
 ## 다음 TODO
 
-1. [ ] 프로덕션에서 Gemini quota limit 0 상태로 보고서 생성 시 `local-fallback` 보고서가 저장·표시되는지 확인한다.
+1. [ ] 프로덕션에서 월간 보고서 모바일 가독성 개선이 실제 기기 폭에서 충분한지 확인한다.
 2. [ ] 프로덕션에서 정상 키로 보고서 생성 시간을 측정해 `maxDuration=60` 이내 완료 여부를 확인한다.
 3. [ ] 자산 변동 기록 스냅샷 미갱신 버그를 Supabase 직접 조회로 조사·수정한다.
 4. [ ] 운영 DB 테스트 데이터와 Auth 계정 2개를 정리한다.

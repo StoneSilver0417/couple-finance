@@ -2,6 +2,14 @@
 
 ## 2026-07-15
 
+### fix - 월간 보고서 모바일 가독성 개선
+
+- 사용자가 제공한 모바일 스크린샷에서 상단 인사이트 카드, 요약 카드, 전월 대비 변화 카드의 텍스트가 작고 대비가 약해 읽기 어렵다는 문제가 확인됐다.
+- `components/reports/report-view.tsx`에서 보고서 카드 배경을 더 불투명한 흰색 계열로 바꾸고, 제목/본문/보조 텍스트의 크기와 줄간격을 올렸다.
+- 전월 대비 변화 항목은 모바일에서 제목·금액 행과 증감 배지가 세로로 쌓이도록 변경해 긴 금액이 눌리거나 작게 보이는 문제를 줄였다.
+- `app/(app)/reports/[yearMonth]/page.tsx`에서 모바일 좌우 여백을 `px-4`로 줄여 카드 내부 텍스트 폭을 확보하고, 생성 정보 카드의 대비와 글자 크기도 조정했다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과.
+
 ### fix - Gemini 한도 초과 시 로컬 보고서 fallback 추가
 
 - 사용자가 제공한 스크린샷에서 `generate_content_free_tier_input_token_count`, `generate_content_free_tier_requests`가 모두 `limit: 0`으로 확인됐다. 이는 “한도를 다 쓴 상태”라기보다 해당 프로젝트/계정 조합에서 무료 생성 한도가 배정되지 않은 상태다.

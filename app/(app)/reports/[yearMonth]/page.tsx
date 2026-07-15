@@ -128,7 +128,7 @@ export default async function MonthlyReportPage({
         </div>
       </header>
 
-      <div className="px-6">
+      <div className="px-4 sm:px-6">
         <nav
           aria-label="보고서 월 이동"
           className="glass-panel mb-6 flex items-center justify-between rounded-2xl border border-white/60 p-2 shadow-sm"
@@ -173,8 +173,8 @@ export default async function MonthlyReportPage({
         {report ? (
           <div className="space-y-5">
             <ReportView content={report.content} />
-            <div className="glass-panel rounded-2xl border border-white/70 p-4 shadow-sm">
-              <div className="mb-3 text-xs leading-relaxed text-text-secondary">
+            <div className="rounded-2xl border border-slate-100 bg-white/95 p-4 shadow-sm">
+              <div className="mb-3 text-sm leading-6 text-slate-600">
                 <p>마지막 생성: {generatedAt}</p>
                 <p>사용 모델: {report.model}</p>
               </div>
