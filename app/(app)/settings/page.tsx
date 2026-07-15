@@ -14,7 +14,6 @@ import {
   MessageCircleQuestion,
   ShieldCheck,
   Heart,
-  FileText,
   Bot,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
@@ -24,7 +23,7 @@ import { FeedbackDialog } from "@/components/settings/feedback-dialog";
 import { isAdmin, getPendingFeedbackCount } from "@/lib/admin-actions";
 import { AiSettingsDialog } from "@/components/settings/ai-settings-dialog";
 
-function getReportMonths(): { current: string; previous: string } {
+function getCurrentReportMonth(): string {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Seoul",
     year: "numeric",
@@ -32,11 +31,7 @@ function getReportMonths(): { current: string; previous: string } {
   }).formatToParts(new Date());
   const year = Number(parts.find((part) => part.type === "year")?.value);
   const month = Number(parts.find((part) => part.type === "month")?.value);
-  const previousDate = new Date(year, month - 2, 1);
-  return {
-    current: `${year}-${String(month).padStart(2, "0")}`,
-    previous: `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, "0")}`,
-  };
+  return `${year}-${String(month).padStart(2, "0")}`;
 }
 
 export default async function SettingsPage() {
@@ -132,7 +127,7 @@ export default async function SettingsPage() {
   const maskedKey = apiKey
     ? `${apiKey.slice(0, Math.min(4, apiKey.length))}…${apiKey.slice(-4)}`
     : null;
-  const reportMonths = getReportMonths();
+  const currentReportMonth = getCurrentReportMonth();
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -239,14 +234,6 @@ export default async function SettingsPage() {
               color: "text-emerald-500",
               bg: "bg-emerald-50",
             },
-            {
-              href: `/reports/${reportMonths.previous}`,
-              title: "AI 월간 보고서",
-              desc: "지난달 금융 분석",
-              icon: FileText,
-              color: "text-violet-600",
-              bg: "bg-violet-50",
-            },
           ].map((item, i) => (
             <Link key={i} href={item.href}>
               <div className="glass-panel p-5 rounded-[2rem] flex items-center justify-between cursor-pointer group hover:bg-white/80 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow">
@@ -316,7 +303,7 @@ export default async function SettingsPage() {
             <AiSettingsDialog
               registered={Boolean(apiKey)}
               maskedKey={maskedKey}
-              reportHref={`/reports/${reportMonths.current}`}
+              reportHref={`/reports/${currentReportMonth}`}
             >
               <Button
                 size="sm"

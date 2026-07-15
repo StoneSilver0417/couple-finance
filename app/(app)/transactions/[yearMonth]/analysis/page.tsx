@@ -2,9 +2,21 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import { ArrowLeft, BarChart3, Sparkles } from "lucide-react";
 import { BudgetAnalysisClient } from "./budget-analysis-client";
 import type { TransactionRpcRow } from "@/types";
+
+function getCurrentYearMonthSeoul(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
 
 export default async function BudgetAnalysisPage({
   params,
@@ -12,6 +24,9 @@ export default async function BudgetAnalysisPage({
   params: { yearMonth: string };
 }) {
   const { yearMonth } = await params;
+  const currentYearMonth = getCurrentYearMonthSeoul();
+  const reportYearMonth =
+    yearMonth > currentYearMonth ? currentYearMonth : yearMonth;
   const supabase = await createClient();
 
   const {
@@ -119,6 +134,16 @@ export default async function BudgetAnalysisPage({
             </h1>
           </div>
         </div>
+
+        <Link href={`/reports/${reportYearMonth}`}>
+          <Button
+            variant="ghost"
+            className="h-auto px-3 py-2 rounded-2xl bg-primary/10 backdrop-blur-md border border-primary/20 shadow-sm text-primary hover:bg-primary/20 transition-all hover:scale-105 flex items-center gap-1.5"
+          >
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            <span className="text-xs font-bold">AI 보고서</span>
+          </Button>
+        </Link>
       </header>
 
       {/* 월 네비게이션 */}
