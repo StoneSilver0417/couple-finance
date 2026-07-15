@@ -33,5 +33,6 @@ npx eslint .       # 린트
 ## 프로젝트 고유 규칙
 - 서버 액션은 입력 검증(zod) 필수, 공개 액션 노출 금지 (v0.6.3 보안 리팩토링 기준 유지)
 - React 19 권장 패턴 사용 (setState-in-effect 금지: key 리마운트, 액션 래퍼 등)
+- 예산 사용률은 `설정 예산 대비 변동지출`로만 계산한다. 고정·비정기 지출은 제외하고 `calculateBudgetUsagePercent()` 공통 함수를 사용한다.
 - Supabase MCP 추가 시: PAT 발급 후
   `claude mcp add supabase --env SUPABASE_ACCESS_TOKEN=<토큰> -- cmd /c npx -y @supabase/mcp-server-supabase@latest --read-only --project-ref=bgevpihfcvraxososcll`

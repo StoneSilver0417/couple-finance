@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { calculateSummary } from "@/lib/calculations/finance";
+import {
+  calculateBudgetUsagePercent,
+  calculateSummary,
+} from "@/lib/calculations/finance";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import {
   GEMINI_MODEL,
@@ -339,8 +342,10 @@ export async function generateMonthlyReport(
     const variableExpense = sumExpenseType(currentTransactions, "variable");
     const irregularExpense = sumExpenseType(currentTransactions, "irregular");
     const totalBudget = Number(budgetResult.data?.total_budget) || 0;
-    const budgetUsagePercent =
-      totalBudget > 0 ? (summary.expense / totalBudget) * 100 : null;
+    const budgetUsagePercent = calculateBudgetUsagePercent(
+      totalBudget,
+      variableExpense,
+    );
 
     const currentCategories = aggregateExpenseCategories(currentTransactions);
     const previousCategories = aggregateExpenseCategories(previousTransactions);

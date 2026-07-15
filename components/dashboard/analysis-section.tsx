@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { calculateBudgetUsagePercent } from "@/lib/calculations/finance";
 import {
   CategoryTransactionsModal,
   TransactionItem,
@@ -42,7 +43,7 @@ export default function AnalysisSection({
   // 예산 잔액은 변동지출만 차감
   const budgetRemaining = totalBudget - variableExpense;
   const budgetUsedPercent =
-    totalBudget > 0 ? (variableExpense / totalBudget) * 100 : 0;
+    calculateBudgetUsagePercent(totalBudget, variableExpense) ?? 0;
 
   const handleCategoryClick = (cat: CategoryData, type: "expense" | "income") => {
     setSelectedCategory(cat);

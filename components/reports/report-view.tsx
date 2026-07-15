@@ -11,6 +11,7 @@ import {
   Sparkles,
   Tags,
 } from "lucide-react";
+import { calculateBudgetUsagePercent } from "@/lib/calculations/finance";
 
 interface SafeCategoryDiff {
   name: string;
@@ -149,9 +150,29 @@ export function ReportView({ content }: { content: unknown }) {
   const income = getNumber(stats, "income");
   const expense = getNumber(stats, "expense");
   const balance = getNumber(stats, "balance");
-  const budgetUsagePercent = getNumber(stats, "budgetUsagePercent");
+  const storedBudgetUsagePercent = getNumber(stats, "budgetUsagePercent");
+  const totalBudget = getNumber(stats, "totalBudget");
+  const variableExpense = getNumber(stats, "variableExpense");
+  const budgetUsagePercent =
+    totalBudget !== null && variableExpense !== null
+      ? calculateBudgetUsagePercent(totalBudget, variableExpense)
+      : storedBudgetUsagePercent;
   const netWorth = getNumber(stats, "netWorth");
   const netWorthDiff = getNumber(stats, "netWorthDiff");
+  const normalizedBudgetFeedback =
+    storedBudgetUsagePercent !== null &&
+    budgetUsagePercent !== null &&
+    storedBudgetUsagePercent !== budgetUsagePercent
+      ? budgetFeedback
+          .replace(
+            `${storedBudgetUsagePercent.toFixed(1)}%`,
+            `${budgetUsagePercent.toFixed(1)}%`,
+          )
+          .replace(
+            `${storedBudgetUsagePercent.toFixed(0)}%`,
+            `${budgetUsagePercent.toFixed(0)}%`,
+          )
+      : budgetFeedback;
 
   const statItems = [
     income !== null
@@ -283,12 +304,14 @@ export function ReportView({ content }: { content: unknown }) {
         </section>
       )}
 
-      {budgetFeedback && (
+      {normalizedBudgetFeedback && (
         <section className="rounded-[1.75rem] border border-blue-100 bg-blue-50/90 p-5 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 text-lg font-black text-blue-950">
             <Gauge className="h-5 w-5" aria-hidden="true" /> 예산 피드백
           </h3>
-          <p className="text-base leading-7 text-blue-900">{budgetFeedback}</p>
+          <p className="text-base leading-7 text-blue-900">
+            {normalizedBudgetFeedback}
+          </p>
         </section>
       )}
 

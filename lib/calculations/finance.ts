@@ -30,6 +30,18 @@ export function calculateSummary(
 }
 
 /**
+ * 설정한 월 예산 대비 변동지출 사용률을 계산한다.
+ * 고정·비정기 지출은 홈 지출 분석과 동일하게 예산 사용액에서 제외한다.
+ */
+export function calculateBudgetUsagePercent(
+  totalBudget: number,
+  variableExpense: number,
+): number | null {
+  if (totalBudget <= 0) return null;
+  return (variableExpense / totalBudget) * 100;
+}
+
+/**
  * Groups transactions by category for charting
  */
 export function groupByCategory(transactions: Transaction[]): ChartDataPoint[] {
