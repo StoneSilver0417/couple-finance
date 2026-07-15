@@ -52,3 +52,6 @@ supabase/.temp/
 # 가능) 등 민감할 수 있는 파일이 들어있어 저장소 공개 전 반드시 무시 처리
 .codex-remote-attachments/
 .agents/
+
+# 로컬 개발자별 도구 권한 설정 (전역 gitignore로도 무시되지만 이식성을 위해 명시)
+.claude/settings.local.json

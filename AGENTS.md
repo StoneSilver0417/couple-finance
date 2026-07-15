@@ -22,17 +22,14 @@ npx eslint .       # 린트
 ```
 
 ## 환경 (Supabase)
-| 환경 | URL                                | 용도             |
-| ---- | ---------------------------------- | ---------------- |
-| 개발 | `tsqrohamnjtqocmnokmo.supabase.co` | 로컬 개발/테스트 |
-| 운영 | `bgevpihfcvraxososcll.supabase.co` | 프로덕션         |
-
-- 환경 변수: `.env.local`(개발), `.env.vercel`(운영 참고)
+- 개발/운영 분리 없이 **단일 프로젝트**만 사용 (`ieahmpxiaamesrnfgbng.supabase.co`)
+- 환경 변수: `.env.local`에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 설정
 - 문제 발생 시 롤백: `vercel rollback` 또는 `git revert <커밋>` 후 푸시
 
 ## 프로젝트 고유 규칙
 - 서버 액션은 입력 검증(zod) 필수, 공개 액션 노출 금지 (v0.6.3 보안 리팩토링 기준 유지)
 - React 19 권장 패턴 사용 (setState-in-effect 금지: key 리마운트, 액션 래퍼 등)
 - 예산 사용률은 `설정 예산 대비 변동지출`로만 계산한다. 고정·비정기 지출은 제외하고 `calculateBudgetUsagePercent()` 공통 함수를 사용한다.
+- 관리자 권한은 이메일이 아니라 `profiles.is_admin` 컬럼으로만 부여한다 (2026-07-15 이메일 기반 자동 부여 백도어 제거, `20260715200000_remove_admin_email_backdoor.sql` 참고). 신규 관리자는 운영자가 DB에서 직접 `is_admin=true`로 설정한다.
 - Supabase MCP 추가 시: PAT 발급 후
-  `claude mcp add supabase --env SUPABASE_ACCESS_TOKEN=<토큰> -- cmd /c npx -y @supabase/mcp-server-supabase@latest --read-only --project-ref=bgevpihfcvraxososcll`
+  `claude mcp add supabase --env SUPABASE_ACCESS_TOKEN=<토큰> -- cmd /c npx -y @supabase/mcp-server-supabase@latest --read-only --project-ref=ieahmpxiaamesrnfgbng`
