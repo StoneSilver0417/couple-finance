@@ -25,6 +25,7 @@
    - 요약 카드: `components/reports/report-view.tsx`에 정의된 (현재 export 안 된) `StatCard`에 `export` 키워드만 추가해 재사용한다. **검증된 props**: `{ label: string; value: string; icon: typeof BanknoteArrowDown; tone: string; valueTone?: string; cardTone?: string }`. 동작 변경 없는 1줄짜리 안전한 수정이다.
 5. **예산 사용률은 기존 규칙 그대로**: 연간 `monthly_budgets.total_budget` 합계 대비 연간 변동지출(`expense_type='variable'`) 합계 — `calculateBudgetUsagePercent(totalBudget, variableExpense)`(`lib/calculations/finance.ts`, **시그니처 검증됨**: `(totalBudget: number, variableExpense: number): number | null`, `totalBudget <= 0`이면 `null`) 재사용. 고정·비정기 지출 제외.
 6. **카테고리 집계 헬퍼는 새 페이지 파일 내부에 로컬로 구현한다.** `report-actions.ts`의 `aggregateExpenseCategories`류는 `"use server"` 파일 안에 있고 export되지 않아 import가 불가능하다. 로직은 15줄 내외로 가볍고, 이미 배포되어 안정적으로 동작 중인 `report-actions.ts`를 건드리는 리스크보다 이 정도 중복을 감수하는 편이 안전하다는 판단이다. (나중에 원한다면 `lib/calculations/finance.ts`로 공통 추출 가능 — 이번 지시서 범위 아님.)
+7. **연도 이동 버튼은 disabled 처리를 하지 않는다.** `app/(app)/transactions/[yearMonth]/analysis/page.tsx`와 `app/(app)/reports/[yearMonth]/page.tsx`를 재확인한 결과, 두 페이지 모두 이전/다음 버튼에 범위 제한(disabled)을 걸지 않고 **항상 `<Link>`로 렌더링하며, 유효하지 않은 값은 페이지 진입 시 서버 redirect로만 되돌린다.** 이번 페이지도 이 컨벤션을 그대로 따른다 — 미래 연도로 이동하는 링크를 눌러도 페이지가 열리면서 바로 현재 연도로 redirect되므로 결과는 동일하고, 코드는 더 단순해지며 기존 코드베이스와의 일관성도 유지된다. (초안에서는 `disabled` prop을 썼으나 재검토 후 제거함.)
 
 ### 3. 참고할 기존 패턴 파일 (구현 전 반드시 읽을 것)
 
@@ -223,7 +224,6 @@ export default async function AnnualSummaryPage({
 
   const prevYear = year - 1;
   const nextYear = year + 1;
-  const nextDisabled = nextYear > currentYear;
 
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
@@ -259,35 +259,22 @@ export default async function AnnualSummaryPage({
               variant="ghost"
               size="icon"
               aria-label="이전 연도"
-              disabled={!isValidYearMonth(prevYear, 1)}
               className="rounded-xl hover:bg-white/60"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>
           <span className="font-black text-text-main">{year}년</span>
-          {nextDisabled ? (
+          <Link href={`/transactions/annual/${nextYear}`}>
             <Button
               variant="ghost"
               size="icon"
-              disabled
-              aria-label="다음 연도 없음"
-              className="rounded-xl"
+              aria-label="다음 연도"
+              className="rounded-xl hover:bg-white/60"
             >
               <ChevronRight className="h-5 w-5" />
             </Button>
-          ) : (
-            <Link href={`/transactions/annual/${nextYear}`}>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="다음 연도"
-                className="rounded-xl hover:bg-white/60"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          )}
+          </Link>
         </nav>
 
         {/* 요약 카드 */}
@@ -377,7 +364,7 @@ export default async function AnnualSummaryPage({
 4. [ ] `/transactions/annual/2026` 접속 → 요약 카드/월별 추이/카테고리 도넛 정상 렌더
 5. [ ] 잘못된 연도(`/transactions/annual/abcd`, `/transactions/annual/1999`) → 현재 연도로 redirect
 6. [ ] 미래 연도(`/transactions/annual/2027`) → 현재 연도로 redirect
-7. [ ] 연도 네비게이션 이전/다음 버튼 동작, 다음 연도(미래) 비활성화 확인
+7. [ ] 연도 네비게이션 이전/다음 버튼 동작 확인. "다음"을 눌러 미래 연도로 이동해도 페이지 진입 시 서버 redirect로 현재 연도로 즉시 되돌아오는지 확인(버튼 자체는 비활성화하지 않음 — `analysis`/`reports` 페이지와 동일하게 항상 링크로 두고 redirect로만 방어하는 기존 컨벤션을 따름)
 8. [ ] 거래/예산이 없는 연도 → 에러 없이 빈 상태로 렌더(도넛/예산카드 미표시)
 9. [ ] 분석 페이지 헤더에서 "연간 요약" 버튼으로 진입 확인
 10. [ ] `handoff.md`·`CHANGELOG.md` 갱신, 한글 conventional 커밋
