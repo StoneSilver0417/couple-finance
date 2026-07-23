@@ -102,6 +102,7 @@ function renderHighlightedSummary(
 export function StatCard({
   label,
   value,
+  caption,
   icon: Icon,
   tone,
   valueTone = "text-slate-950",
@@ -109,6 +110,7 @@ export function StatCard({
 }: {
   label: string;
   value: string;
+  caption?: string;
   icon: typeof BanknoteArrowDown;
   tone: string;
   valueTone?: string;
@@ -129,6 +131,11 @@ export function StatCard({
       >
         {value}
       </p>
+      {caption && (
+        <p className="mt-1 whitespace-nowrap text-xs font-bold tabular-nums text-slate-500">
+          {caption}
+        </p>
+      )}
     </div>
   );
 }

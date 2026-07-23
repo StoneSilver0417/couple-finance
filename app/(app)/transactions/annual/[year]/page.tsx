@@ -47,11 +47,12 @@ interface AnnualCategoryAggregate {
 
 function aggregateAnnualCategories(
   rows: TransactionRpcRow[],
+  type: "income" | "expense",
 ): AnnualCategoryAggregate[] {
   const groups = new Map<string, AnnualCategoryAggregate>();
 
   for (const row of rows) {
-    if (row.type !== "expense") continue;
+    if (row.type !== type) continue;
 
     const name = row.category_name || "미분류";
     const amount = Number(row.amount) || 0;
@@ -201,7 +202,16 @@ export default async function AnnualSummaryPage({
     totalBudget,
     variableExpense,
   );
-  const annualCategories = aggregateAnnualCategories(transactionRows);
+  const avgMonthlyBalance = (totalIncome - totalExpense) / monthsInYear;
+  const avgMonthlyVariableExpense = variableExpense / monthsInYear;
+  const annualExpenseCategories = aggregateAnnualCategories(
+    transactionRows,
+    "expense",
+  );
+  const annualIncomeCategories = aggregateAnnualCategories(
+    transactionRows,
+    "income",
+  );
 
   const prevYear = year - 1;
   const nextYear = year + 1;
@@ -275,8 +285,8 @@ export default async function AnnualSummaryPage({
             cardTone="border-rose-100 bg-gradient-to-br from-rose-50/80 to-white"
           />
           <StatCard
-            label="연간 잔액"
-            value={`${(totalIncome - totalExpense).toLocaleString()}원`}
+            label="월평균 잔액"
+            value={`${Math.round(avgMonthlyBalance).toLocaleString()}원`}
             icon={CircleDollarSign}
             tone="bg-blue-50 text-blue-600"
           />
@@ -284,6 +294,7 @@ export default async function AnnualSummaryPage({
             <StatCard
               label="예산 사용률"
               value={`${budgetUsagePercent.toFixed(1)}%`}
+              caption={`월평균 ${Math.round(avgMonthlyVariableExpense).toLocaleString()}원 지출`}
               icon={Gauge}
               tone="bg-violet-50 text-violet-600"
             />
@@ -298,13 +309,24 @@ export default async function AnnualSummaryPage({
         />
       </div>
 
-      {annualCategories.length > 0 && (
+      {annualIncomeCategories.length > 0 && (
+        <div className="px-6 mb-6">
+          <div className="glass-panel p-5 rounded-[2rem] border border-white/60">
+            <h3 className="text-lg font-bold text-text-main mb-4 px-2">
+              카테고리별 수입 비중
+            </h3>
+            <AssetPortfolioChart data={annualIncomeCategories} />
+          </div>
+        </div>
+      )}
+
+      {annualExpenseCategories.length > 0 && (
         <div className="px-6">
           <div className="glass-panel p-5 rounded-[2rem] border border-white/60">
             <h3 className="text-lg font-bold text-text-main mb-4 px-2">
               카테고리별 지출 비중
             </h3>
-            <AssetPortfolioChart data={annualCategories} />
+            <AssetPortfolioChart data={annualExpenseCategories} />
           </div>
         </div>
       )}
