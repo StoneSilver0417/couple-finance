@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-23
+
+### docs - 연간 요약 페이지 + AI 보고서 기간 확장 Codex 작업 지시서 작성
+
+- `docs/tasks/annual-summary-and-report-period-expansion.md` 신설.
+- **Phase 1 (지금 착수)**: 연간 수입/지출 추이와 카테고리별 지출 비중을 보여주는 조회 전용 페이지 `/transactions/annual/[year]`. 신규 마이그레이션 없이 기존 `monthly_balances`/`monthly_budgets`/`get_transactions_by_month` RPC로 집계. 신규 차트 컴포넌트 0개 — `ExpenseTrendSection`, `AssetPortfolioChart`, `report-view.tsx`의 `StatCard`(export 추가)를 그대로 재사용. 분석 페이지 헤더에 진입 버튼 추가.
+- **Phase 2 (설계만, 착수는 나중)**: 월간 AI 보고서를 분기/반기/연간으로 확장하는 상세 설계 — 라이브 `monthly_reports` 테이블은 건드리지 않고 신규 `periodic_reports` 테이블로 분리(회귀 리스크 회피), 기존 `momCategoryDiffs` 등 필드명은 하위호환을 위해 유지하고 `periodLabel`/`previousPeriodLabel`만 추가, `/reports/[yearMonth]` → `/reports/[period]` 라우트 리네임안(기존 URL 호환 유지) 포함.
+- 설계 검증: `StatCard`/`ExpenseTrendSection`/`calculateBudgetUsagePercent`/`isValidYearMonth`/`TransactionRpcRow`의 실제 시그니처를 코드에서 직접 확인 후 지시서에 반영.
+
+### 깃허브 저장소 공개 전환 완료
+
+- 사용자가 보안 마이그레이션(`20260715200000_remove_admin_email_backdoor.sql`)을 운영 Supabase Dashboard에서 직접 적용 완료.
+- `gh repo edit`으로 저장소 가시성을 PRIVATE → PUBLIC으로 전환 완료 (https://github.com/StoneSilver0417/couple-finance).
+
 ## 2026-07-15
 
 ### security - 깃허브 저장소 공개 전환 대비 보안 점검 및 정리
