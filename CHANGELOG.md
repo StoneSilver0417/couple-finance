@@ -2,6 +2,16 @@
 
 ## 2026-07-23
 
+### feat - 연간 요약 페이지 구현 (Phase 1)
+
+- 조회 전용 동적 라우트 `/transactions/annual/[year]`를 추가했다. Asia/Seoul 기준 현재 연도를 사용해 4자리·2000~2100 범위 밖의 연도와 미래 연도를 현재 연도로 되돌리고, 기존 인증·가구 온보딩 게이트를 그대로 적용했다.
+- `monthly_balances`의 12개월 수입·지출, `monthly_budgets`의 연간 예산 합계, `get_transactions_by_month` RPC의 연간 거래를 병렬 조회한다. 올해 추이는 현재 월까지만 만들며 과거 연도는 12개월 전체를 표시한다.
+- 연간 예산 사용률은 프로젝트 규칙대로 `calculateBudgetUsagePercent(연간 예산 합계, 연간 변동지출)`로 계산해 고정·비정기 지출을 제외했다.
+- 월별 추이는 기존 `ExpenseTrendSection`, 카테고리별 지출 비중은 기존 `AssetPortfolioChart`, 요약 카드는 `StatCard`를 export해 재사용했다. 카테고리는 지출액순 상위 7개와 나머지 `기타`로 최대 8개까지 표시한다.
+- 예산 실적 분석 헤더에 해당 연도의 `연간 요약` 진입 버튼을 추가했다. 모바일에서는 헤더 버튼 행을 제목 아래로 내려 가로 오버플로를 막고, 연간 페이지에서는 기존 추이 컴포넌트의 자체 여백과 외부 여백이 중복되지 않게 정렬했다.
+- 신규 마이그레이션·npm 의존성은 추가하지 않았으며, Phase 2의 보고서 기간 확장 라우트·서버 액션·DB 설계에는 착수하지 않았다.
+- 검증: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과. 빌드 결과에서 `/transactions/annual/[year]` 동적 라우트 생성을 확인했고, 프로덕션 서버 렌더 기준 잘못된 연도·미래 연도는 `/transactions/annual/2026`, 인증 없는 정상 연도는 `/login` 리다이렉트 마커를 확인했다.
+
 ### docs - 연간 요약 페이지 + AI 보고서 기간 확장 Codex 작업 지시서 작성
 
 - `docs/tasks/annual-summary-and-report-period-expansion.md` 신설.

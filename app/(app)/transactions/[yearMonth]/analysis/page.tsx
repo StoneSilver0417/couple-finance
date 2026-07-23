@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BarChart3, Sparkles } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarRange, Sparkles } from "lucide-react";
 import { BudgetAnalysisClient } from "./budget-analysis-client";
 import type { TransactionRpcRow } from "@/types";
 
@@ -114,7 +114,7 @@ export default async function BudgetAnalysisPage({
   return (
     <div className="flex-1 w-full animate-fade-in pb-8">
       {/* Header */}
-      <header className="flex items-center justify-between p-6 pt-10">
+      <header className="flex flex-col gap-4 p-6 pt-10 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Link href={`/transactions/${yearMonth}`}>
             <Button
@@ -135,15 +135,26 @@ export default async function BudgetAnalysisPage({
           </div>
         </div>
 
-        <Link href={`/reports/${reportYearMonth}`}>
-          <Button
-            variant="ghost"
-            className="h-auto px-3 py-2 rounded-2xl bg-primary/10 backdrop-blur-md border border-primary/20 shadow-sm text-primary hover:bg-primary/20 transition-all hover:scale-105 flex items-center gap-1.5"
-          >
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            <span className="text-xs font-bold">AI 보고서</span>
-          </Button>
-        </Link>
+        <div className="flex items-center justify-end gap-2">
+          <Link href={`/transactions/annual/${year}`}>
+            <Button
+              variant="ghost"
+              className="h-auto cursor-pointer px-3 py-2 rounded-2xl bg-white/60 border border-white/60 shadow-sm text-text-main hover:bg-white flex items-center gap-1.5"
+            >
+              <CalendarRange className="h-4 w-4" aria-hidden="true" />
+              <span className="text-xs font-bold">연간 요약</span>
+            </Button>
+          </Link>
+          <Link href={`/reports/${reportYearMonth}`}>
+            <Button
+              variant="ghost"
+              className="h-auto cursor-pointer px-3 py-2 rounded-2xl bg-primary/10 backdrop-blur-md border border-primary/20 shadow-sm text-primary hover:bg-primary/20 transition-all hover:scale-105 flex items-center gap-1.5"
+            >
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              <span className="text-xs font-bold">AI 보고서</span>
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* 월 네비게이션 */}

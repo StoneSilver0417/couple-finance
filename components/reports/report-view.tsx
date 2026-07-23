@@ -99,7 +99,7 @@ function renderHighlightedSummary(
   });
 }
 
-function StatCard({
+export function StatCard({
   label,
   value,
   icon: Icon,

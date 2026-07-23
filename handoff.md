@@ -2,20 +2,17 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.4 + AI 보고서 예산 사용률 계산 기준 통일 완료
+- **버전**: v0.6.4 + 연간 요약 페이지 Phase 1 구현 완료
 - **빌드 상태**: 성공 (`npx tsc --noEmit`, `npx eslint .` 0 오류·0 경고, `npm run build` 통과)
-- **배포 상태**: 최신 `master` 자동 프로덕션 배포 운영. 신규 아이콘 커밋 `00a2bcf` 배포 `Ready`, 예산 계산 수정도 푸시 후 자동 배포
+- **배포 상태**: Phase 1 변경은 로컬 커밋 완료, 아직 원격 푸시·프로덕션 배포 전. 현재 프로덕션은 `origin/master` 커밋 `5451b7b` 기준
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **깃허브 저장소**: **PUBLIC 전환 완료** (2026-07-23) — https://github.com/StoneSilver0417/couple-finance
 - **Supabase**: 개발/운영 분리 없이 `ieahmpxiaamesrnfgbng.supabase.co` 단일 프로젝트 사용
 
 ## 최근 작업
 
-- **연간 요약 페이지 + AI 보고서 기간 확장 설계 (2026-07-23)**: Codex 작업 지시서 작성 완료 — `docs/tasks/annual-summary-and-report-period-expansion.md`. Phase 1(연간 요약 페이지, `/transactions/annual/[year]`, 조회 전용, 신규 마이그레이션 없음)은 지금 착수 대상. Phase 2(AI 월간 보고서를 분기/반기/연간으로 확장, `periodic_reports` 신규 테이블 설계 포함)는 설계만 확정, 착수는 사용자가 나중에 다시 요청할 때.
-- **깃허브 저장소 공개 전환 완료 (2026-07-23)**: 사용자가 보안 마이그레이션(`20260715200000_remove_admin_email_backdoor.sql`)을 Supabase Dashboard에서 직접 적용 완료. `gh repo edit`으로 저장소를 PRIVATE → PUBLIC 전환 완료.
-- **깃허브 공개 전환 보안 점검 (2026-07-15)**: 히스토리 전체 비밀값 노출 없음 확인. **[치명적] 특정 이메일 자동 관리자 권한 부여 백도어 발견** — 수정 마이그레이션 `20260715200000_remove_admin_email_backdoor.sql` 작성(적용 완료, 위 항목 참고). 관리자·테스트 계정 실이메일을 문서에서 마스킹, `.gitignore`에 `.codex-remote-attachments/`·`.agents/` 추가. 상세는 CHANGELOG.md 참고.
-- **AI 보고서 예산 사용률 계산 수정 (2026-07-15)**: 보고서만 전체 지출을 설정 예산으로 나눠 홈 지출 분석과 값이 달랐던 원인을 수정했다. 홈과 보고서 모두 `변동지출 ÷ 설정 예산` 공통 함수를 사용하며 고정·비정기 지출은 제외한다. 기존 저장 보고서도 화면에서 새 비율을 파생 계산하고 피드백 문장의 기존 비율을 가능한 경우 보정한다.
-- **신규 앱/PWA 아이콘 적용 (2026-07-15)**: 사용자가 제공한 `부부공동 가계부` 일러스트를 변형 없이 192·512px PWA 아이콘, 180px Apple 홈 화면 아이콘, 48px favicon으로 내보냈다. manifest의 `any maskable` 용도와 Next.js 메타데이터 아이콘 경로도 각 규격에 맞게 갱신했다.
+- **연간 요약 페이지 Phase 1 구현 (2026-07-23)**: 조회 전용 `/transactions/annual/[year]` 페이지를 추가했다. 연간 수입·지출·잔액·변동지출 기준 예산 사용률, 월별 수입/지출 추이, 카테고리별 지출 비중을 기존 DB와 차트 컴포넌트로 제공한다. 분석 화면에 진입 버튼을 추가했고 모바일 헤더·차트 여백도 정렬했다. 신규 마이그레이션과 npm 의존성은 없다.
+- **Phase 2 미착수 유지 (2026-07-23)**: AI 보고서 분기/반기/연간 확장은 `docs/tasks/annual-summary-and-report-period-expansion.md`에 설계만 남아 있으며 관련 라우트·서버 액션·DB는 전혀 변경하지 않았다.
 
 ## 알려진 이슈
 
@@ -28,7 +25,7 @@
 
 ## 다음 TODO
 
-1. [ ] **(Codex) 연간 요약 페이지 구현 (Phase 1)** — 지시서: `docs/tasks/annual-summary-and-report-period-expansion.md`. `/transactions/annual/[year]` 신규 페이지, 신규 마이그레이션 없음.
+1. [ ] 필요 시 Phase 1 커밋을 `master`에 푸시해 Vercel 프로덕션 배포 후 실제 인증 데이터로 연간 요약 화면을 확인한다.
 2. [ ] 실제 보고서에서 예산 사용률이 홈 지출 분석과 같은지 확인하고, 기존 보고서는 필요하면 재생성해 AI 피드백 전체를 갱신한다.
 3. [ ] 설치된 PWA는 아이콘 캐시가 남을 수 있으므로 재설치 후 신규 홈 화면 아이콘을 확인한다.
 4. [ ] 프로덕션에서 정상 Gemini 키 생성 시간을 실사용 검증한다.
