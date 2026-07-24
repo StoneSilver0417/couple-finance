@@ -4,15 +4,15 @@
 
 - **버전**: v0.6.4 + 연간 요약 페이지 Phase 1 구현·검증·배포·기능 개선 완료
 - **빌드 상태**: 성공 (`npx tsc --noEmit`, `npx eslint .` 0 오류·0 경고, `npm run build` 통과, 실제 Supabase 연동 E2E 21/21 통과, 프로덕션 브라우저 시각 검증 완료)
-- **배포 상태**: 커밋 `482bea8` 푸시 완료, Vercel 프로덕션 배포 `Ready` 확인
+- **배포 상태**: 커밋 `1a36a20` 푸시 완료, Vercel 프로덕션 배포 `Ready` 확인
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **깃허브 저장소**: **PUBLIC 전환 완료** (2026-07-23) — https://github.com/StoneSilver0417/couple-finance
 - **Supabase**: 개발/운영 분리 없이 `ieahmpxiaamesrnfgbng.supabase.co` 단일 프로젝트 사용
 
 ## 최근 작업
 
+- **도넛 차트 두 번 클릭 버그 수정 (2026-07-24, Codex 진단 + Claude Code 검증/배포)**: 사용자가 도넛 차트 퍼센트 라벨 클릭 시 두 번 클릭해야 선택되는 버그를 지적, Codex 플러그인에 명시 위임. Codex가 라벨 `<text>`에 `pointer-events` 미지정이 원인임을 진단, `pointerEvents: "none"` 한 줄로 수정. Codex 샌드박스가 폰트 네트워크 차단으로 `npm run build` 검증을 못 마쳐 내가 인계받아 로컬 tsc/eslint/build 통과 확인 후 커밋·배포(`1a36a20`). 프로덕션 Playwright 정밀 검증으로 단일 클릭 즉시 선택됨을 확인. `AssetPortfolioChart` 공유 컴포넌트라 자산 페이지·연간 요약 페이지 모두 적용.
 - **연간 요약 탭 통합 + 평균 계산 수정 (2026-07-24, Claude Code)**: 사용자 피드백 2건 반영, 프로덕션 배포·검증 완료(커밋 `482bea8`). ① 지출/수입 비중 도넛이 세로로 둘 다 나열돼 페이지가 길어지던 문제 → 지출 추이와 같은 지출/수입 토글 탭 하나로 통합(`CategoryBreakdownSection` 신규). ② 월평균 잔액·예산 사용률 평균 지출액을 "달력상 경과 개월수"가 아니라 "실제 monthly_balances 기록이 있는 개월수"로 나누도록 수정 — 가입 전이거나 입력 안 한 달까지 나누면 평균이 부자연스럽게 낮아지는 문제 방지, "n개월 기록 기준" 캡션으로 기준 명시. 프로덕션 실측: 7개월 중 실제 기록 6개월 → 월평균 잔액이 1,485,714원(7개월 기준, 오류)에서 1,733,333원(6개월 기준, 정확)으로 교정됨을 확인.
-- **연간 요약 지표 개선 1차 + Phase 1 구현·검증·배포 (2026-07-23~24)**: 조회 전용 `/transactions/annual/[year]` 신규(신규 마이그레이션·npm 의존성 없음), 실 Supabase E2E 21/21 통과, 프로덕션 브라우저 시각 검증 완료. 상세는 CHANGELOG.md.
 
 ## 알려진 이슈
 

@@ -2,6 +2,14 @@
 
 ## 2026-07-24
 
+### fix - 도넛 차트 퍼센트 라벨 두 번 클릭 버그 수정 (Codex 진단)
+
+- 사용자가 도넛 차트(`components/charts/asset-portfolio-chart.tsx`의 `AssetPortfolioChart`, 자산 페이지·연간 요약 페이지 공용)에서 조각의 퍼센트(%) 텍스트를 클릭하면 첫 클릭이 반응하지 않고 두 번 클릭해야 선택된다고 지적, 명시적으로 Codex 플러그인(`codex:rescue`)에 위임해 진단·수정을 요청했다.
+- Codex가 원인을 확인: `<Pie>`의 `label` prop으로 렌더링되는 퍼센트 `<text>` 엘리먼트가 조각(`Cell`/`Sector`) 위에 겹쳐 그려지지만 `pointer-events`가 지정돼 있지 않아, 라벨 글자 정확히 위를 클릭하면 클릭이 아래 조각의 `onClick`으로 전달되지 않고 라벨 자체가 이벤트를 가로챘다. 수정은 라벨 `<text>`의 인라인 스타일에 `pointerEvents: "none"` 한 줄 추가(140행 부근) — 클릭이 항상 아래 조각으로 통과하도록 함.
+- Codex 작업 환경(샌드박스)에서 `npm run build`가 Google Fonts(`Manrope`/`Nunito`) 네트워크 요청 차단으로 실패해 최종 검증·커밋을 진행하지 못하는 상황이 발생했다. 코드 수정 자체는 올바르다고 판단해 Codex 서브에이전트에 남은 검증은 직접 처리하겠다고 전달했고, 서브에이전트도 "thin forwarder" 역할 제약에 따라 스스로 작업을 중단하고 인계했다.
+- 인계받아 로컬(네트워크 제한 없는 환경)에서 `npx tsc --noEmit`, `npx eslint components/charts/asset-portfolio-chart.tsx`, `npm run build` 모두 통과 확인 후 직접 커밋·배포(`1a36a20`).
+- 프로덕션에서 Playwright로 정밀 검증: 첫 테스트 시도들은 뷰포트 밖으로 스크롤된 좌표를 클릭하는 내 테스트 스크립트 자체의 버그(`boundingBox()` 값이 뷰포트 높이를 초과 → `document.elementFromPoint`가 `null` 반환)로 오탐이 발생했다. `scrollIntoViewIfNeeded()`를 추가해 라벨을 뷰포트 안으로 스크롤한 뒤 재검증하자, 클릭 좌표가 라벨이 아닌 `recharts-sector` 조각 엘리먼트에 정확히 히트하고, 단 한 번의 클릭만으로 선택 상세(`.mt-1` div)가 나타남을 확인 — 버그가 실제로 해결됐음을 프로덕션에서 직접 확인했다. 이 컴포넌트는 자산 페이지와 연간 요약 페이지 양쪽에서 공유되므로 두 화면 모두 수정 적용됨.
+
 ### fix - 연간 요약 지출/수입 비중 탭 통합 및 평균 계산 기준 수정
 
 - **탭 통합**: 사용자가 지출 비중·수입 비중 도넛이 세로로 둘 다 나열돼 페이지가 너무 길어진다고 지적했다. 두 도넛을 `components/dashboard/category-breakdown-section.tsx`(신규, `"use client"`) 하나로 합치고, 이미 지출 추이 섹션(`expense-trend-section.tsx`)에 쓰던 것과 동일한 지출/수입 토글 탭 UI로 전환만 하도록 했다. `AssetPortfolioChart`는 그대로 재사용, 신규 npm 의존성 없음.
