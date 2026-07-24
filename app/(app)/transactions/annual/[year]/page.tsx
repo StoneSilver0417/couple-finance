@@ -10,7 +10,7 @@ import {
   CircleDollarSign,
   Gauge,
 } from "lucide-react";
-import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
+import CategoryBreakdownSection from "@/components/dashboard/category-breakdown-section";
 import ExpenseTrendSection from "@/components/dashboard/expense-trend-section";
 import { StatCard } from "@/components/reports/report-view";
 import { Button } from "@/components/ui/button";
@@ -202,8 +202,12 @@ export default async function AnnualSummaryPage({
     totalBudget,
     variableExpense,
   );
-  const avgMonthlyBalance = (totalIncome - totalExpense) / monthsInYear;
-  const avgMonthlyVariableExpense = variableExpense / monthsInYear;
+  // 아직 기록이 없는 달(가입 전이거나 입력을 건너뛴 달)까지 나눠 평균을 희석시키지
+  // 않도록, 달력상 경과 개월수가 아니라 실제 잔액 기록이 있는 개월수로 나눈다.
+  const monthsWithData = balancesResult.data?.length ?? 0;
+  const avgDivisor = Math.max(monthsWithData, 1);
+  const avgMonthlyBalance = (totalIncome - totalExpense) / avgDivisor;
+  const avgMonthlyVariableExpense = variableExpense / avgDivisor;
   const annualExpenseCategories = aggregateAnnualCategories(
     transactionRows,
     "expense",
@@ -287,6 +291,7 @@ export default async function AnnualSummaryPage({
           <StatCard
             label="월평균 잔액"
             value={`${Math.round(avgMonthlyBalance).toLocaleString()}원`}
+            caption={`${monthsWithData}개월 기록 기준`}
             icon={CircleDollarSign}
             tone="bg-blue-50 text-blue-600"
           />
@@ -309,27 +314,10 @@ export default async function AnnualSummaryPage({
         />
       </div>
 
-      {annualIncomeCategories.length > 0 && (
-        <div className="px-6 mb-6">
-          <div className="glass-panel p-5 rounded-[2rem] border border-white/60">
-            <h3 className="text-lg font-bold text-text-main mb-4 px-2">
-              카테고리별 수입 비중
-            </h3>
-            <AssetPortfolioChart data={annualIncomeCategories} />
-          </div>
-        </div>
-      )}
-
-      {annualExpenseCategories.length > 0 && (
-        <div className="px-6">
-          <div className="glass-panel p-5 rounded-[2rem] border border-white/60">
-            <h3 className="text-lg font-bold text-text-main mb-4 px-2">
-              카테고리별 지출 비중
-            </h3>
-            <AssetPortfolioChart data={annualExpenseCategories} />
-          </div>
-        </div>
-      )}
+      <CategoryBreakdownSection
+        expenseCategories={annualExpenseCategories}
+        incomeCategories={annualIncomeCategories}
+      />
 
       <div className="h-24" />
     </div>
