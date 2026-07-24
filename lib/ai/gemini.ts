@@ -12,6 +12,11 @@ export interface GeminiReportAggregates {
   periodLabel?: string;
   /** 기존 월간 생성 경로는 생략하며 Gemini 요청 시 월간 라벨을 기본값으로 사용한다. */
   previousPeriodLabel?: string;
+  /**
+   * 직전 기간에 비교할 지출 기록이 있었는지 여부. false면 이전 기간 데이터가 없어
+   * "전월/전분기 대비" 같은 비교 서술이 불가능하다(가입 초기 등). 생략 시 true로 본다.
+   */
+  hasComparisonBaseline?: boolean;
   yearMonth: string;
   categoryExpenses: Array<{
     name: string;
@@ -226,6 +231,13 @@ export async function generateReportContent(
 > {
   const periodLabel = aggregates.periodLabel ?? "이번 달";
   const previousPeriodLabel = aggregates.previousPeriodLabel ?? "전월";
+  // 직전 기간에 비교할 지출 기록이 없으면(가입 초기 등) 비교 서술 자체가 불가능하다.
+  const hasComparisonBaseline =
+    aggregates.hasComparisonBaseline ??
+    aggregates.monthOverMonthHighlights.length > 0;
+  const comparisonInstruction = hasComparisonBaseline
+    ? `monthOverMonthHighlights의 순서를 유지해 ${previousPeriodLabel} 대비 momComments를 같은 개수로 작성하세요.`
+    : `${previousPeriodLabel}에는 비교할 지출 기록이 없습니다. "${previousPeriodLabel} 대비" 같은 비교 표현은 절대 쓰지 말고, ${periodLabel} 지출 구성과 규모 자체를 설명하세요. momComments는 반드시 빈 배열로 두세요.`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
@@ -248,7 +260,7 @@ export async function generateReportContent(
                   `당신은 부부가 함께 쓰는 가계부의 ${periodLabel} 금융 흐름 분석 도우미입니다.`,
                   "따뜻하지만 과장하지 않고, 바로 실천할 수 있는 한국어 조언을 작성하세요.",
                   "반드시 제공된 집계의 숫자만 언급하고 새로운 금액이나 비율을 계산하거나 추측하지 마세요.",
-                  `monthOverMonthHighlights의 순서를 유지해 ${previousPeriodLabel} 대비 momComments를 같은 개수로 작성하세요.`,
+                  comparisonInstruction,
                   "savingTips는 2~3개만 작성하세요.",
                   "assets가 제공되지 않았다면 assetComment는 반드시 빈 문자열로 작성하세요.",
                   "headline은 60자, summaryComment는 200자, momComments 각 항목은 80자 이내로 작성하세요.",

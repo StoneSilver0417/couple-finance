@@ -433,23 +433,29 @@ export async function generateMonthlyReport(
       ...currentCategoryMap.keys(),
       ...previousCategoryMap.keys(),
     ]);
-    const momCategoryDiffs = Array.from(categoryNames)
-      .map((name) => {
-        const currentCategory = currentCategoryMap.get(name);
-        const previousCategory = previousCategoryMap.get(name);
-        const currentAmount = currentCategory?.amount ?? 0;
-        const previousAmount = previousCategory?.amount ?? 0;
-        return {
-          name,
-          icon: currentCategory?.icon ?? previousCategory?.icon ?? "WalletCards",
-          current: currentAmount,
-          prev: previousAmount,
-          diff: currentAmount - previousAmount,
-        };
-      })
-      .filter((category) => category.diff !== 0)
-      .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
-      .slice(0, 5);
+    // 전월에 지출 기록이 아예 없으면(가입 첫 달 등) 모든 카테고리가 "신규 증가"로
+    // 잡혀 "전월 대비 늘었다"는 잘못된 서술이 나온다. 이럴 땐 비교를 생략한다.
+    const hasComparisonBaseline = previousCategories.length > 0;
+    const momCategoryDiffs = hasComparisonBaseline
+      ? Array.from(categoryNames)
+          .map((name) => {
+            const currentCategory = currentCategoryMap.get(name);
+            const previousCategory = previousCategoryMap.get(name);
+            const currentAmount = currentCategory?.amount ?? 0;
+            const previousAmount = previousCategory?.amount ?? 0;
+            return {
+              name,
+              icon:
+                currentCategory?.icon ?? previousCategory?.icon ?? "WalletCards",
+              current: currentAmount,
+              prev: previousAmount,
+              diff: currentAmount - previousAmount,
+            };
+          })
+          .filter((category) => category.diff !== 0)
+          .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+          .slice(0, 5)
+      : [];
 
     const assetHistory = assetHistoryResult.data ?? [];
     const netWorth =
@@ -487,6 +493,7 @@ export async function generateMonthlyReport(
     }));
 
     const aggregates: GeminiReportAggregates = {
+      hasComparisonBaseline,
       yearMonth: parsed.yearMonth,
       categoryExpenses,
       monthOverMonthHighlights: momCategoryDiffs.map((category) => ({
@@ -685,23 +692,29 @@ export async function generatePeriodicReport(
       ...currentCategoryMap.keys(),
       ...previousCategoryMap.keys(),
     ]);
-    const momCategoryDiffs = Array.from(categoryNames)
-      .map((name) => {
-        const currentCategory = currentCategoryMap.get(name);
-        const previousCategory = previousCategoryMap.get(name);
-        const currentAmount = currentCategory?.amount ?? 0;
-        const previousAmount = previousCategory?.amount ?? 0;
-        return {
-          name,
-          icon: currentCategory?.icon ?? previousCategory?.icon ?? "WalletCards",
-          current: currentAmount,
-          prev: previousAmount,
-          diff: currentAmount - previousAmount,
-        };
-      })
-      .filter((category) => category.diff !== 0)
-      .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
-      .slice(0, 5);
+    // 직전 기간에 지출 기록이 아예 없으면(가입 초기 등) 모든 카테고리가 "신규 증가"로
+    // 잡혀 "전기간 대비 늘었다"는 잘못된 서술이 나온다. 이럴 땐 비교를 생략한다.
+    const hasComparisonBaseline = previousCategories.length > 0;
+    const momCategoryDiffs = hasComparisonBaseline
+      ? Array.from(categoryNames)
+          .map((name) => {
+            const currentCategory = currentCategoryMap.get(name);
+            const previousCategory = previousCategoryMap.get(name);
+            const currentAmount = currentCategory?.amount ?? 0;
+            const previousAmount = previousCategory?.amount ?? 0;
+            return {
+              name,
+              icon:
+                currentCategory?.icon ?? previousCategory?.icon ?? "WalletCards",
+              current: currentAmount,
+              prev: previousAmount,
+              diff: currentAmount - previousAmount,
+            };
+          })
+          .filter((category) => category.diff !== 0)
+          .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+          .slice(0, 5)
+      : [];
 
     const assetHistory = assetHistoryResult.data ?? [];
     const netWorth =
@@ -745,6 +758,7 @@ export async function generatePeriodicReport(
     const aggregates: GeminiReportAggregates = {
       periodLabel: period.periodLabel,
       previousPeriodLabel: period.previousPeriodLabel,
+      hasComparisonBaseline,
       yearMonth: period.periodKey,
       categoryExpenses,
       monthOverMonthHighlights: momCategoryDiffs.map((category) => ({
