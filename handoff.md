@@ -2,17 +2,18 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.5 + AI 보고서 Phase 2 + 도넛 터치 재수정 + 이전 기간 없을 때 비교 방지
-- **검증 상태**: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 모두 통과. AI 보고서 라우팅·redirect·회귀 검증 완료. 도넛 차트는 마우스 클릭 기준 회귀 없음 확인 — **실제 모바일 터치 재현은 사용자 확인 대기**. 이전 기간 비교 게이팅 로직은 Node 단언으로 검증
-- **배포 상태**: 커밋 `57c82e7` 푸시 완료, Vercel 프로덕션 배포 진행/확인
+- **버전**: v0.6.5 + AI 보고서 Phase 2 + 도넛 터치 재수정 + 이전 기간 비교 방지 + 기간 보고서 월평균 표출
+- **검증 상태**: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 모두 통과. AI 보고서 라우팅·redirect·회귀 검증 완료. 도넛 차트는 마우스 클릭 기준 회귀 없음 확인 — **실제 모바일 터치 재현은 사용자 확인 대기**. AI 보고서 표출/집계 로직 변경은 Gemini 키 등록 계정이 없어 실제 렌더 E2E 미검증
+- **배포 상태**: 커밋 `bb73e40` 푸시 완료, Vercel 프로덕션 배포 진행/확인
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **깃허브 저장소**: **PUBLIC 전환 완료** (2026-07-23) — https://github.com/StoneSilver0417/couple-finance
 - **Supabase**: 단일 운영 프로젝트 사용. `20260724000000_periodic_reports.sql` **사용자가 Dashboard SQL Editor에서 수동 적용 완료**
 
 ## 최근 작업
 
-- **이전 기간 없을 때 AI 보고서 허위 비교 방지 (2026-07-24, Claude Code)**: 직전 기간(전월·전분기·전반기·전년)에 지출 기록이 아예 없으면 모든 카테고리가 prev=0으로 잡혀 "전기간보다 늘었다"고 잘못 서술하던 문제 수정. `previousCategories`가 비면 `hasComparisonBaseline=false`로 판단해 `momCategoryDiffs`를 빈 배열로 두고("대비 주요 변화" 섹션 자동 숨김), Gemini 프롬프트에도 플래그를 전달해 비교 표현 금지·구성 설명으로 유도. 이전 기록이 있으면 기존 동작 유지. 월간/기간 두 경로 모두 적용. 커밋 `57c82e7`.
-- **도넛 차트 모바일 터치 재수정 (2026-07-24, Claude Code)**: 퍼센트 라벨/조각을 폰에서 두 번 눌러야 선택되던 문제의 진짜 원인이 `<Pie>`의 `onMouseEnter`/`onMouseLeave`(hover로 화면이 바뀌는 요소를 모바일에서 탭하면 첫 탭이 hover 미리보기로만 소비되는 잘 알려진 동작)임을 확인, 터치 기기에서는 hover 핸들러를 걸지 않도록 수정(데스크톱 마우스 동작은 유지). 커밋 `bfafc55`. Playwright가 실제 터치를 재현 못 해 마우스 클릭 회귀 없음만 확인 — **실제 폰 재확인은 사용자 대기**. (AI 보고서 Phase 2 배포 완료, zod 내부 경로 우회 수정 등 이전 상세는 CHANGELOG.md 참고.)
+- **분기·반기·연간 보고서 잔액/예산 표출 통일 (2026-07-24, Claude Code)**: 기간 보고서 요약 카드를 연간 요약 페이지와 동일하게 — 잔액을 "월평균 잔액"(기간 총잔액 ÷ 실제 기록 개월수)으로 바꾸고 "N개월 기록 기준" 캡션, 예산 사용률에 "월평균 X원 지출" 캡션 추가. 기준 개월수(`periodMonthsWithData`)를 생성 시 stats에 저장, `ReportView`가 이 필드 유무로 분기/월간을 구분(월간은 기존 총액 유지). 커밋 `bb73e40`.
+- **이전 기간 없을 때 AI 보고서 허위 비교 방지 (2026-07-24, Claude Code)**: 직전 기간(전월·전분기·전반기·전년)에 지출 기록이 없으면 모든 카테고리가 prev=0으로 잡혀 "전기간보다 늘었다"고 잘못 서술하던 문제 수정. `previousCategories`가 비면 `hasComparisonBaseline=false`로 판단해 `momCategoryDiffs`를 빈 배열로 두고("대비 주요 변화" 섹션 자동 숨김), Gemini 프롬프트에도 플래그 전달해 비교 표현 금지. 이전 기록 있으면 기존 동작 유지. 커밋 `57c82e7`.
+- 이전 상세(도넛 터치 재수정 `bfafc55` — 실제 폰 재확인 사용자 대기, AI 보고서 Phase 2 배포, zod 내부 경로 우회 수정 등)는 CHANGELOG.md 참고.
 
 ## 알려진 이슈
 
