@@ -137,6 +137,7 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
                     dominantBaseline="central"
                     className="text-[10px] font-black"
                     style={{
+                      pointerEvents: "none",
                       opacity:
                         activeIndex === null || activeIndex === index ? 1 : 0.4,
                     }}
