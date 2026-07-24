@@ -730,9 +730,14 @@ export async function generatePeriodicReport(
         ? netWorth - previousNetWorth
         : null;
 
+    // 연간 요약 페이지와 동일하게, 잔액을 "실제 기록이 있는 개월수"로 나눈 월평균으로
+    // 보여주기 위해 기간 내 monthly_balances 로우 수를 함께 저장한다.
+    const periodMonthsWithData = balancesResult.data?.length ?? 0;
+
     const stats: ReportStats = {
       periodLabel: period.periodLabel,
       previousPeriodLabel: period.previousPeriodLabel,
+      periodMonthsWithData,
       income: summary.income,
       expense: summary.expense,
       balance: summary.balance,

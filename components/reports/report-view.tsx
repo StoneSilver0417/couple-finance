@@ -174,6 +174,21 @@ export function ReportView({
       : storedBudgetUsagePercent;
   const netWorth = getNumber(stats, "netWorth");
   const netWorthDiff = getNumber(stats, "netWorthDiff");
+  // 분기·반기·연간 보고서는 연간 요약 페이지와 동일하게 잔액을 "실제 기록이 있는
+  // 개월수"로 나눈 월평균으로 보여주고, 예산 사용률에도 월평균 변동지출을 병기한다.
+  // periodMonthsWithData가 없는(=월간) 보고서는 기존 총액 표시 방식을 유지한다.
+  const periodMonthsWithData = getNumber(stats, "periodMonthsWithData");
+  const isPeriodicReport =
+    periodMonthsWithData !== null && periodMonthsWithData > 0;
+  const avgDivisor = isPeriodicReport
+    ? Math.max(periodMonthsWithData, 1)
+    : 1;
+  const avgMonthlyBalance =
+    isPeriodicReport && balance !== null ? balance / avgDivisor : null;
+  const avgMonthlyVariableExpense =
+    isPeriodicReport && variableExpense !== null
+      ? variableExpense / avgDivisor
+      : null;
   const normalizedBudgetFeedback =
     storedBudgetUsagePercent !== null &&
     budgetUsagePercent !== null &&
@@ -211,17 +226,29 @@ export function ReportView({
         }
       : null,
     balance !== null
-      ? {
-          label: "잔액",
-          value: formatWon(balance),
-          icon: CircleDollarSign,
-          tone: "bg-blue-50 text-blue-600",
-        }
+      ? isPeriodicReport && avgMonthlyBalance !== null
+        ? {
+            label: "월평균 잔액",
+            value: formatWon(Math.round(avgMonthlyBalance)),
+            caption: `${periodMonthsWithData}개월 기록 기준`,
+            icon: CircleDollarSign,
+            tone: "bg-blue-50 text-blue-600",
+          }
+        : {
+            label: "잔액",
+            value: formatWon(balance),
+            icon: CircleDollarSign,
+            tone: "bg-blue-50 text-blue-600",
+          }
       : null,
     budgetUsagePercent !== null
       ? {
           label: "예산 사용률",
           value: `${budgetUsagePercent.toFixed(1)}%`,
+          caption:
+            avgMonthlyVariableExpense !== null
+              ? `월평균 ${formatWon(Math.round(avgMonthlyVariableExpense))} 지출`
+              : undefined,
           icon: Gauge,
           tone: "bg-violet-50 text-violet-600",
         }
