@@ -6,14 +6,7 @@ import { ensureDefaultCategories } from "@/lib/household-actions";
 export default async function NewTransactionPage({
   searchParams,
 }: {
-  searchParams: { 
-    date?: string;
-    type?: string;
-    amount?: string;
-    category_id?: string;
-    memo?: string;
-    expense_type?: string;
-  } | Promise<{ 
+  searchParams: Promise<{
     date?: string;
     type?: string;
     amount?: string;

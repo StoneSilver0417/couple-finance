@@ -8,15 +8,33 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   generateMonthlyReport,
+  generatePeriodicReport,
   type ReportActionState,
 } from "@/lib/report-actions";
+import type { PeriodicReportType } from "@/lib/period-range";
 
 interface GenerateReportCardProps {
   yearMonth: string;
   mode?: "initial" | "regenerate";
 }
 
-function GenerateSubmitContent({ mode }: { mode: "initial" | "regenerate" }) {
+interface GeneratePeriodicReportCardProps {
+  periodType: PeriodicReportType;
+  periodKey: string;
+  periodLabel: string;
+  reportName: string;
+  mode?: "initial" | "regenerate";
+}
+
+function GenerateSubmitContent({
+  mode,
+  analysisTarget = "한 달",
+  periodLabel = "이번 달",
+}: {
+  mode: "initial" | "regenerate";
+  analysisTarget?: string;
+  periodLabel?: string;
+}) {
   const { pending } = useFormStatus();
 
   return (
@@ -34,7 +52,7 @@ function GenerateSubmitContent({ mode }: { mode: "initial" | "regenerate" }) {
       {pending && mode === "initial" ? (
         <div className="mb-6 text-center" role="status" aria-live="polite">
           <h2 className="text-xl font-black text-text-main">
-            AI가 한 달 가계부를 분석하고 있어요
+            AI가 {analysisTarget} 가계부를 분석하고 있어요
           </h2>
           <p className="mt-2 text-sm font-medium text-text-secondary">
             창을 닫지 말고 잠시 기다려주세요. 최대 30초 정도 걸릴 수 있어요.
@@ -43,7 +61,7 @@ function GenerateSubmitContent({ mode }: { mode: "initial" | "regenerate" }) {
       ) : mode === "initial" ? (
         <div className="mb-6 text-center">
           <h2 className="text-xl font-black text-text-main">
-            이번 달의 금융 흐름을 돌아볼까요?
+            {periodLabel}의 금융 흐름을 돌아볼까요?
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-text-secondary">
             앱이 계산한 집계를 바탕으로 Gemini가 실용적인 코멘트와 절약 팁을
@@ -116,6 +134,59 @@ export function GenerateReportCard({
     >
       <input type="hidden" name="yearMonth" value={yearMonth} />
       <GenerateSubmitContent mode={mode} />
+    </form>
+  );
+}
+
+export function GeneratePeriodicReportCard({
+  periodType,
+  periodKey,
+  periodLabel,
+  reportName,
+  mode = "initial",
+}: GeneratePeriodicReportCardProps) {
+  const router = useRouter();
+  const [, formAction] = useActionState(
+    async (previousState: ReportActionState, formData: FormData) => {
+      const result = await generatePeriodicReport(previousState, formData);
+      if (result.success) {
+        toast.success(
+          mode === "initial"
+            ? `${reportName} AI 보고서를 만들었습니다.`
+            : `${reportName} AI 보고서를 새로 만들었습니다.`,
+        );
+        router.refresh();
+      } else if (result.error) {
+        toast.error(result.error);
+      }
+      return result;
+    },
+    {} as ReportActionState,
+  );
+
+  const analysisTarget =
+    periodType === "quarter"
+      ? "한 분기"
+      : periodType === "half"
+        ? "6개월치"
+        : "한 해";
+
+  return (
+    <form
+      action={formAction}
+      className={
+        mode === "initial"
+          ? "glass-panel flex w-full flex-col items-center rounded-[2rem] border border-white/70 p-6 shadow-glass"
+          : "flex justify-end"
+      }
+    >
+      <input type="hidden" name="periodType" value={periodType} />
+      <input type="hidden" name="periodKey" value={periodKey} />
+      <GenerateSubmitContent
+        mode={mode}
+        analysisTarget={analysisTarget}
+        periodLabel={periodLabel}
+      />
     </form>
   );
 }

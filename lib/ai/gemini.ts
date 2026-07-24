@@ -8,6 +8,10 @@ const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const GENERATION_TIMEOUT_MS = 45_000;
 
 export interface GeminiReportAggregates {
+  /** 기존 월간 생성 경로는 생략하며 Gemini 요청 시 월간 라벨을 기본값으로 사용한다. */
+  periodLabel?: string;
+  /** 기존 월간 생성 경로는 생략하며 Gemini 요청 시 월간 라벨을 기본값으로 사용한다. */
+  previousPeriodLabel?: string;
   yearMonth: string;
   categoryExpenses: Array<{
     name: string;
@@ -47,52 +51,56 @@ export interface GeminiReportAggregates {
   };
 }
 
-const reportResponseSchema = {
-  type: "OBJECT",
-  properties: {
-    headline: {
-      type: "STRING",
-      description: "이번 달 가계부 한 줄 총평. 한국어 60자 이내.",
+function createReportResponseSchema(
+  periodLabel: string,
+  previousPeriodLabel: string,
+) {
+  return {
+    type: "OBJECT",
+    properties: {
+      headline: {
+        type: "STRING",
+        description: `${periodLabel} 가계부 한 줄 총평. 한국어 60자 이내.`,
+      },
+      summaryComment: {
+        type: "STRING",
+        description: `${periodLabel} 수입과 지출에 대한 실용적인 한국어 해설. 200자 이내.`,
+      },
+      momComments: {
+        type: "ARRAY",
+        description: `monthOverMonthHighlights와 같은 순서와 개수의 ${previousPeriodLabel} 대비 코멘트. 각 항목 한국어 80자 이내.`,
+        items: { type: "STRING" },
+      },
+      budgetFeedback: {
+        type: "STRING",
+        description: `${periodLabel} 예산 사용에 대한 한국어 피드백. 160자 이내.`,
+      },
+      savingTips: {
+        type: "ARRAY",
+        description: "집계에 근거한 구체적인 한국어 절약 팁 2~3개.",
+        items: { type: "STRING" },
+      },
+      assetComment: {
+        type: "STRING",
+        description:
+          "자산 집계가 있을 때만 작성하는 한국어 코멘트. 자산 집계가 없으면 빈 문자열.",
+      },
+      praise: {
+        type: "STRING",
+        description: "집계에서 찾은 긍정적인 습관을 칭찬하는 한국어 문장.",
+      },
     },
-    summaryComment: {
-      type: "STRING",
-      description: "월간 수입과 지출에 대한 실용적인 한국어 해설. 200자 이내.",
-    },
-    momComments: {
-      type: "ARRAY",
-      description:
-        "categoryExpenses와 같은 순서의 전월 대비 코멘트. 각 항목 한국어 80자 이내.",
-      items: { type: "STRING" },
-    },
-    budgetFeedback: {
-      type: "STRING",
-      description: "예산 사용에 대한 한국어 피드백. 160자 이내.",
-    },
-    savingTips: {
-      type: "ARRAY",
-      description: "집계에 근거한 구체적인 한국어 절약 팁 2~3개.",
-      items: { type: "STRING" },
-    },
-    assetComment: {
-      type: "STRING",
-      description:
-        "자산 집계가 있을 때만 작성하는 한국어 코멘트. 자산 집계가 없으면 빈 문자열.",
-    },
-    praise: {
-      type: "STRING",
-      description: "집계에서 찾은 긍정적인 습관을 칭찬하는 한국어 문장.",
-    },
-  },
-  required: [
-    "headline",
-    "summaryComment",
-    "momComments",
-    "budgetFeedback",
-    "savingTips",
-    "assetComment",
-    "praise",
-  ],
-} as const;
+    required: [
+      "headline",
+      "summaryComment",
+      "momComments",
+      "budgetFeedback",
+      "savingTips",
+      "assetComment",
+      "praise",
+    ],
+  } as const;
+}
 
 function isBoundedString(value: unknown, maxLength: number): value is string {
   return typeof value === "string" && value.length <= maxLength;
@@ -216,6 +224,8 @@ export async function generateReportContent(
 ): Promise<
   { ok: true; ai: ReportAiContent } | { ok: false; error: string }
 > {
+  const periodLabel = aggregates.periodLabel ?? "이번 달";
+  const previousPeriodLabel = aggregates.previousPeriodLabel ?? "전월";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
@@ -235,10 +245,10 @@ export async function generateReportContent(
             parts: [
               {
                 text: [
-                  "당신은 부부가 함께 쓰는 가계부의 월간 분석 도우미입니다.",
+                  `당신은 부부가 함께 쓰는 가계부의 ${periodLabel} 금융 흐름 분석 도우미입니다.`,
                   "따뜻하지만 과장하지 않고, 바로 실천할 수 있는 한국어 조언을 작성하세요.",
                   "반드시 제공된 집계의 숫자만 언급하고 새로운 금액이나 비율을 계산하거나 추측하지 마세요.",
-                  "monthOverMonthHighlights의 순서를 유지해 momComments를 하나씩 작성하세요.",
+                  `monthOverMonthHighlights의 순서를 유지해 ${previousPeriodLabel} 대비 momComments를 같은 개수로 작성하세요.`,
                   "savingTips는 2~3개만 작성하세요.",
                   "assets가 제공되지 않았다면 assetComment는 반드시 빈 문자열로 작성하세요.",
                   "headline은 60자, summaryComment는 200자, momComments 각 항목은 80자 이내로 작성하세요.",
@@ -251,14 +261,17 @@ export async function generateReportContent(
               role: "user",
               parts: [
                 {
-                  text: `다음 집계만 근거로 월간 보고서 문구를 작성하세요.\n${JSON.stringify(aggregates)}`,
+                  text: `다음 집계만 근거로 ${periodLabel} 보고서 문구를 작성하세요.\n${JSON.stringify(aggregates)}`,
                 },
               ],
             },
           ],
           generationConfig: {
             responseMimeType: "application/json",
-            responseSchema: reportResponseSchema,
+            responseSchema: createReportResponseSchema(
+              periodLabel,
+              previousPeriodLabel,
+            ),
             temperature: 0.7,
           },
         }),
@@ -319,7 +332,7 @@ export async function generateReportContent(
         error: "AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.",
       };
     }
-    console.error("Gemini 월간 보고서 생성 실패:", error);
+    console.error("Gemini AI 보고서 생성 실패:", error);
     return {
       ok: false,
       error: "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",

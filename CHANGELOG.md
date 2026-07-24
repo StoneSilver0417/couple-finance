@@ -2,6 +2,17 @@
 
 ## 2026-07-24
 
+### feat - AI 보고서 분기·반기·연간 확장 Phase 2 구현
+
+- 확정 설계대로 기존 라이브 `monthly_reports`는 전혀 수정하지 않고 분기·반기·연간 전용 `periodic_reports` 테이블과 가구 RLS 정책을 정의한 `20260724000000_periodic_reports.sql`을 추가했다. 운영 Supabase에는 실행하지 않았으며 사용자가 Dashboard SQL Editor에서 수동 적용해야 한다.
+- `lib/period-range.ts`를 신설해 분기·반기·연간의 당기간/전기간 날짜 범위와 `periodLabel`/`previousPeriodLabel`을 계산한다. Q1→전년 Q4, H1→전년 H2, 연간→전년 경계를 포함한 14개 유효·거부 시나리오를 Node로 검증했다.
+- `generatePeriodicReport` 서버 액션을 기존 `generateMonthlyReport` 옆에 새로 추가했다. 유형별 정규식·연도 검증, 미래 기간 차단, 당기간/전기간 거래 비교, 기간 내 월 예산 합산, 변동지출 기준 예산 사용률, 월별 추이 3/6/12개월, 상세 상위 8/10/12개, 자산 기록 및 `periodic_reports` upsert를 구현했다. 기존 월간 액션 함수 본문은 HEAD와 동일함을 별도 비교했다.
+- 보고서 라우트를 `/reports/[yearMonth]`에서 `/reports/[period]`로 일반화했다. 파싱 순서를 월→분기→반기→연간으로 고정하고 월간일 때만 기존 `monthly_reports`/`GenerateReportCard`/`generateMonthlyReport` 경로를 사용한다. 오늘 기준 기간으로 이동하는 월·분기·반기·연간 탭, 유형별 이전/다음 이동과 미래·2000년 하한 방어, 44px 터치 영역·고대비 포커스/활성 상태를 추가했다.
+- 기존 JSON 키 `momCategoryDiffs`, `monthOverMonthHighlights`, `momComments`, `monthlyTrend`, `yearMonth`는 모두 유지하고 선택적 라벨 필드만 추가했다. `ReportView`는 기본 월간 문구를 그대로 보존하면서 비월간 화면의 요약·직전 기간 비교·칭찬 문구를 동적으로 표시한다.
+- Gemini 응답 스키마 설명과 시스템/사용자 프롬프트를 기간 라벨 기반으로 바꾸고, `momComments` 기준을 실제 런타임 검증과 같은 `monthOverMonthHighlights` 순서·개수로 바로잡았다. Gemini 실패 시 로컬 fallback도 기간별 문구를 사용하되 기존 월간 fallback 결과는 유지한다.
+- 검증 중 Next 16이 기존 페이지 3곳의 동기 `params/searchParams` 타입을 거부해 이미 `await`하던 선언만 `Promise`로 교정했다. `npx tsc --noEmit`, `npx eslint .`, 폰트 mock을 사용한 `npx next build --webpack` 전체 프로덕션 빌드와 `/reports/2026-07`, 현재 분기·반기·연간, 잘못된 값, 미래 분기 서버 리다이렉트를 통과했다. 기본 `npm run build`는 코드와 무관하게 샌드박스의 Google Fonts(Manrope/Nunito) 네트워크 차단으로 두 차례 실패했다. 운영 DB 미적용 원칙 때문에 신규 기간 생성·재생성 실데이터 E2E는 마이그레이션 수동 적용 후 진행한다.
+- **검토·수정 (Claude Code)**: Codex가 `generatePeriodicReport`의 입력 검증에 zod를 쓰면서 "새 npm 의존성 추가 금지" 제약을 우회하려고 Next.js 내부 번들 경로(`next/dist/compiled/zod`)를 직접 import하고 이를 위한 가짜 타입 선언 파일(`types/next-compiled-zod.d.ts`)까지 만들었다. 이 저장소의 다른 서버 액션 14개는 전부 zod 없이 수동 검증(정규식·타입가드)만 쓰고 있고, `next/dist/compiled/*`는 Next.js가 공개하지 않는 내부 구현 경로라 버전업 때 아무 경고 없이 사라질 수 있어 위험하다고 판단, `parsePeriodicReportInput()`(정규식 + `isValidYearMonth` 재사용)으로 교체하고 가짜 타입 선언 파일을 삭제했다. 네트워크 제한 없는 로컬 환경에서 `npx tsc --noEmit`, `npx eslint .`, `npm run build`(Turbopack, 폰트 mock 불필요) 모두 재통과 확인.
+
 ### fix - 도넛 차트 퍼센트 라벨 두 번 클릭 버그 수정 (Codex 진단)
 
 - 사용자가 도넛 차트(`components/charts/asset-portfolio-chart.tsx`의 `AssetPortfolioChart`, 자산 페이지·연간 요약 페이지 공용)에서 조각의 퍼센트(%) 텍스트를 클릭하면 첫 클릭이 반응하지 않고 두 번 클릭해야 선택된다고 지적, 명시적으로 Codex 플러그인(`codex:rescue`)에 위임해 진단·수정을 요청했다.

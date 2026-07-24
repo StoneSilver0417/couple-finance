@@ -140,7 +140,15 @@ export function StatCard({
   );
 }
 
-export function ReportView({ content }: { content: unknown }) {
+export function ReportView({
+  content,
+  periodLabel = "이번 달",
+  previousPeriodLabel = "전월",
+}: {
+  content: unknown;
+  periodLabel?: string;
+  previousPeriodLabel?: string;
+}) {
   if (!isRecord(content)) return null;
   const stats = isRecord(content.stats) ? content.stats : {};
   const ai = isRecord(content.ai) ? content.ai : {};
@@ -230,7 +238,9 @@ export function ReportView({ content }: { content: unknown }) {
             </span>
             <div className="min-w-0">
               <p className="mb-2 text-[0.72rem] font-black uppercase tracking-widest text-primary-dark">
-                AI Monthly Insight
+                {periodLabel === "이번 달"
+                  ? "AI Monthly Insight"
+                  : "AI Financial Insight"}
               </p>
               <h2 className="text-[1.35rem] font-black leading-[1.28] tracking-tight text-slate-950">
                 {headline}
@@ -251,7 +261,7 @@ export function ReportView({ content }: { content: unknown }) {
             id="report-summary-title"
             className="mb-3 px-1 text-xl font-black tracking-tight text-slate-950"
           >
-            이번 달 요약
+            {periodLabel} 요약
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {statItems.map((item) => (
@@ -265,7 +275,7 @@ export function ReportView({ content }: { content: unknown }) {
         <section className="rounded-[1.75rem] border border-slate-100 bg-white/95 p-5 shadow-sm">
           <h3 className="mb-5 flex items-center gap-2 text-xl font-black tracking-tight text-slate-950">
             <Tags className="h-5 w-5 text-violet-500" aria-hidden="true" />
-            전월 대비 주요 변화
+            {previousPeriodLabel} 대비 주요 변화
           </h3>
           <div className="space-y-4">
             {categoryDiffs.map((category, index) => {
@@ -281,7 +291,8 @@ export function ReportView({ content }: { content: unknown }) {
                         {category.name}
                       </p>
                       <p className="mt-1.5 text-sm leading-6 text-slate-600">
-                        전월 {formatWon(category.prev)} → 이번 달 {formatWon(category.current)}
+                        {previousPeriodLabel} {formatWon(category.prev)} →{" "}
+                        {periodLabel} {formatWon(category.current)}
                       </p>
                     </div>
                     <span
@@ -326,7 +337,9 @@ export function ReportView({ content }: { content: unknown }) {
         <section className="rounded-[1.75rem] border border-slate-100 bg-white/95 p-5 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 text-xl font-black tracking-tight text-slate-950">
             <Lightbulb className="h-5 w-5 text-amber-500" aria-hidden="true" />
-            다음 달 절약 팁
+            {periodLabel === "이번 달"
+              ? "다음 달 절약 팁"
+              : "앞으로의 절약 팁"}
           </h3>
           <ol className="space-y-3">
             {savingTips.map((tip, index) => (
@@ -367,7 +380,9 @@ export function ReportView({ content }: { content: unknown }) {
               <BadgeCheck className="h-5 w-5" aria-hidden="true" />
             </span>
             <div>
-              <h3 className="text-lg font-black text-slate-950">이번 달 잘한 점</h3>
+              <h3 className="text-lg font-black text-slate-950">
+                {periodLabel} 잘한 점
+              </h3>
               <p className="mt-2 text-base leading-7 text-slate-700">
                 {praise}
               </p>

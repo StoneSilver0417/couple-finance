@@ -14,7 +14,7 @@ import type { Category, Transaction, TransactionRpcRow } from "@/types";
 export default async function MonthDetailPage({
   params,
 }: {
-  params: { yearMonth: string };
+  params: Promise<{ yearMonth: string }>;
 }) {
   const { yearMonth } = await params;
   const supabase = await createClient();

@@ -1,4 +1,8 @@
 export interface ReportStats {
+  /** 기존 월간 보고서 JSON에는 없을 수 있어 선택적으로 유지한다. */
+  periodLabel?: string;
+  /** 기존 월간 보고서 JSON에는 없을 수 있어 선택적으로 유지한다. */
+  previousPeriodLabel?: string;
   income: number;
   expense: number;
   balance: number;

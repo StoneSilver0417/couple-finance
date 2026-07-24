@@ -21,7 +21,7 @@ function getCurrentYearMonthSeoul(): string {
 export default async function BudgetAnalysisPage({
   params,
 }: {
-  params: { yearMonth: string };
+  params: Promise<{ yearMonth: string }>;
 }) {
   const { yearMonth } = await params;
   const currentYearMonth = getCurrentYearMonthSeoul();
