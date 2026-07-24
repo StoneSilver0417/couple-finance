@@ -1,9 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import AssetTrendChart from "@/components/charts/asset-trend-chart";
+import dynamic from "next/dynamic";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const AssetTrendChart = dynamic(
+  () => import("@/components/charts/asset-trend-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        className="h-[200px] w-full animate-pulse rounded-2xl bg-gray-100/70 motion-reduce:animate-none"
+      >
+        <span className="sr-only">추이 차트를 불러오는 중입니다.</span>
+      </div>
+    ),
+  },
+);
 
 interface TrendDataPoint {
   date: string;

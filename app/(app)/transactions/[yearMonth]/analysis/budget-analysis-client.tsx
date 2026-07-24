@@ -1,17 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Cell,
-  LabelList,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { TrendingUp, TrendingDown, Wallet, PiggyBank } from "lucide-react";
 import { CategoryTransactionsModal } from "@/components/dashboard/category-transactions-modal";
+
+const BudgetComparisonChart = dynamic(
+  () => import("./budget-comparison-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        className="h-[280px] w-full animate-pulse rounded-2xl bg-gray-100/70 motion-reduce:animate-none"
+      >
+        <span className="sr-only">예산 비교 차트를 불러오는 중입니다.</span>
+      </div>
+    ),
+  },
+);
 
 interface AnalysisData {
   income: number;
@@ -40,14 +47,6 @@ interface BudgetAnalysisClientProps {
 }
 
 type ExpenseType = "income" | "fixed" | "variable" | "irregular";
-
-// 금액 포맷팅 함수
-function formatAmount(amount: number): string {
-  if (amount >= 10000) {
-    return `${(amount / 10000).toFixed(0)}만`;
-  }
-  return amount.toLocaleString();
-}
 
 export function BudgetAnalysisClient({
   data,
@@ -78,8 +77,6 @@ export function BudgetAnalysisClient({
       color: "#a855f7", // purple
     },
   ];
-
-  const maxValue = Math.max(...chartData.map((d) => d.value));
 
   const handleItemClick = (type: ExpenseType) => {
     setSelectedType(type);
@@ -368,41 +365,7 @@ export function BudgetAnalysisClient({
           📊 항목별 비교
         </h2>
 
-        <div className="h-[280px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{ top: 5, right: 60, left: 10, bottom: 5 }}
-            >
-              <XAxis type="number" hide domain={[0, maxValue * 1.2]} />
-              <YAxis
-                type="category"
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 13, fontWeight: 700, fill: "#374151" }}
-                width={80}
-              />
-              <Bar
-                dataKey="value"
-                radius={[0, 12, 12, 0]}
-                barSize={36}
-                animationDuration={800}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-                <LabelList
-                  dataKey="value"
-                  position="right"
-                  formatter={(value: unknown) => formatAmount(Number(value))}
-                  style={{ fontSize: 13, fontWeight: 700, fill: "#374151" }}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <BudgetComparisonChart data={chartData} />
       </div>
 
       {/* 지출 비율 */}

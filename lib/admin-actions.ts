@@ -1,22 +1,11 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCachedProfile } from "@/lib/supabase/request-context";
 import { revalidatePath } from "next/cache";
 
 export async function isAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return false;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
+  const profile = await getCachedProfile();
   return !!profile?.is_admin;
 }
 

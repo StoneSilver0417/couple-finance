@@ -3,6 +3,10 @@
 
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getCachedProfile,
+  getCachedUser,
+} from "@/lib/supabase/request-context";
 
 export type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -21,20 +25,13 @@ export type HouseholdContext =
  */
 export async function getHouseholdContext(): Promise<HouseholdContext> {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   if (!user) {
     return { ok: false, error: "로그인이 필요합니다." };
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id")
-    .eq("id", user.id)
-    .single();
+  const profile = await getCachedProfile();
 
   if (!profile?.household_id) {
     return { ok: false, error: "가구 정보가 없습니다." };

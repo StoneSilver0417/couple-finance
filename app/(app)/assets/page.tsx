@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import AssetsPageClient from "./assets-page-client";
 import type { Asset, AssetHistory } from "@/types";
 
@@ -79,11 +80,17 @@ export default async function AssetsPage() {
       breakdown[key] = (breakdown[key] || 0) + amount;
     });
 
-    await supabase.from("asset_history").insert({
-      household_id: profile.household_id,
-      record_date: today,
-      total_net_worth: totalNetWorth,
-      breakdown_data: breakdown,
+    after(async () => {
+      const { error } = await supabase.from("asset_history").insert({
+        household_id: profile.household_id,
+        record_date: today,
+        total_net_worth: totalNetWorth,
+        breakdown_data: breakdown,
+      });
+
+      if (error) {
+        console.error("오늘 자산 스냅샷 생성 실패:", error);
+      }
     });
   }
 

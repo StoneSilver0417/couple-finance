@@ -8,7 +8,6 @@ import {
   useContext,
   ReactNode,
 } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 import { Button } from "./button";
 
@@ -81,68 +80,56 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
-      <AnimatePresence>
-        {isOpen && options && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-            style={{ pointerEvents: "auto" }}
+      {isOpen && options && (
+        <div className="fixed inset-0 z-[100] flex animate-in items-center justify-center fade-in-0 p-4 duration-200 motion-reduce:animate-none">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={handleCancel}
+          />
+          <div
+            className="relative w-full max-w-sm animate-in rounded-3xl bg-white p-6 shadow-2xl fade-in-0 zoom-in-95 duration-200 ease-out motion-reduce:animate-none"
           >
-            <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            <button
               onClick={handleCancel}
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              className="relative bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl"
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <button
-                onClick={handleCancel}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              <X className="h-5 w-5 text-gray-400" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div
+                className={`h-14 w-14 rounded-full ${styles.icon} flex items-center justify-center mb-4`}
               >
-                <X className="h-5 w-5 text-gray-400" />
-              </button>
-
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className={`h-14 w-14 rounded-full ${styles.icon} flex items-center justify-center mb-4`}
-                >
-                  <AlertTriangle className="h-7 w-7" />
-                </div>
-
-                <h3 className="text-lg font-bold text-text-main mb-2">
-                  {options.title || "확인"}
-                </h3>
-
-                <p className="text-sm text-text-secondary mb-6">
-                  {options.message}
-                </p>
-
-                <div className="flex gap-3 w-full">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancel}
-                    className="flex-1 h-12 rounded-xl font-bold"
-                  >
-                    {options.cancelText || "취소"}
-                  </Button>
-                  <Button
-                    onClick={handleConfirm}
-                    className={`flex-1 h-12 rounded-xl font-bold ${styles.button}`}
-                  >
-                    {options.confirmText || "확인"}
-                  </Button>
-                </div>
+                <AlertTriangle className="h-7 w-7" />
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+              <h3 className="text-lg font-bold text-text-main mb-2">
+                {options.title || "확인"}
+              </h3>
+
+              <p className="text-sm text-text-secondary mb-6">
+                {options.message}
+              </p>
+
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1 h-12 rounded-xl font-bold"
+                >
+                  {options.cancelText || "취소"}
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  className={`flex-1 h-12 rounded-xl font-bold ${styles.button}`}
+                >
+                  {options.confirmText || "확인"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ConfirmContext.Provider>
   );
 }

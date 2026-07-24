@@ -1,8 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+
+const AssetPortfolioChart = dynamic(
+  () => import("@/components/charts/asset-portfolio-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        className="h-[250px] w-full animate-pulse rounded-2xl bg-gray-100/70 motion-reduce:animate-none"
+      >
+        <span className="sr-only">비중 차트를 불러오는 중입니다.</span>
+      </div>
+    ),
+  },
+);
 
 interface CategoryAggregate {
   name: string;

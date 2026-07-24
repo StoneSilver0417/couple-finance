@@ -22,6 +22,10 @@ import { LogoutButton } from "./logout-button";
 import { FeedbackDialog } from "@/components/settings/feedback-dialog";
 import { isAdmin, getPendingFeedbackCount } from "@/lib/admin-actions";
 import { AiSettingsDialog } from "@/components/settings/ai-settings-dialog";
+import {
+  getCachedProfile,
+  getCachedUser,
+} from "@/lib/supabase/request-context";
 
 function getCurrentReportMonth(): string {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -36,22 +40,14 @@ function getCurrentReportMonth(): string {
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const isUserAdmin = await isAdmin();
-  const pendingCount = isUserAdmin ? await getPendingFeedbackCount() : 0;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [user, profile] = await Promise.all([
+    getCachedUser(),
+    getCachedProfile(),
+  ]);
 
   if (!user) {
     redirect("/login");
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("household_id, full_name")
-    .eq("id", user.id)
-    .single();
 
   // 가구 정보가 없으면 onboarding으로
   if (!profile?.household_id) {
@@ -104,7 +100,13 @@ export default async function SettingsPage() {
   }
 
   // 병렬 쿼리
-  const [householdResult, membersResult, aiSettingResult] = await Promise.all([
+  const [
+    householdResult,
+    membersResult,
+    aiSettingResult,
+    isUserAdmin,
+    pendingCount,
+  ] = await Promise.all([
     supabase
       .from("households")
       .select("name, invite_code")
@@ -119,6 +121,8 @@ export default async function SettingsPage() {
       .select("gemini_api_key")
       .eq("household_id", profile.household_id)
       .maybeSingle(),
+    isAdmin(),
+    getPendingFeedbackCount(),
   ]);
 
   const household = householdResult.data;

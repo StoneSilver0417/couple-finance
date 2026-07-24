@@ -2,6 +2,19 @@
 
 ## 2026-07-24
 
+### perf - 서버 왕복과 초기 클라이언트 번들 최적화
+
+- 요청 단위 인증 컨텍스트 `lib/supabase/request-context.ts`를 추가했다. React `cache()`로 `getCachedUser()`와 `getCachedProfile()`을 감싸 동일 서버 렌더 요청의 `auth.getUser()`와 `profiles` 조회를 각각 한 번으로 제한했다. `getHouseholdContext()`는 기존 시그니처·반환 계약·오류 문구와 서버 전용 일반 모듈 성격(`"use server"` 없음)을 유지한 채 이 캐시를 사용한다. 거래 생성·수정·삭제 액션은 직접 수정하지 않았고 기존 `{ supabase, user, householdId }` 경로가 그대로임을 재확인했다.
+- settings 페이지와 `isAdmin()`/`getPendingFeedbackCount()`가 같은 요청 캐시를 공유하도록 바꾸고, 관리자 여부·미답변 피드백 수를 기존 가구/구성원/AI 설정 `Promise.all`에 합쳤다. 기존 최대 8~10회 순차 왕복을 인증 → 프로필 → 본 데이터 병렬의 약 3단계로 줄였다. 관리자 판별 기준은 계속 `profiles.is_admin`뿐이다.
+- assets 페이지는 기존 “오늘 스냅샷 없음 + 자산 존재” 조건과 순자산/소유자별 합산을 유지하면서 `asset_history` INSERT만 공개 `next/server`의 `after()` 콜백으로 옮겼다. `(household_id, record_date)` UNIQUE 제약도 유지되어 중복 방지 조건은 변하지 않는다. 콜백은 렌더 중 생성한 Supabase 클라이언트와 계산값을 캡처하므로 Server Component의 `after()` 안에서 request API를 새로 호출하지 않는다.
+- middleware의 `getUser()` → `getClaims()` 조건부 교체는 보류했다. 비대칭 사용자 JWT의 warm 요청에서 Auth `/user` 왕복이 사라지는지 확인해야 하지만, 샌드박스는 Supabase/JWKS 네트워크가 차단됐고 연결 가능한 로그인 브라우저도 없었다. 레거시 대칭 키면 `getClaims()`도 서버 검증으로 폴백하므로 근거 없이 교체하지 않고 기존 보안을 유지했다.
+- 루트 `app/template.tsx`를 삭제하고 `ConfirmProvider`의 전역 framer-motion 의존을 `tw-animate-css` 기반 200ms fade/zoom으로 교체했다. `motion-reduce:animate-none`을 적용해 모션 축소 설정도 존중한다. 자산 페이지·월 요약의 라우트 한정 framer-motion은 유지했다.
+- Recharts 소비 지점 네 곳을 클라이언트 경계의 `next/dynamic({ ssr: false })`로 전환했다. 자산 포트폴리오·추이 차트와 대시보드/연간 요약 공용 차트를 동적 로드하고, 분석 막대 차트는 `budget-comparison-chart.tsx`로 분리해 동적 로드한다. 로딩 중에는 실제 차트 높이 250/200/280px를 예약하는 접근 가능한 스켈레톤을 표시한다.
+- 미사용 `emoji-picker-react`, `next-pwa`를 uninstall하고 `components/page-transition.tsx`, `types/next-pwa.d.ts`, 미참조 1.35MB/1.47MB 로고 PNG 두 장을 삭제했다. 신규 npm 의존성, 서비스워커, DB/RPC/마이그레이션, 옵티미스틱 UI 변경은 없다.
+- Next.js 16은 빌드 출력에서 공식 `First Load JS` 지표를 제공하지 않으므로, 변경 전후 동일한 route client-reference manifest + root main files 산식으로 초기 JS raw/gzip을 비교했다. gzip 기준 대시보드 322.6→171.1KiB(-47.0%), 자산 355.8→234.6KiB(-34.1%), 분석 293.9→156.0KiB(-46.9%), 연간 313.1→154.2KiB(-50.8%), 설정 298.7→260.5KiB(-12.8%)였다. Recharts는 비동기 청크로 분리됐고 초기 청크에서 Recharts·루트 framer-motion 표식이 사라졌다.
+- 검증: `npx tsc --noEmit`, `npx eslint .` 통과, `next experimental-analyze --output` 통과. `npm run build`는 코드 오류가 아니라 샌드박스가 Google Fonts의 Manrope/Nunito CSS 요청을 차단해 변경 전·후 모두 같은 지점에서 실패했다. assets 당일 스냅샷 생성은 인증 브라우저 부재로 실데이터 E2E 대신 조건·INSERT·UNIQUE 경로를 코드 수준으로 확인했다.
+- **검토·보강 (Claude Code)**: `package.json`에 `next-pwa`는 제거됐지만 `@types/next-pwa`(devDependency)가 그대로 남아 있어 `npm uninstall @types/next-pwa`로 마저 정리했다. 네트워크 제한 없는 로컬 환경에서 `npx tsc --noEmit`, `npx eslint .`, `npm run build`(Turbopack, 폰트 mock 불필요) 모두 통과해 코드 정확성을 재확인했다. 연간 요약 E2E 계정으로 로그인해 대시보드·설정(워터폴 해체 대상)·자산·연간 요약·분석·월간 보고서 6개 페이지를 콘솔 에러 0건으로 확인했다. 자산 페이지는 임시 자산을 등록·삭제하며 당일 스냅샷("7/24 기록됨") 생성과 새 CSS 기반 확인 다이얼로그(프레이머모션 대체분)가 첫 클릭에 정상 표시되는 것까지 라이브 검증했다(단, `after()`로 옮긴 렌더-후 캐치업 경로 자체를 별도로 재현하지는 못함 — 자산 생성 액션이 이미 스냅샷을 남겨 두 경로가 겹침).
+
 ### fix - AI 보고서 자산 순자산을 보고 기간 시점 기준으로 조회
 
 - 사용자가 "자산 코멘트가 이상하다, 다 최근 기준으로 조회되는 듯하다. 해당 월 기록이 따라와야 할 듯"이라고 지적했다.

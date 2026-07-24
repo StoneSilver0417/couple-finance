@@ -2,14 +2,43 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Wallet, TrendingUp, TrendingDown, LineChart, Info } from "lucide-react";
 import AssetsListClient from "./assets-list-client";
-import AssetPortfolioChart from "@/components/charts/asset-portfolio-chart";
-import AssetTrendChart from "@/components/charts/asset-trend-chart";
 import AssetFilterTabs from "@/components/assets/asset-filter-tabs";
 import { Asset, AssetHistory } from "@/types";
+
+const AssetPortfolioChart = dynamic(
+  () => import("@/components/charts/asset-portfolio-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        className="h-[250px] w-full animate-pulse rounded-2xl bg-gray-100/70 motion-reduce:animate-none"
+      >
+        <span className="sr-only">포트폴리오 차트를 불러오는 중입니다.</span>
+      </div>
+    ),
+  },
+);
+
+const AssetTrendChart = dynamic(
+  () => import("@/components/charts/asset-trend-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        className="h-[200px] w-full animate-pulse rounded-2xl bg-gray-100/70 motion-reduce:animate-none"
+      >
+        <span className="sr-only">자산 추이 차트를 불러오는 중입니다.</span>
+      </div>
+    ),
+  },
+);
 
 interface Member {
   id: string;
