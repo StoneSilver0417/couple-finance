@@ -22,6 +22,14 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // 터치 기기에서는 onMouseEnter가 달려 있으면 브라우저가 첫 탭을 hover 미리보기로만
+  // 처리하고 click을 두 번째 탭까지 미루는 경우가 있다(모바일 웹의 잘 알려진 동작).
+  // 터치 기기에서는 hover 핸들러 자체를 걸지 않아 탭 한 번으로 바로 선택되게 한다.
+  const [isTouchDevice] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0),
+  );
 
   const activeIndex = hoveredIndex ?? selectedIndex;
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
@@ -106,8 +114,10 @@ export default function AssetPortfolioChart({ data }: AssetChartProps) {
               stroke="none"
               isAnimationActive={false}
               labelLine={false}
-              onMouseEnter={(_, index) => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
+              onMouseEnter={
+                isTouchDevice ? undefined : (_, index) => setHoveredIndex(index)
+              }
+              onMouseLeave={isTouchDevice ? undefined : () => setHoveredIndex(null)}
               onClick={(_, index, e) => {
                 e?.stopPropagation();
                 setSelectedIndex((prev) => (prev === index ? null : index));
