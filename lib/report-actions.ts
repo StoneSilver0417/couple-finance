@@ -242,8 +242,8 @@ function createFallbackReportContent(
     assetComment:
       stats.netWorth !== null
         ? isMonthlyReport
-          ? `최근 기록 기준 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 달에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
-          : `최근 기록 기준 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 기간에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
+          ? `${periodLabel}까지 기록된 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 달에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
+          : `${periodLabel}까지 기록된 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 기간에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
         : "",
     praise:
       stats.balance >= 0
@@ -356,7 +356,8 @@ export async function generateMonthlyReport(
       previousTransactionsResult,
       budgetResult,
       balancesResult,
-      assetHistoryResult,
+      currentAssetResult,
+      previousAssetResult,
     ] = await Promise.all([
       ctx.supabase.rpc("get_transactions_by_month", {
         p_household_id: ctx.householdId,
@@ -382,12 +383,24 @@ export async function generateMonthlyReport(
         .order("year", { ascending: false })
         .order("month", { ascending: false })
         .limit(6),
+      // 보고 대상 월 말 기준 최신 순자산(최근이 아니라 그 달까지의 기록)
       ctx.supabase
         .from("asset_history")
         .select("record_date, total_net_worth")
         .eq("household_id", ctx.householdId)
+        .lte("record_date", currentRange.end)
         .order("record_date", { ascending: false })
-        .limit(2),
+        .limit(1)
+        .maybeSingle(),
+      // 그 달이 시작되기 전 최신 순자산(전월 대비 증감 계산용)
+      ctx.supabase
+        .from("asset_history")
+        .select("record_date, total_net_worth")
+        .eq("household_id", ctx.householdId)
+        .lt("record_date", currentRange.start)
+        .order("record_date", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     const queryError = [
@@ -395,7 +408,8 @@ export async function generateMonthlyReport(
       previousTransactionsResult.error,
       budgetResult.error,
       balancesResult.error,
-      assetHistoryResult.error,
+      currentAssetResult.error,
+      previousAssetResult.error,
     ].find(Boolean);
     if (queryError) throw queryError;
 
@@ -457,15 +471,12 @@ export async function generateMonthlyReport(
           .slice(0, 5)
       : [];
 
-    const assetHistory = assetHistoryResult.data ?? [];
-    const netWorth =
-      assetHistory.length > 0
-        ? Number(assetHistory[0].total_net_worth) || 0
-        : null;
-    const previousNetWorth =
-      assetHistory.length > 1
-        ? Number(assetHistory[1].total_net_worth) || 0
-        : null;
+    const netWorth = currentAssetResult.data
+      ? Number(currentAssetResult.data.total_net_worth) || 0
+      : null;
+    const previousNetWorth = previousAssetResult.data
+      ? Number(previousAssetResult.data.total_net_worth) || 0
+      : null;
     const netWorthDiff =
       netWorth !== null && previousNetWorth !== null
         ? netWorth - previousNetWorth
@@ -609,7 +620,8 @@ export async function generatePeriodicReport(
       previousTransactionsResult,
       budgetsResult,
       balancesResult,
-      assetHistoryResult,
+      currentAssetResult,
+      previousAssetResult,
     ] = await Promise.all([
       ctx.supabase.rpc("get_transactions_by_month", {
         p_household_id: ctx.householdId,
@@ -637,13 +649,24 @@ export async function generatePeriodicReport(
         .lte("month", endMonth)
         .order("month", { ascending: true })
         .limit(options.trendMonths),
+      // 보고 대상 기간 말 기준 최신 순자산(최근이 아니라 그 기간까지의 기록)
       ctx.supabase
         .from("asset_history")
         .select("record_date, total_net_worth")
         .eq("household_id", ctx.householdId)
         .lte("record_date", period.range.end)
         .order("record_date", { ascending: false })
-        .limit(2),
+        .limit(1)
+        .maybeSingle(),
+      // 그 기간이 시작되기 전 최신 순자산(전기간 대비 증감 계산용)
+      ctx.supabase
+        .from("asset_history")
+        .select("record_date, total_net_worth")
+        .eq("household_id", ctx.householdId)
+        .lt("record_date", period.range.start)
+        .order("record_date", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     const queryError = [
@@ -651,7 +674,8 @@ export async function generatePeriodicReport(
       previousTransactionsResult.error,
       budgetsResult.error,
       balancesResult.error,
-      assetHistoryResult.error,
+      currentAssetResult.error,
+      previousAssetResult.error,
     ].find(Boolean);
     if (queryError) throw queryError;
 
@@ -716,15 +740,12 @@ export async function generatePeriodicReport(
           .slice(0, 5)
       : [];
 
-    const assetHistory = assetHistoryResult.data ?? [];
-    const netWorth =
-      assetHistory.length > 0
-        ? Number(assetHistory[0].total_net_worth) || 0
-        : null;
-    const previousNetWorth =
-      assetHistory.length > 1
-        ? Number(assetHistory[1].total_net_worth) || 0
-        : null;
+    const netWorth = currentAssetResult.data
+      ? Number(currentAssetResult.data.total_net_worth) || 0
+      : null;
+    const previousNetWorth = previousAssetResult.data
+      ? Number(previousAssetResult.data.total_net_worth) || 0
+      : null;
     const netWorthDiff =
       netWorth !== null && previousNetWorth !== null
         ? netWorth - previousNetWorth
