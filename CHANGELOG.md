@@ -2,6 +2,13 @@
 
 ## 2026-07-24
 
+### fix - 도넛 차트 모바일 터치 두 번 탭 문제 재수정
+
+- 이전에 배포·검증까지 마쳤던 "퍼센트 라벨 pointer-events" 수정(`1a36a20`)은 Playwright 마우스 클릭 기준으로는 문제없이 동작했으나, 사용자가 실제 폰(터치)에서 확인한 결과 퍼센트 라벨과 색칠된 조각 둘 다 여전히 두 번 눌러야 선택됐다.
+- 재조사 결과 진짜 원인은 `components/charts/asset-portfolio-chart.tsx`의 `<Pie>`에 걸린 `onMouseEnter`/`onMouseLeave`였다. 이 핸들러는 호버된 조각을 제외한 나머지 조각의 opacity를 낮추는 시각 효과를 트리거하는데, 모바일 웹에서는 hover 관련 리스너가 달려 있고 그 결과 화면이 실제로 바뀌는 요소를 탭하면 브라우저가 첫 탭을 hover 미리보기로만 처리하고 click 이벤트는 두 번째 탭까지 미루는 동작이 잘 알려져 있다(iOS Safari 등). `app/layout.tsx`의 viewport에 이미 `maximumScale: 1`이 있어 더블탭 확대 방지에 따른 300ms 지연 문제는 아니었고, 정확히 이 hover-게이트 패턴과 일치했다.
+- `typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0)`로 터치 기기를 감지해 터치 기기에서는 `onMouseEnter`/`onMouseLeave`를 아예 걸지 않도록 했다(데스크톱 마우스 hover 동작은 그대로 유지). `useState` lazy initializer로 계산해 재렌더마다 다시 계산하지 않는다.
+- `npx tsc --noEmit`, `npx eslint .`, `npm run build` 통과 후 배포(`bfafc55`). 프로덕션에서 Playwright 마우스 클릭 기준 회귀 없음(퍼센트 라벨 클릭 시 여전히 단일 클릭으로 정확한 카테고리 선택)을 재확인했다. 이 환경의 Playwright는 실제 터치 이벤트(`hasTouch`)를 지원하지 않아 진짜 터치 재현 검증은 하지 못했고, 사용자에게 실제 폰에서 재확인을 요청했다.
+
 ### feat - AI 보고서 분기·반기·연간 확장 Phase 2 구현
 
 - 확정 설계대로 기존 라이브 `monthly_reports`는 전혀 수정하지 않고 분기·반기·연간 전용 `periodic_reports` 테이블과 가구 RLS 정책을 정의한 `20260724000000_periodic_reports.sql`을 추가했다. 운영 Supabase에는 실행하지 않았으며 사용자가 Dashboard SQL Editor에서 수동 적용해야 한다.
