@@ -2,18 +2,17 @@
 
 ## 현재 상태
 
-- **버전**: v0.6.5 + AI 보고서 기간 확장 Phase 2 배포·검증 완료 + 도넛 차트 모바일 터치 재수정
-- **검증 상태**: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 모두 통과. 마이그레이션 적용 후 로컬·프로덕션 양쪽에서 `/reports/2026`(연간)·`/reports/2026-Q3`(분기)·`/reports/2026-H1`(반기)·`/reports/2026-07`(월간, 회귀 확인) 렌더 확인, 잘못된 값·미래 기간 redirect 확인, 콘솔·서버 에러 0건. 도넛 차트는 마우스 클릭 기준 회귀 없음 확인 — **실제 모바일 터치 재현은 사용자 확인 대기**
-- **배포 상태**: 커밋 `bfafc55` 푸시 완료, Vercel 프로덕션 배포 `Ready` 확인
+- **버전**: v0.6.5 + AI 보고서 Phase 2 + 도넛 터치 재수정 + 이전 기간 없을 때 비교 방지
+- **검증 상태**: `npx tsc --noEmit`, `npx eslint .`, `npm run build` 모두 통과. AI 보고서 라우팅·redirect·회귀 검증 완료. 도넛 차트는 마우스 클릭 기준 회귀 없음 확인 — **실제 모바일 터치 재현은 사용자 확인 대기**. 이전 기간 비교 게이팅 로직은 Node 단언으로 검증
+- **배포 상태**: 커밋 `57c82e7` 푸시 완료, Vercel 프로덕션 배포 진행/확인
 - **프로덕션 URL**: https://couple-finance-roan.vercel.app
 - **깃허브 저장소**: **PUBLIC 전환 완료** (2026-07-23) — https://github.com/StoneSilver0417/couple-finance
 - **Supabase**: 단일 운영 프로젝트 사용. `20260724000000_periodic_reports.sql` **사용자가 Dashboard SQL Editor에서 수동 적용 완료**
 
 ## 최근 작업
 
-- **도넛 차트 모바일 터치 재수정 (2026-07-24, Claude Code)**: 이전 세션에서 "퍼센트 라벨 pointer-events" 수정을 배포·검증(Playwright 마우스 클릭 기준)까지 마쳤으나, 사용자가 실제 폰(터치)에서 재현해보니 퍼센트 라벨과 색칠된 조각 둘 다 여전히 두 번 눌러야 선택됐다. 재조사 결과 진짜 원인은 `<Pie>`의 `onMouseEnter`/`onMouseLeave`(형제 조각 opacity를 dim시키는 hover 효과)였다 — 모바일 웹에서 hover 리스너가 달린 요소는 첫 탭을 hover 미리보기로만 처리하고 click은 두 번째 탭까지 미루는 동작이 잘 알려져 있는데, 정확히 이 패턴이었다(뷰포트에 `maximumScale:1`이 이미 있어 300ms 탭 지연 문제는 아니었음). 터치 기기 감지 후 hover 핸들러 자체를 걸지 않도록 수정(데스크톱 마우스 hover는 그대로 유지), 커밋(`bfafc55`)·배포. Playwright는 실제 터치 이벤트를 이 환경에서 재현할 수 없어(`hasTouch` 미지원) 마우스 클릭 기준 회귀 없음만 확인했고, 실제 터치 재현 확인은 사용자에게 요청함.
-- **AI 보고서 Phase 2 배포 완료 (2026-07-24, Codex 구현 + Claude Code 검토/수정/배포)**: Codex가 신규 `periodic_reports` 테이블, `getPeriodRange`, `generatePeriodicReport`, 기간별 Gemini 프롬프트/집계, `/reports/[period]` 라우트와 월·분기·반기·연간 탭을 구현. 기존 월간 액션·테이블·JSON 키·`/reports/YYYY-MM` 경로는 보존됨을 diff로 직접 확인. 검토 중 Codex가 "새 npm 의존성 금지" 제약을 우회하려고 입력 검증에 Next.js 비공개 내부 경로(`next/dist/compiled/zod`)를 끌어다 쓴 것을 발견 — 이 저장소의 다른 서버 액션은 전부 zod 없이 수동 검증만 쓰고 있고 내부 경로는 버전업 시 경고 없이 사라질 수 있어, 정규식 기반 수동 검증(`parsePeriodicReportInput`)으로 교체하고 가짜 타입 선언 파일을 삭제함. 사용자가 마이그레이션을 Dashboard에서 수동 적용한 뒤, 로컬·프로덕션 양쪽에서 4가지 기간 유형과 잘못된 값·미래 기간 redirect, 기존 월간 경로 회귀 여부를 Playwright로 직접 확인 후 커밋(`adc2bac`)·배포.
-- **검증/호환성 보강 (2026-07-24, Codex)**: 월간 하위호환·기간 계산·UI 접근성을 독립 리뷰하고 발견된 탭 대비와 2000년 하한 이동을 수정했다. Next 16 프로덕션 타입 검사에서 발견된 기존 라우트 3곳의 Promise 타입 선언도 무동작 교정했다.
+- **이전 기간 없을 때 AI 보고서 허위 비교 방지 (2026-07-24, Claude Code)**: 직전 기간(전월·전분기·전반기·전년)에 지출 기록이 아예 없으면 모든 카테고리가 prev=0으로 잡혀 "전기간보다 늘었다"고 잘못 서술하던 문제 수정. `previousCategories`가 비면 `hasComparisonBaseline=false`로 판단해 `momCategoryDiffs`를 빈 배열로 두고("대비 주요 변화" 섹션 자동 숨김), Gemini 프롬프트에도 플래그를 전달해 비교 표현 금지·구성 설명으로 유도. 이전 기록이 있으면 기존 동작 유지. 월간/기간 두 경로 모두 적용. 커밋 `57c82e7`.
+- **도넛 차트 모바일 터치 재수정 (2026-07-24, Claude Code)**: 퍼센트 라벨/조각을 폰에서 두 번 눌러야 선택되던 문제의 진짜 원인이 `<Pie>`의 `onMouseEnter`/`onMouseLeave`(hover로 화면이 바뀌는 요소를 모바일에서 탭하면 첫 탭이 hover 미리보기로만 소비되는 잘 알려진 동작)임을 확인, 터치 기기에서는 hover 핸들러를 걸지 않도록 수정(데스크톱 마우스 동작은 유지). 커밋 `bfafc55`. Playwright가 실제 터치를 재현 못 해 마우스 클릭 회귀 없음만 확인 — **실제 폰 재확인은 사용자 대기**. (AI 보고서 Phase 2 배포 완료, zod 내부 경로 우회 수정 등 이전 상세는 CHANGELOG.md 참고.)
 
 ## 알려진 이슈
 
