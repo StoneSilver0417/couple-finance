@@ -40,11 +40,12 @@ export function BottomNav() {
           <Link
             href="/"
             className={cn(
-              "flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all",
+              "flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all active:scale-90 duration-100",
               pathname === "/"
                 ? "text-primary-dark bg-primary-soft/20 scale-110"
                 : "text-text-secondary hover:text-primary-dark",
             )}
+            prefetch={true}
           >
             <Home
               className={cn("w-7 h-7", pathname === "/" && "fill-current")}
