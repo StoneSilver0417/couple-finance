@@ -236,11 +236,14 @@ export async function validateGeminiKey(key: string): Promise<boolean> {
 }
 
 export async function generateReportContent(
-  key: string,
+  key: string | undefined,
   aggregates: GeminiReportAggregates,
 ): Promise<
   { ok: true; ai: ReportAiContent } | { ok: false; error: string }
 > {
+  if (!key) {
+    return { ok: false, error: "API 키가 제공되지 않았습니다." };
+  }
   const periodLabel = aggregates.periodLabel ?? "이번 달";
   const previousPeriodLabel = aggregates.previousPeriodLabel ?? "전월";
   // 직전 기간에 비교할 지출 기록이 없으면(가입 초기 등) 비교 서술 자체가 불가능하다.

@@ -199,58 +199,74 @@ function createFallbackReportContent(
   const nextPeriodLabel = isMonthlyReport ? "다음 달" : "다음 기간";
   const balanceTone =
     stats.balance >= 0
-      ? `수입에서 지출을 제외하고 ${formatWon(stats.balance)}이 남았습니다.`
-      : `지출이 수입보다 ${formatWon(Math.abs(stats.balance))} 많았습니다.`;
+      ? `수입에서 지출을 제외하고 ${formatWon(stats.balance)}이 여유 자금으로 확보되었습니다.`
+      : `지출이 수입을 초과하여 ${formatWon(Math.abs(stats.balance))}의 마이너스가 발생했습니다.`;
   const biggestExpense = aggregates.categoryExpenses[0];
-  const headline = biggestExpense
-    ? isMonthlyReport
-      ? `${biggestExpense.name} 지출을 중심으로 점검이 필요한 달입니다`
-      : `${biggestExpense.name} 지출을 중심으로 ${periodLabel} 흐름 점검이 필요합니다`
-    : isMonthlyReport
-      ? "이번 달 가계 흐름을 차분히 점검해볼 달입니다"
-      : `${periodLabel} 가계 흐름을 차분히 점검해보세요`;
+
+  const rand = Math.floor(Math.random() * 3);
+  const headlineOptions = biggestExpense
+    ? [
+        `${biggestExpense.name} 지출 비중이 가장 높습니다. 집중적인 리밸런싱이 시급합니다.`,
+        `${biggestExpense.name} 항목이 최대 지출처입니다. 이번 기간 핵심 절약 타겟입니다.`,
+        `${biggestExpense.name} 지출 흐름을 정밀 분석하고 새롭게 예산을 재설정하세요.`,
+      ]
+    : [
+        `전반적인 수입·지출 흐름을 체계적으로 점검하고 자산 체력을 다지는 달입니다.`,
+        `불필요한 지출 누수를 차단하고 저축 여력을 극대화할 시점입니다.`,
+        `안정적인 자산 형성을 위해 카테고리별 지출 습관을 점검해보세요.`,
+      ];
+  const headline = headlineOptions[rand % headlineOptions.length];
 
   const momComments = aggregates.monthOverMonthHighlights.map((category) => {
-    const direction = category.diff > 0 ? "늘었습니다" : "줄었습니다";
-    return `${category.name} 지출이 ${previousPeriodLabel}보다 ${formatWon(Math.abs(category.diff))} ${direction}.`;
+    const direction = category.diff > 0 ? "증가" : "감소";
+    const emoji = category.diff > 0 ? "⚠️" : "📉";
+    return `${emoji} ${category.name} 지출이 ${previousPeriodLabel} 대비 ${formatWon(Math.abs(category.diff))} ${direction}했습니다.`;
   });
 
-  const budgetFeedback =
+  const budgetFeedbackOptions = [
     stats.totalBudget > 0 && stats.budgetUsagePercent !== null
-      ? `${periodLabel} 예산 ${formatWon(stats.totalBudget)} 중 ${stats.budgetUsagePercent.toFixed(1)}%를 사용했습니다. 80%를 넘었다면 남은 기간 변동비를 우선 조절하세요.`
-      : isMonthlyReport
-        ? "이번 달 예산이 등록되어 있지 않습니다. 다음 달부터는 월 예산을 먼저 정해두면 지출 속도를 판단하기 쉽습니다."
-        : `${periodLabel} 예산이 등록되어 있지 않습니다. ${nextPeriodLabel}부터는 월별 예산을 먼저 정해두면 지출 속도를 판단하기 쉽습니다.`;
+      ? `🎯 예산 관리 진단: 총 예산 ${formatWon(stats.totalBudget)} 중 ${stats.budgetUsagePercent.toFixed(1)}%가 소진되었습니다. ${stats.budgetUsagePercent > 80 ? "지출 속도가 매우 빠르니 남은 기간 각별한 주의가 필요합니다." : "예산 범위 내에서 안정적으로 통제되고 있습니다."}`
+      : `💡 예산 설정 제안: 아직 월별 예산이 설정되지 않았습니다. 예산을 먼저 설정하면 지출 통제력이 훨씬 높아집니다.`,
+  ];
+  const budgetFeedback = budgetFeedbackOptions[0];
 
   const highExpenseTip = biggestExpense
-    ? `${biggestExpense.name} 항목은 ${nextPeriodLabel}에 주간 한도를 정해 초과 여부를 확인하세요.`
-    : `${nextPeriodLabel}에는 지출 카테고리를 꾸준히 나눠 기록해 흐름을 더 선명하게 보세요.`;
+    ? `🔥 핵심 절약 팁: ${biggestExpense.name} 영역에서 주간 지출 상한선을 설정하고 중간 점검을 습관화하세요.`
+    : `✨ 지출 기록 팁: 매일 가계부를 작성하여 숨은 지출 포인트를 투명하게 가시화하세요.`;
 
   const fixedRatio =
     stats.expense > 0 ? (stats.fixedExpense / stats.expense) * 100 : 0;
   const fixedTip =
     fixedRatio >= 50
-      ? "고정비 비중이 큰 편입니다. 구독, 통신, 보험처럼 매달 반복되는 항목부터 재점검하세요."
-      : "고정비보다 변동비 조정 여지가 큽니다. 외식, 쇼핑, 생활비 항목을 먼저 살펴보세요.";
+      ? `🛡️ 고정비 방어 팁: 고정비 비중(${fixedRatio.toFixed(1)}%)이 높습니다. 통신비, 보험료, 정기 구독 서비스를 일괄 재정비하세요.`
+      : `🚀 변동비 최적화 팁: 고정비가 안정적이므로 외식·쇼핑 등 변동비 지출 항목을 타이트하게 조절하면 저축액을 크게 늘릴 수 있습니다.`;
+
+  const leakDiagnosisOptions = biggestExpense
+    ? [
+        `🔍 지출 누수 정밀 진단: ${biggestExpense.name}(${formatWon(biggestExpense.current)}) 항목이 전체 예산의 큰 부분을 차지합니다. 불필요한 구독이나 충동적인 소비가 숨어있는지 세부 내역을 검토하세요.`,
+        `⚠️ 리스크 포인트: ${biggestExpense.name} 지출이 과도합니다. 해당 카테고리의 결제 빈도를 절반으로 줄이는 것만으로도 상당한 자금 여유가 생깁니다.`,
+      ]
+    : [
+        `✨ 양호한 상태: 아직 뚜렷한 지출 누수 포인트가 감지되지 않았습니다. 꾸준한 기록을 유지하세요.`,
+      ];
+  const leakDiagnosis = leakDiagnosisOptions[rand % leakDiagnosisOptions.length];
 
   return {
     headline,
-    summaryComment: `${periodLabel} 수입은 ${formatWon(stats.income)}, 지출은 ${formatWon(stats.expense)}입니다. ${balanceTone}`,
+    summaryComment: `${periodLabel} 총 수입은 ${formatWon(stats.income)}, 총 지출은 ${formatWon(stats.expense)}입니다. ${balanceTone}`,
     momComments,
     budgetFeedback,
-    fixedVariableAnalysis: `전체 지출 중 고정비가 약 ${fixedRatio.toFixed(1)}%를 차지하고 있습니다. ${fixedRatio >= 50 ? "고정비 비중이 높아 변동비 통제력이 낮으니 구독 서비스나 통신비 등을 우선 점검하세요." : "고정비가 낮은 편으로, 변동비 지출 습관을 다듬는 것만으로도 큰 저축 효과를 볼 수 있습니다."}`,
-    leakDiagnosis: biggestExpense ? `${biggestExpense.name} 항목에서 지출이 가장 많이 발생하고 있습니다. 이 항목의 세부 내역을 살펴 불필요한 누수가 없는지 확인해 보세요.` : "지출 항목이 적어 아직 눈에 띄는 누수 포인트가 발견되지 않았습니다. 꾸준한 기록을 통해 소비 패턴을 찾아보세요.",
+    fixedVariableAnalysis: `📊 고정비(${formatWon(stats.fixedExpense)}) vs 변동비(${formatWon(stats.variableExpense)}) 분석: 전체 지출 중 고정비가 ${fixedRatio.toFixed(1)}%를 차지합니다. ${fixedRatio >= 50 ? "고정지출 고착화가 우려되므로 고정비 다이어트가 필수적입니다." : "변동비 비중이 높아 실시간 지출 통제가 저축 성패를 좌우합니다."}`,
+    leakDiagnosis,
     savingTips: [highExpenseTip, fixedTip],
     assetComment:
       stats.netWorth !== null
-        ? isMonthlyReport
-          ? `${periodLabel}까지 기록된 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 달에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
-          : `${periodLabel}까지 기록된 순자산은 ${formatWon(stats.netWorth)}입니다. 변동이 큰 기간에는 지출보다 자산 기록의 입력 시점도 함께 확인하세요.`
-        : "",
+        ? `💎 순자산 브리핑: 현재 순자산은 ${formatWon(stats.netWorth)}입니다. 자산 증감 추이를 매달 꾸준히 모니터링하세요.`
+        : "💎 순자산 브리핑: 자산 항목을 연동하면 순자산 변화 추이를 함께 진단받으실 수 있습니다.",
     praise:
       stats.balance >= 0
-        ? `수입과 지출을 기록해 남는 금액을 확인한 점이 좋습니다. 이 흐름을 ${nextPeriodLabel} 예산 설정으로 이어가세요.`
-        : `지출 초과를 숫자로 확인한 것만으로도 ${nextPeriodLabel} 조정의 출발점이 됩니다.`,
+        ? `🏆 수석 재무 컨설턴트 총평: 흑자 기조를 유지하며 자산을 방어한 점이 훌륭합니다. 이 저축 모멘텀을 ${nextPeriodLabel}에도 그대로 유지하세요!`
+        : `⚡ 수석 재무 컨설턴트 총평: 적자 구조를 빠르게 파악한 것이 곧 혁신의 시작입니다. 이번 달 누수 포인트를 보완하여 ${nextPeriodLabel}에는 반드시 흑자로 전환해봅시다!`,
   };
 }
 
@@ -341,12 +357,7 @@ export async function generateMonthlyReport(
       .maybeSingle();
     if (aiSettingError) throw aiSettingError;
     const apiKey = aiSetting?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      return {
-        error:
-          "AI 보고서를 사용하려면 설정에서 Gemini API 키를 등록해주세요.",
-      };
-    }
+
 
     const currentRange = getMonthRange(parsed.year, parsed.month);
     const previousDate = new Date(parsed.year, parsed.month - 2, 1);
@@ -609,12 +620,7 @@ export async function generatePeriodicReport(
       .maybeSingle();
     if (aiSettingError) throw aiSettingError;
     const apiKey = aiSetting?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      return {
-        error:
-          "AI 보고서를 사용하려면 설정에서 Gemini API 키를 등록해주세요.",
-      };
-    }
+
 
     const startMonth = Number(period.range.start.slice(5, 7));
     const endMonth = Number(period.range.end.slice(5, 7));
