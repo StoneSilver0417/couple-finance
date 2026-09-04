@@ -80,6 +80,14 @@ function createReportResponseSchema(
         type: "STRING",
         description: `${periodLabel} 예산 사용에 대한 한국어 피드백. 160자 이내.`,
       },
+      fixedVariableAnalysis: {
+        type: "STRING",
+        description: "고정비와 변동비의 비율 및 성격에 대한 전문적인 분석. 200자 이내.",
+      },
+      leakDiagnosis: {
+        type: "STRING",
+        description: "지출 중 가장 주의해야 할 누수(Leak) 포인트 진단. 200자 이내.",
+      },
       savingTips: {
         type: "ARRAY",
         description: "집계에 근거한 구체적인 한국어 절약 팁 2~3개.",
@@ -100,6 +108,8 @@ function createReportResponseSchema(
       "summaryComment",
       "momComments",
       "budgetFeedback",
+      "fixedVariableAnalysis",
+      "leakDiagnosis",
       "savingTips",
       "assetComment",
       "praise",
@@ -136,6 +146,8 @@ function isReportAiContent(
     isBoundedStringArray(candidate.momComments, 5, 80) &&
     candidate.momComments.length === expectedMomCommentCount &&
     isBoundedString(candidate.budgetFeedback, 300) &&
+    isBoundedString(candidate.fixedVariableAnalysis, 300) &&
+    isBoundedString(candidate.leakDiagnosis, 300) &&
     isBoundedStringArray(candidate.savingTips, 3, 300) &&
     candidate.savingTips.length >= 2 &&
     isBoundedString(candidate.assetComment, 300) &&

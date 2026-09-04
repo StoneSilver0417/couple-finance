@@ -238,6 +238,8 @@ function createFallbackReportContent(
     summaryComment: `${periodLabel} 수입은 ${formatWon(stats.income)}, 지출은 ${formatWon(stats.expense)}입니다. ${balanceTone}`,
     momComments,
     budgetFeedback,
+    fixedVariableAnalysis: `전체 지출 중 고정비가 약 ${fixedRatio.toFixed(1)}%를 차지하고 있습니다. ${fixedRatio >= 50 ? "고정비 비중이 높아 변동비 통제력이 낮으니 구독 서비스나 통신비 등을 우선 점검하세요." : "고정비가 낮은 편으로, 변동비 지출 습관을 다듬는 것만으로도 큰 저축 효과를 볼 수 있습니다."}`,
+    leakDiagnosis: biggestExpense ? `${biggestExpense.name} 항목에서 지출이 가장 많이 발생하고 있습니다. 이 항목의 세부 내역을 살펴 불필요한 누수가 없는지 확인해 보세요.` : "지출 항목이 적어 아직 눈에 띄는 누수 포인트가 발견되지 않았습니다. 꾸준한 기록을 통해 소비 패턴을 찾아보세요.",
     savingTips: [highExpenseTip, fixedTip],
     assetComment:
       stats.netWorth !== null

@@ -33,6 +33,8 @@ export interface ReportAiContent {
   summaryComment: string;
   momComments: string[];
   budgetFeedback: string;
+  fixedVariableAnalysis: string;
+  leakDiagnosis: string;
   savingTips: string[];
   assetComment: string;
   praise: string;
