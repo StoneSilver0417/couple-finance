@@ -199,19 +199,23 @@ export async function deleteAsset(assetId: string) {
 
     if (error) throw error;
 
-    // 활동 기록
-    const label = asset.is_liability ? "부채" : "자산";
-    await logActivity(
-      supabase,
-      householdId,
-      user.id,
-      "DELETE",
-      "ASSET",
-      `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
-    );
-
-    // 자산 스냅샷 저장
-    await saveAssetSnapshot(supabase, householdId);
+    // 비동기 작업(로그 및 스냅샷)을 백그라운드로 분리하여 응답 속도 및 안정성 최적화
+    (async () => {
+      try {
+        const label = asset.is_liability ? "부채" : "자산";
+        await logActivity(
+          supabase,
+          householdId,
+          user.id,
+          "DELETE",
+          "ASSET",
+          `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
+        );
+        await saveAssetSnapshot(supabase, householdId);
+      } catch (err) {
+        console.error("Background asset cleanup error:", err);
+      }
+    })();
 
     revalidatePath("/assets");
     return { success: true };
