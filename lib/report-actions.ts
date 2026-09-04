@@ -340,7 +340,8 @@ export async function generateMonthlyReport(
       .eq("household_id", ctx.householdId)
       .maybeSingle();
     if (aiSettingError) throw aiSettingError;
-    if (!aiSetting?.gemini_api_key) {
+    const apiKey = aiSetting?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
       return {
         error:
           "AI 보고서를 사용하려면 설정에서 Gemini API 키를 등록해주세요.",
@@ -552,7 +553,7 @@ export async function generateMonthlyReport(
     };
 
     const generated = await generateReportContent(
-      aiSetting.gemini_api_key,
+      apiKey,
       aggregates,
     );
     const ai = generated.ok
@@ -607,7 +608,8 @@ export async function generatePeriodicReport(
       .eq("household_id", ctx.householdId)
       .maybeSingle();
     if (aiSettingError) throw aiSettingError;
-    if (!aiSetting?.gemini_api_key) {
+    const apiKey = aiSetting?.gemini_api_key || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
       return {
         error:
           "AI 보고서를 사용하려면 설정에서 Gemini API 키를 등록해주세요.",
@@ -830,7 +832,7 @@ export async function generatePeriodicReport(
     };
 
     const generated = await generateReportContent(
-      aiSetting.gemini_api_key,
+      apiKey,
       aggregates,
     );
     const ai = generated.ok
