@@ -51,6 +51,7 @@ export const metadata: Metadata = {
 
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { PwaRegister } from "@/components/pwa-register";
 
 export default function RootLayout({
   children,
@@ -68,6 +69,7 @@ export default function RootLayout({
             <BottomNav />
           </div>
           <Toaster position="top-center" richColors />
+          <PwaRegister />
         </ConfirmProvider>
       </body>
     </html>
