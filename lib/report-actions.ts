@@ -13,6 +13,7 @@ import {
   type GeminiReportAggregates,
 } from "@/lib/ai/gemini";
 
+import { createEnhancedFallbackReport } from "@/lib/ai/fallback-report";
 import {
   getPeriodRange,
   type PeriodicReportType,
@@ -484,17 +485,20 @@ export async function generateMonthlyReport(
         : {}),
     };
 
-    // Gemini API 호출 (폴백 대신 에러 반환)
-    if (!apiKey || apiKey.length < 20) {
-      return { error: "Gemini API 키가 설정되지 않았거나 올바르지 않습니다. 설정에서 API 키를 등록해주세요." };
+    // Gemini API 호출 및 폴백 처리
+    let aiContent;
+    if (apiKey && apiKey.length >= 20) {
+      const res = await generateReportContent(apiKey, aggregates);
+      if (res.ok) {
+        aiContent = res.ai;
+      } else {
+        console.warn("[REPORT_GEN] Gemini API 실패, 구조화된 분석 폴백 생성:", res.error);
+        aiContent = createEnhancedFallbackReport(stats, aggregates);
+      }
+    } else {
+      console.warn("[REPORT_GEN] API Key 없음/부족, 구조화된 분석 폴백 생성");
+      aiContent = createEnhancedFallbackReport(stats, aggregates);
     }
-
-    const res = await generateReportContent(apiKey, aggregates);
-    if (!res.ok) {
-      return { error: `AI 보고서 생성 실패: ${res.error}` };
-    }
-
-    const aiContent = res.ai;
     const content: MonthlyReportContent = { stats, ai: aiContent };
     const { error: saveError } = await ctx.supabase.from("monthly_reports").upsert(
       {
@@ -773,17 +777,20 @@ export async function generatePeriodicReport(
         : {}),
     };
 
-    // Gemini API 호출 (폴백 대신 에러 반환)
-    if (!apiKey || apiKey.length < 20) {
-      return { error: "Gemini API 키가 설정되지 않았거나 올바르지 않습니다. 설정에서 API 키를 등록해주세요." };
+    // Gemini API 호출 및 폴백 처리
+    let aiContent;
+    if (apiKey && apiKey.length >= 20) {
+      const res = await generateReportContent(apiKey, aggregates);
+      if (res.ok) {
+        aiContent = res.ai;
+      } else {
+        console.warn("[REPORT_GEN] Gemini API 실패, 구조화된 분석 폴백 생성:", res.error);
+        aiContent = createEnhancedFallbackReport(stats, aggregates);
+      }
+    } else {
+      console.warn("[REPORT_GEN] API Key 없음/부족, 구조화된 분석 폴백 생성");
+      aiContent = createEnhancedFallbackReport(stats, aggregates);
     }
-
-    const res = await generateReportContent(apiKey, aggregates);
-    if (!res.ok) {
-      return { error: `AI 보고서 생성 실패: ${res.error}` };
-    }
-
-    const aiContent = res.ai;
     const content: MonthlyReportContent = { stats, ai: aiContent };
     const { error: saveError } = await ctx.supabase
       .from("periodic_reports")
