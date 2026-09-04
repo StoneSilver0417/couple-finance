@@ -2,7 +2,7 @@ import "server-only";
 
 import type { ReportAiContent } from "@/types/report";
 
-export const GEMINI_MODEL = "gemini-2.0-flash-lite";
+export const GEMINI_MODEL = "gemini-2.5-flash";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const GENERATION_TIMEOUT_MS = 45_000;

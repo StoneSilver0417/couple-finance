@@ -84,3 +84,18 @@ export async function getPendingFeedbackCount() {
 
   return count || 0;
 }
+
+
+export async function forceClearReportsForUser(userId: string) {
+  const isUserAdmin = await isAdmin();
+  if (!isUserAdmin) throw new Error("Unauthorized");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("monthly_reports")
+    .delete()
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  return { success: true };
+}

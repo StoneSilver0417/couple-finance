@@ -1,6 +1,5 @@
-const CACHE_NAME = 'couple-finance-v1';
+const CACHE_NAME = 'couple-finance-v3';
 const ASSETS_TO_CACHE = [
-  '/',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
@@ -28,22 +27,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests or external API calls
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+  if (event.request.method !== 'GET' || event.request.mode === 'navigate') {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+
+  if (url.origin !== self.location.origin || !ASSETS_TO_CACHE.includes(url.pathname)) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        return response;
-      }).catch(() => {
-        // Fallback for offline if needed
-        return caches.match('/');
-      });
-    })
+    caches.match(event.request).then((response) => response || fetch(event.request))
   );
 });
