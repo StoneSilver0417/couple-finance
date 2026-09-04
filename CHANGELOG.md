@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-09-04
+
+### refactor - 소스코드 전체 보안, 데이터 일관성, 성능 및 모듈 리팩토링
+
+- **보안/권한 강화 (Security & Auth)**:
+  - `app/api/admin/clear-reports/route.ts`: 일반 로그인 사용자가 전체 가구 보고서를 지울 수 있었던 권한 취약점을 고치고, 호출자의 프로필 `is_admin` 필드가 `true`인 관리자 계정만 삭제할 수 있도록 서버 사이드 인가 로직을 추가했다.
+  - `lib/transaction-validation.ts`: 거래 내역 생성 및 수정 시 제출되는 `category_id` 및 `owner_profile_id`가 현재 사용자의 가구(`household_id`)에 실제 속한 ID인지 서버 액션 단에서 이중 검증하는 모듈을 신설했다.
+- **데이터 일관성 & 비동기 처리 안정화 (Serverless Async Integrity)**:
+  - `lib/transaction-actions.ts`, `lib/transaction-update-action.ts`, `lib/asset-actions.ts`, `lib/category-actions.ts` 내에 존재하던 `(async () => { ... })()` 비동기 IIFE 패턴을 완전히 제거했다.
+  - 잔액 스냅샷 재계산 및 활동 로그 기록이 Serverless(Vercel) 응답 종료 전 확실하게 완료(`await`)되도록 변경하여 백그라운드 작업 누락 위험을 제거했다.
+- **성능 & 쿼리 페이징 최적화 (Performance & Pagination)**:
+  - `lib/admin-actions.ts` 및 `lib/feedback-actions.ts`의 관리자 목록 조회 쿼리에 기본 50개 단위의 `limit`/`offset` 상한선과 정렬 기준을 추가하여, 전체 데이터를 무분별하게 읽어오던 부하를 차단했다.
+- **PWA 서비스 워커 및 Gemini 2.5 Flash API 복구**:
+  - `public/sw.js` 캐시 버전을 `v3`로 올리고, Supabase 및 네비게이션/API 요청은 무조건 네트워크 우선(Network-First) 처리하도록 수정했다.
+  - Gemini API 모델을 `gemini-2.0-flash-lite`(만료)에서 `gemini-2.5-flash`로 업그레이드하고 하드코딩된 폴백 로직을 정비했다.
+
 ## 2026-07-24
 
 ### perf - 서버 왕복과 초기 클라이언트 번들 최적화

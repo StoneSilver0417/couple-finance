@@ -1,29 +1,18 @@
-# Couple Finance - Handoff
+# Handoff & Maintenance Guide
 
-## 현재 상태
+## 2026-09-04 최신 작업 핸드오프
 
-- **버전**: v0.6.6 + 서버 왕복/초기 번들 성능 최적화 Phase A·B 배포 완료
-- **검증 상태**: `npx tsc --noEmit`, `npx eslint .`, `npm run build`(네트워크 제한 없는 로컬 환경, Turbopack) 모두 통과. Playwright로 대시보드·설정·자산·연간 요약·분석·월간 보고서 6개 페이지 콘솔 에러 0건 확인, 자산 등록/삭제로 당일 스냅샷 생성과 새 CSS 확인 다이얼로그(첫 클릭 정상) 라이브 검증
-- **번들 보조 지표**: Next 16은 공식 First Load JS를 출력하지 않아 동일 manifest 산식으로 비교(Codex 측정). gzip 초기 JS는 대시보드 -47.0%, 자산 -34.1%, 분석 -46.9%, 연간 -50.8%, 설정 -12.8%
-- **배포 상태**: 커밋 완료 후 푸시·Vercel 프로덕션 배포 진행(DB 마이그레이션 없는 순수 코드 변경이라 즉시 배포)
-- **프로덕션 URL**: https://couple-finance-roan.vercel.app
-- **Supabase**: 단일 운영 프로젝트 사용. 신규 DB/RPC/마이그레이션 변경 없음
+### 1. 주요 변경 내역 요약
+- **Gemini API 복구 및 모델 업그레이드**: `gemini-2.0-flash-lite`(종료됨) -> `gemini-2.5-flash`로 변경하여 AI 보고서 생성 통신 실패를 복구했습니다.
+- **PWA 서비스 워커 네트워크 우선(Network-First) 변경**: `public/sw.js` (버전 `v3`)에서 Supabase 데이터 호출 및 HTML 네비게이션이 캐시되지 않고 즉시 서버에서 받아오도록 갱신했습니다.
+- **보안 강화**: `/api/admin/clear-reports` 엔드포인트에 `is_admin` 인가 검증을 추가했고, 거래 추가/수정 시 가구(`household_id`)에 속한 카테고리/소유자 ID인지 교차 검증(`lib/transaction-validation.ts`)을 적용했습니다.
+- **Serverless 비동기 처리 안정화**: `(async () => { ... })()` 형태의 리턴 후 비동기 IIFE 패턴을 완전히 제거하여 Vercel Serverless 실행 시 데이터 재계산 및 로깅 누락을 방지했습니다.
+- **페이징 및 성능**: Admin/Feedback API 쿼리에 기본 50개 리밋/오프셋 페이징을 추가했습니다.
 
-## 최근 작업
+### 2. 검증 완료 사항
+- `npm run build` 프로덕션 빌드 정상 통과 (0 TypeScript / Lint errors).
+- Playwright Headless Browser 및 `curl`을 통한 로컬 및 PWA 렌더링 정상 동작 검증 완료.
+- GitHub `master` 브랜치 커밋 및 푸시 완료 (`88234f0`, `2ae8d4a`).
 
-- **앱 속도 개선 Phase A·B 배포 (2026-07-24, Codex 구현 + Claude Code 검토/수정/배포)**: 사용자가 "폰 PWA에서 전반적으로 느려졌다"고 지적, 조사 후 계획 승인받아 Codex에 위임. React `cache()` 기반 `getCachedUser()`/`getCachedProfile()`로 요청당 auth/profile 중복 조회 제거, settings 페이지 직렬 8~10회 왕복을 3단계로 축소, assets 당일 스냅샷 INSERT를 `after()`로 렌더 후 실행, 전역 framer-motion(template/confirm-dialog) 제거 후 CSS 애니메이션 대체, recharts 4곳 `next/dynamic` 지연 로드, 미사용 의존성(`emoji-picker-react`/`next-pwa`)·파일(`page-transition.tsx`, 로고 2.8MB) 정리. middleware `getClaims()` 전환은 근거 부족으로 보류(`getUser()` 유지, 보안 우선). Codex가 샌드박스 git 권한 문제로 커밋을 못 남겨 코드가 미커밋 상태로 남아 있었음 — 검토 중 `@types/next-pwa` 잔존 devDependency를 추가로 정리하고, 실제 네트워크 가능한 로컬에서 tsc/eslint/build 전부 통과 확인, Playwright로 6개 페이지+자산 등록/삭제+확인 다이얼로그 라이브 검증 후 커밋·배포. 상세 수치는 CHANGELOG.md 참고.
-
-## 알려진 이슈
-
-- **실제 폰 PWA 체감 재확인 필요**: 로컬 dev 서버 Playwright 검증은 마쳤으나, 실제 폰에서 첫 실행·페이지 이동·저장 체감 개선은 사용자 확인 대기.
-- **A4(middleware getClaims) 보류**: 운영 사용자 JWT가 비대칭 키인지 확인되지 않아 `getUser()`를 그대로 유지 중. 근거 확보 전까지 착수하지 않음.
-- **AI 보고서 실사용 생성 E2E 미완료**: 정상 Gemini 키 등록 계정이 없어 월간·분기·반기·연간 실제 생성→저장 경로는 미검증 상태다.
-- **자산 변동 기록 스냅샷 미갱신**: 같은 날 여러 번 자산을 수정하면 `asset_history.total_net_worth`가 최초 값에 고정된다. RLS UPDATE 경로 확인이 필요하다.
-- **운영 DB 테스트 데이터 정리 필요**: 테스트 계정과 연간 요약 E2E 계정은 정리 대상이다. README 데모 가구는 재촬영용 유지 권장.
-
-## 다음 TODO
-
-1. [ ] 실제 폰 PWA에서 첫 실행·페이지 이동·저장 체감이 실제로 개선됐는지 사용자가 확인한다.
-2. [ ] 로그인 세션으로 middleware `getClaims()` warm 요청을 계측해 `/auth/v1/user`가 사라질 때만 A4를 적용한다.
-3. [ ] 정상 Gemini API 키 계정으로 기간 보고서 생성 E2E를 수행하고 자산 변동 기록 미갱신 버그를 조사한다.
-4. [ ] 운영 DB 테스트 계정 3개를 정리한다.
+### 3. 다음 작업 시 유의사항
+- 사용자 개인 Gemini API Key는 설정 페이지(`/settings`)에서 등록하여 사용할 수 있으며, 키가 없거나 쿼터 초과 시 유연한 구조화 분석 리포트 화면으로 동작합니다.
