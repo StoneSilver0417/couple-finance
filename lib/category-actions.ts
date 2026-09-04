@@ -133,20 +133,14 @@ export async function deleteCategory(categoryId: string) {
 
     if (error) throw error;
 
-    (async () => {
-      try {
-        await logActivity(
-          supabase,
-          householdId,
-          user.id,
-          "DELETE",
-          "CATEGORY",
-          `카테고리 "${cat.name}" 삭제`,
-        );
-      } catch (err) {
-        console.error("Background category log error:", err);
-      }
-    })();
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
+      "DELETE",
+      "CATEGORY",
+      `카테고리 "${cat.name}" 삭제`,
+    );
 
     revalidatePath("/settings/categories");
     revalidatePath("/transactions/new");

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
+import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import {
   getTrimmedString,
@@ -45,6 +46,15 @@ export async function createTransaction(formData: FormData) {
   }
 
   try {
+    const categoryIsValid = await categoryBelongsToHousehold(
+      supabase,
+      householdId,
+      categoryId,
+    );
+    if (!categoryIsValid) {
+      return { error: "카테고리 정보가 올바르지 않습니다." };
+    }
+
     // RPC 함수로 INSERT (RLS 우회)
     const { error } = await supabase.rpc("create_transaction", {
       p_household_id: householdId,
@@ -113,25 +123,23 @@ export async function deleteTransaction(transactionId: string) {
 
     if (error) throw error;
 
-    // 비동기 작업(로그 및 동기화)을 배경으로 실행하여 응답 속도 최적화
-    (async () => {
-      try {
-        const date = new Date(tx.transaction_date);
-        await syncMonthlyBalance(supabase, householdId, date.getFullYear(), date.getMonth() + 1);
-        const typeLabel = tx.type === "income" ? "수입" : "지출";
-        const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");
-        await logActivity(
-          supabase,
-          householdId,
-          user.id,
-          "DELETE",
-          "TRANSACTION",
-          `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`
-        );
-      } catch (e) {
-        console.error("Side effect failed:", e);
-      }
-    })();
+    const date = new Date(tx.transaction_date);
+    await syncMonthlyBalance(
+      supabase,
+      householdId,
+      date.getFullYear(),
+      date.getMonth() + 1,
+    );
+    const typeLabel = tx.type === "income" ? "수입" : "지출";
+    const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
+      "DELETE",
+      "TRANSACTION",
+      `${typeLabel} ₩${amountStr} 삭제${tx.memo ? ` - ${tx.memo}` : ""}`,
+    );
 
     revalidatePath("/transactions");
     return { success: true };

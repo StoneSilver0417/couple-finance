@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
+import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import {
   getTrimmedString,
@@ -58,6 +59,15 @@ export async function updateTransaction(
   }
 
   try {
+    const categoryIsValid = await categoryBelongsToHousehold(
+      supabase,
+      householdId,
+      categoryId,
+    );
+    if (!categoryIsValid) {
+      return { error: "카테고리 정보가 올바르지 않습니다." };
+    }
+
     // 3. 거래 수정
     const { error } = await supabase
       .from("transactions")

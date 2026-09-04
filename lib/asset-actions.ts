@@ -94,6 +94,24 @@ function parseAssetForm(formData: FormData) {
   };
 }
 
+async function isHouseholdProfile(
+  supabase: ServerSupabaseClient,
+  householdId: string,
+  profileId: string | null,
+): Promise<boolean> {
+  if (!profileId) return false;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", profileId)
+    .eq("household_id", householdId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data !== null;
+}
+
 export async function createAsset(formData: FormData) {
   const ctx = await getHouseholdContext();
   if (!ctx.ok) return { error: ctx.error };
@@ -104,6 +122,17 @@ export async function createAsset(formData: FormData) {
   const { values } = parsed;
 
   try {
+    if (
+      values.owner_type === "INDIVIDUAL" &&
+      !(await isHouseholdProfile(
+        supabase,
+        householdId,
+        values.owner_profile_id,
+      ))
+    ) {
+      return { error: "소유자 정보가 올바르지 않습니다." };
+    }
+
     const { error } = await supabase.from("assets").insert({
       household_id: householdId,
       ...values,
@@ -142,6 +171,17 @@ export async function updateAsset(assetId: string, formData: FormData) {
   const { values } = parsed;
 
   try {
+    if (
+      values.owner_type === "INDIVIDUAL" &&
+      !(await isHouseholdProfile(
+        supabase,
+        householdId,
+        values.owner_profile_id,
+      ))
+    ) {
+      return { error: "소유자 정보가 올바르지 않습니다." };
+    }
+
     const { error } = await supabase
       .from("assets")
       .update({
@@ -199,23 +239,16 @@ export async function deleteAsset(assetId: string) {
 
     if (error) throw error;
 
-    // 비동기 작업(로그 및 스냅샷)을 백그라운드로 분리하여 응답 속도 및 안정성 최적화
-    (async () => {
-      try {
-        const label = asset.is_liability ? "부채" : "자산";
-        await logActivity(
-          supabase,
-          householdId,
-          user.id,
-          "DELETE",
-          "ASSET",
-          `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
-        );
-        await saveAssetSnapshot(supabase, householdId);
-      } catch (err) {
-        console.error("Background asset cleanup error:", err);
-      }
-    })();
+    const label = asset.is_liability ? "부채" : "자산";
+    await logActivity(
+      supabase,
+      householdId,
+      user.id,
+      "DELETE",
+      "ASSET",
+      `${label} "${asset.name}" ₩${Math.round(Number(asset.current_amount)).toLocaleString("ko-KR")} 삭제`,
+    );
+    await saveAssetSnapshot(supabase, householdId);
 
     revalidatePath("/assets");
     return { success: true };

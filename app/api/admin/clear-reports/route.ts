@@ -1,21 +1,9 @@
 
 import { NextResponse } from 'next/server';
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -25,38 +13,35 @@ export async function POST(req: Request) {
   // 로그인된 사용자의 가구 ID 가져오기
   const { data: profile } = await supabase
     .from("profiles")
-    .select("household_id")
+    .select("household_id, is_admin")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.household_id) {
+  if (!profile?.is_admin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (!profile.household_id) {
     return NextResponse.json({ error: "No household" }, { status: 400 });
   }
 
   // 해당 가구의 구형/가짜 보고서 삭제
-  let err1, err2;
-  try {
-    const res1 = await supabase
-      .from("monthly_reports")
-      .delete()
-      .eq("household_id", profile.household_id);
-    err1 = res1.error;
-  } catch (e: any) {
-    console.error("monthly_reports delete error:", e);
+  const { error: monthlyError } = await supabase
+    .from("monthly_reports")
+    .delete()
+    .eq("household_id", profile.household_id);
+
+  const { error: periodicError } = await supabase
+    .from("periodic_reports")
+    .delete()
+    .eq("household_id", profile.household_id);
+
+  if (monthlyError) {
+    return NextResponse.json({ error: monthlyError.message }, { status: 500 });
   }
 
-  try {
-    const res2 = await supabase
-      .from("periodic_reports")
-      .delete()
-      .eq("household_id", profile.household_id);
-    err2 = res2.error;
-  } catch (e: any) {
-    console.error("periodic_reports delete error:", e);
-  }
-
-  if (err1) {
-    return NextResponse.json({ error: err1.message }, { status: 500 });
+  if (periodicError) {
+    return NextResponse.json({ error: periodicError.message }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

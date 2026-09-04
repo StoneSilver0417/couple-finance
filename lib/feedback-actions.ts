@@ -75,7 +75,7 @@ export async function submitFeedback(
   }
 }
 
-export async function getMyFeedbacks() {
+export async function getMyFeedbacks(limit?: number, offset: number = 0) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -83,11 +83,23 @@ export async function getMyFeedbacks() {
 
   if (!user) return [];
 
-  const { data } = await supabase
+  let query = supabase
     .from("feedbacks")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  if (limit !== undefined) {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(100, Math.max(1, Math.trunc(limit)))
+      : 1;
+    const safeOffset = Number.isFinite(offset)
+      ? Math.max(0, Math.trunc(offset))
+      : 0;
+    query = query.range(safeOffset, safeOffset + safeLimit - 1);
+  }
+
+  const { data } = await query;
 
   return data || [];
 }
