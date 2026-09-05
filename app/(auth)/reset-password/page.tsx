@@ -87,7 +87,7 @@ export default function ResetPasswordPage() {
 
               <div className="rounded-2xl bg-indigo-50/50 p-4 border border-indigo-100">
                 <p className="font-bold text-sm text-text-main mb-1">💡 안내</p>
-                <p className="text-xs text-text-secondary">
+                <p className="break-keep text-xs text-text-secondary">
                   입력하신 이메일로 비밀번호 재설정 링크가 발송됩니다.
                 </p>
               </div>

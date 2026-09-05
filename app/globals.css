@@ -19,8 +19,11 @@
   --color-bg-dark: var(--bg-dark);
 
   /* Fonts */
-  --font-sans: var(--font-manrope);
-  --font-display: var(--font-nunito);
+  --font-sans:
+    "Pretendard Variable", Pretendard, system-ui, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI",
+    sans-serif;
+  --font-display: var(--font-sans);
 
   /* Shadows */
   --shadow-glass: var(--shadow-glass);
@@ -234,5 +237,25 @@
   }
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

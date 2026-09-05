@@ -1,19 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Nunito } from "next/font/google";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
-
-const nunito = Nunito({
-  subsets: ["latin"],
-  variable: "--font-nunito",
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   themeColor: "#ff85a2",
@@ -59,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${manrope.variable} ${nunito.variable} min-h-dvh bg-[#FDFDFD] font-sans text-[#2D2D5F] antialiased selection:bg-primary-soft selection:text-text-main`}
+        className="min-h-dvh bg-[#FDFDFD] font-sans text-[#2D2D5F] antialiased selection:bg-primary-soft selection:text-text-main"
       >
         <ConfirmProvider>
           {children}
