@@ -207,7 +207,7 @@ export async function joinHousehold(formData: FormData) {
 
     // RPC 함수에서 반환된 에러 확인
     if (result?.error) {
-      return { error: result.error };
+      return { error: getKoreanErrorMessage(result.error) };
     }
 
     console.log("[joinHousehold] 성공");

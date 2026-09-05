@@ -68,7 +68,10 @@ function parseAssetForm(formData: FormData) {
   const parsed = assetSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
-    currentAmount: Number(formData.get("current_amount")),
+    current_amount: Number(formData.get("current_amount")),
+    is_liability: formData.get("is_liability") === "true",
+    owner_type: formData.get("owner_type"),
+    owner_profile_id: formData.get("owner_profile_id") || undefined,
   });
 
   if (!parsed.success) {

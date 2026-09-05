@@ -41,7 +41,18 @@ const errorMap: Record<string, string> = {
 };
 
 export function getKoreanErrorMessage(error: string | Error | unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
+  const candidate = Array.isArray(error) ? error[0] : error;
+  const message =
+    candidate instanceof Error
+      ? candidate.message
+      : typeof candidate === "string"
+        ? candidate
+        : typeof candidate === "object" &&
+            candidate !== null &&
+            "message" in candidate &&
+            typeof candidate.message === "string"
+          ? candidate.message
+          : "Unknown error";
 
   // 정확히 일치하는 메시지 찾기
   if (errorMap[message]) {

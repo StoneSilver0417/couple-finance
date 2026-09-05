@@ -25,10 +25,10 @@ export async function createTransaction(formData: FormData) {
   const parsed = transactionSchema.safeParse({
     type: formData.get("type"),
     amount: Number(formData.get("amount")),
-    categoryId: formData.get("category_id"),
-    transactionDate: formData.get("transaction_date"),
+    category_id: formData.get("category_id"),
+    transaction_date: formData.get("transaction_date"),
     memo: formData.get("memo") || undefined,
-    expenseType: formData.get("expense_type") || undefined,
+    expense_type: formData.get("expense_type") || undefined,
   });
 
   if (!parsed.success) {
