@@ -22,12 +22,13 @@ export function BottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pointer-events-none" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pt-7 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="max-w-md mx-auto relative h-20">
         {/* Floating Plus Button */}
         <div className="absolute left-1/2 -top-7 -translate-x-1/2 z-20 pointer-events-auto">
           <Link
             href={plusHref}
+            aria-label="새 항목 추가"
             className="group flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-primary-dark to-primary text-white rounded-full shadow-lg shadow-primary/40 border-[6px] border-[#FDFDFD] transition-all hover:scale-110 active:scale-95"
             scroll={false}
           >
@@ -36,7 +37,7 @@ export function BottomNav() {
         </div>
 
         {/* Navigation Bar */}
-        <nav className="glass-panel w-full h-full rounded-full flex items-center justify-between px-6 shadow-2xl border-white/80 pointer-events-auto relative z-10">
+        <nav aria-label="주요 메뉴" className="glass-panel pointer-events-auto relative z-10 flex h-full w-full items-center justify-between rounded-full border-white/80 px-6 shadow-2xl">
           <Link
             href="/"
             className={cn(

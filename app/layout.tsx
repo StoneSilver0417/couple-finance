@@ -19,7 +19,6 @@ export const viewport: Viewport = {
   themeColor: "#ff85a2",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
 };
 
@@ -49,7 +48,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { BottomNav } from "@/components/layout/bottom-nav";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { PwaRegister } from "@/components/pwa-register";
 
@@ -61,13 +59,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${manrope.variable} ${nunito.variable} font-sans antialiased bg-[#FDFDFD] text-[#2D2D5F] min-h-screen selection:bg-primary-soft selection:text-text-main`}
+        className={`${manrope.variable} ${nunito.variable} min-h-dvh bg-[#FDFDFD] font-sans text-[#2D2D5F] antialiased selection:bg-primary-soft selection:text-text-main`}
       >
         <ConfirmProvider>
-          <div className="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen pb-28 bg-mesh shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)]">
-            {children}
-            <BottomNav />
-          </div>
+          {children}
           <Toaster position="top-center" richColors />
           <PwaRegister />
         </ConfirmProvider>
