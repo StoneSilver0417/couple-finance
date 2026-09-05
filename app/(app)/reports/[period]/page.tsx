@@ -286,7 +286,7 @@ export default async function ReportPage({
           className="group size-11 cursor-pointer rounded-full bg-white/60 shadow-soft transition-colors hover:bg-white"
         >
           <Link href="/" aria-label="대시보드로 돌아가기">
-            <ArrowLeft className="h-5 w-5 text-text-main transition-transform group-hover:-translate-x-0.5" />
+            <ArrowLeft className="h-5 w-5 text-text-main transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
           </Link>
         </Button>
         <div>

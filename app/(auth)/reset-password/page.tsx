@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft, CircleCheck, Heart, Info, Loader2 } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-dark to-primary text-white shadow-lg shadow-primary/30 animate-bounce-subtle">
-            <Heart className="h-8 w-8 fill-current" />
+            <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-text-main mb-2">
@@ -86,7 +86,10 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="rounded-2xl bg-indigo-50/50 p-4 border border-indigo-100">
-                <p className="font-bold text-sm text-text-main mb-1">💡 안내</p>
+                <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-text-main">
+                  <Info className="h-4 w-4" aria-hidden="true" />
+                  안내
+                </p>
                 <p className="break-keep text-xs text-text-secondary">
                   입력하신 이메일로 비밀번호 재설정 링크가 발송됩니다.
                 </p>
@@ -99,7 +102,7 @@ export default function ResetPasswordPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
                     발송 중...
                   </>
                 ) : (
@@ -109,16 +112,16 @@ export default function ResetPasswordPage() {
 
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-1 text-sm text-text-secondary hover:text-text-main font-medium pt-2"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1 px-2 text-sm font-medium text-text-secondary hover:text-text-main"
               >
-                <ArrowLeft className="h-3 w-3" />
+                <ArrowLeft className="h-3 w-3" aria-hidden="true" />
                 로그인으로 돌아가기
               </Link>
             </form>
           ) : (
             <div className="space-y-5">
               <div className="rounded-2xl bg-green-50 p-6 text-center border border-green-100">
-                <div className="text-4xl mb-3">✅</div>
+                <CircleCheck className="mx-auto mb-3 h-10 w-10 text-emerald-600" aria-hidden="true" />
                 <p className="text-sm font-bold text-text-main mb-2">
                   이메일이 발송되었습니다
                 </p>

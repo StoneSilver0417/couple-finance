@@ -202,35 +202,6 @@
     animation: fade-in 0.3s ease-out forwards;
   }
 
-  /* Sparkle Effect */
-  .sparkle-bg {
-    position: relative;
-    overflow: hidden;
-  }
-  .sparkle-bg::after {
-    content: "✨";
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    font-size: 1.2rem;
-    opacity: 0.6;
-    animation: sparkle-spin 4s linear infinite;
-  }
-  @keyframes sparkle-spin {
-    0% {
-      transform: rotate(0deg) scale(0.8);
-      opacity: 0.4;
-    }
-    50% {
-      transform: rotate(180deg) scale(1.2);
-      opacity: 0.8;
-    }
-    100% {
-      transform: rotate(360deg) scale(0.8);
-      opacity: 0.4;
-    }
-  }
-
   .hide-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */

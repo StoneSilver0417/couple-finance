@@ -50,7 +50,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-dark to-primary text-white shadow-lg shadow-primary/30 animate-bounce-subtle">
-            <Heart className="h-8 w-8 fill-current" />
+            <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-text-main mb-2">
@@ -126,7 +126,7 @@ export default function SignupPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
                   가입 중...
                 </>
               ) : (
@@ -138,7 +138,7 @@ export default function SignupPage() {
               이미 계정이 있으신가요?{" "}
               <Link
                 href="/login"
-                className="font-bold text-primary-dark hover:underline"
+                className="inline-flex min-h-11 items-center px-2 font-bold text-primary-dark hover:underline"
               >
                 로그인
               </Link>

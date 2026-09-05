@@ -87,10 +87,11 @@ export function CategoryCard({ category, onEdit }: CategoryCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full bg-white/40 hover:bg-white shadow-soft"
+              aria-label={`${category.name} 카테고리 메뉴`}
+              className="size-11 rounded-full bg-white/40 hover:bg-white shadow-soft"
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreVertical className="h-5 w-5 text-text-secondary" />
+              <MoreVertical className="h-5 w-5 text-text-secondary" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent

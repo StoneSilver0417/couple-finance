@@ -159,11 +159,12 @@ export function FeedbackAdminList({
                 size="icon"
                 className="rounded-full"
                 onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                aria-label={isExpanded ? "피드백 접기" : "피드백 펼치기"}
               >
                 {isExpanded ? (
-                  <ChevronUp className="h-5 w-5" />
+                  <ChevronUp className="h-5 w-5" aria-hidden="true" />
                 ) : (
-                  <ChevronDown className="h-5 w-5" />
+                  <ChevronDown className="h-5 w-5" aria-hidden="true" />
                 )}
               </Button>
             </CardHeader>

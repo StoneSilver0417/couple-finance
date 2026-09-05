@@ -10,6 +10,7 @@ import {
   Wallet,
   TrendingUp as TrendUp,
   TrendingDown,
+  Sparkles,
 } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/dashboard-header";
 import ExpenseTrendSection from "@/components/dashboard/expense-trend-section";
@@ -183,7 +184,7 @@ export default async function DashboardPage() {
               <span className="text-[10px] font-bold text-text-main uppercase tracking-wide">
                 이번 달 수입지출현황
               </span>
-              <span className="text-[10px] text-primary-dark">✨</span>
+              <Sparkles className="h-3 w-3 text-primary-dark" aria-hidden="true" />
             </div>
 
             <h1 className="text-[1.75rem] font-black text-text-main tracking-tight mb-3 drop-shadow-sm flex items-baseline justify-center">

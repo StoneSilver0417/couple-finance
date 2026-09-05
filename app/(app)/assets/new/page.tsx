@@ -75,7 +75,7 @@ export default function NewAssetPage() {
       toast.error(result.error);
       setIsLoading(false);
     } else {
-      toast.success("자산이 추가되었습니다! ✨");
+      toast.success("자산이 추가되었습니다");
       router.push("/assets");
     }
   }
@@ -88,9 +88,10 @@ export default function NewAssetPage() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="자산 목록으로 돌아가기"
             className="group rounded-full bg-white/60 hover:bg-white shadow-soft transition-all duration-300"
           >
-            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
           </Button>
         </Link>
         <div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { calculateBudgetUsagePercent } from "@/lib/calculations/finance";
+import { BarChart3, CircleDollarSign } from "lucide-react";
 import {
   CategoryTransactionsModal,
   TransactionItem,
@@ -61,7 +62,7 @@ export default function AnalysisSection({
       <div className="flex items-center justify-between mb-5 pl-1">
         <h3 className="text-xl font-bold text-text-main flex items-center gap-2">
           {mode === "expense" ? "지출 분석" : "수입 분석"}{" "}
-          <span className="text-xl">📊</span>
+          <BarChart3 className="h-5 w-5 text-primary-dark" aria-hidden="true" />
         </h3>
 
         <div className="flex bg-white/60 p-1 rounded-xl border border-white/60 shadow-sm backdrop-blur-sm">
@@ -196,7 +197,7 @@ export default function AnalysisSection({
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
                         style={{ backgroundColor: cat.color ? `${cat.color}30` : "#f3f4f6" }}
                       >
-                        {cat.icon || "💸"}
+                        {cat.icon || <CircleDollarSign className="h-5 w-5" aria-hidden="true" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-bold text-text-main truncate">
@@ -296,7 +297,7 @@ export default function AnalysisSection({
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
                       style={{ backgroundColor: cat.color ? `${cat.color}30` : "#dcfce7" }}
                     >
-                      {cat.icon || "💰"}
+                      {cat.icon || <CircleDollarSign className="h-5 w-5" aria-hidden="true" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-bold text-text-main truncate">

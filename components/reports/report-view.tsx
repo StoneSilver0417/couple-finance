@@ -365,7 +365,7 @@ export function ReportView({
       {fixedVariableAnalysis && (
         <section className="rounded-[1.75rem] border border-violet-100 bg-violet-50/90 p-5 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 font-black text-violet-950">
-            <Gauge className="h-5 w-5" aria-hidden="true" /> ⚖️ 고정비 vs 변동비 분석
+            <Gauge className="h-5 w-5" aria-hidden="true" /> 고정비 vs 변동비 분석
           </h3>
           <p className="text-base leading-7 text-violet-900">{fixedVariableAnalysis}</p>
         </section>
@@ -374,7 +374,7 @@ export function ReportView({
       {leakDiagnosis && (
         <section className="rounded-[1.75rem] border border-rose-100 bg-rose-50/90 p-5 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 font-black text-rose-950">
-            <BanknoteArrowDown className="h-5 w-5" aria-hidden="true" /> 🎯 지출 누수(Leak) 진단
+            <BanknoteArrowDown className="h-5 w-5" aria-hidden="true" /> 지출 누수(Leak) 진단
           </h3>
           <p className="text-base leading-7 text-rose-900">{leakDiagnosis}</p>
         </section>

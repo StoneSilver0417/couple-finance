@@ -47,7 +47,7 @@ export default function OnboardingPage() {
   if (isCheckingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#FDFDFD]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-xl space-y-8 relative z-10">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-dark to-primary text-white shadow-lg shadow-primary/30 animate-bounce-subtle">
-            <Heart className="h-8 w-8 fill-current" />
+            <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-text-main mb-2">
@@ -126,13 +126,13 @@ export default function OnboardingPage() {
               value="create"
               className="gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary-dark font-bold text-text-secondary transition-all"
             >
-              <Home className="h-4 w-4" />새 가구 만들기
+              <Home className="h-4 w-4" aria-hidden="true" />새 가구 만들기
             </TabsTrigger>
             <TabsTrigger
               value="join"
               className="gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary-dark font-bold text-text-secondary transition-all"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-4 w-4" aria-hidden="true" />
               가구 참여하기
             </TabsTrigger>
           </TabsList>
@@ -159,7 +159,7 @@ export default function OnboardingPage() {
                   <Input
                     id="household_name"
                     name="household_name"
-                    placeholder="예: 김철수♥이영희 가계부"
+                    placeholder="예: 우리 가족 가계부"
                     required
                     className="h-12 rounded-2xl border-white/60 bg-white/50 focus:bg-white font-medium"
                   />

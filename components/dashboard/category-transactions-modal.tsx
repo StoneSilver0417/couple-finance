@@ -1,6 +1,7 @@
 "use client";
 
-import { X } from "lucide-react";
+import type { ReactNode } from "react";
+import { CircleDollarSign, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface TransactionItem {
@@ -24,7 +25,7 @@ interface CategoryTransactionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   categoryName: string;
-  categoryIcon?: string;
+  categoryIcon?: ReactNode;
   categoryColor?: string;
   transactions: TransactionItem[];
   type: "expense" | "income";
@@ -65,7 +66,7 @@ export function CategoryTransactionsModal({
               className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
               style={{ backgroundColor: `${categoryColor}20` }}
             >
-              {categoryIcon || (type === "expense" ? "💸" : "💰")}
+              {categoryIcon || <CircleDollarSign className="h-6 w-6" aria-hidden="true" />}
             </div>
             <div>
               <h2 className="text-lg font-black text-text-main">{categoryName}</h2>
@@ -81,9 +82,10 @@ export function CategoryTransactionsModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
+            aria-label="카테고리 거래 내역 닫기"
             className="rounded-full hover:bg-gray-100"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </Button>
         </div>
 

@@ -53,7 +53,7 @@ export default async function AdminUsersPage() {
             size="icon"
             className="group rounded-full bg-white/60 shadow-soft transition-all duration-300 hover:bg-white"
           >
-            <ArrowLeft className="h-5 w-5 text-text-main transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft className="h-5 w-5 text-text-main transition-transform group-hover:-translate-x-1" aria-hidden="true" />
             <span className="sr-only">설정으로 돌아가기</span>
           </Button>
         </Link>

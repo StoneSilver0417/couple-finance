@@ -77,9 +77,10 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="설정으로 돌아가기"
               className="group rounded-full bg-white/60 hover:bg-white shadow-soft transition-all duration-300"
             >
-              <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
             </Button>
           </Link>
           <div>
@@ -98,9 +99,10 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="이전 달 예산"
               className="rounded-xl hover:bg-white/50"
             >
-              <ArrowLeft className="h-4 w-4 text-text-secondary" />
+              <ArrowLeft className="h-4 w-4 text-text-secondary" aria-hidden="true" />
             </Button>
           </Link>
           <span className="font-black text-lg text-text-main">
@@ -110,9 +112,10 @@ export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="다음 달 예산"
               className="rounded-xl hover:bg-white/50"
             >
-              <ArrowLeft className="h-4 w-4 text-text-secondary rotate-180" />
+              <ArrowLeft className="h-4 w-4 text-text-secondary rotate-180" aria-hidden="true" />
             </Button>
           </Link>
         </div>

@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-dark to-primary text-white shadow-lg shadow-primary/30 animate-bounce-subtle">
-            <Heart className="h-8 w-8 fill-current" />
+            <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-text-main mb-2">
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 </Label>
                 <Link
                   href="/reset-password"
-                  className="text-xs text-primary-dark hover:underline font-semibold"
+                  className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-primary-dark hover:underline"
                 >
                   비밀번호를 잊으셨나요?
                 </Link>
@@ -100,7 +100,7 @@ export default function LoginPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
                   로그인 중...
                 </>
               ) : (
@@ -112,7 +112,7 @@ export default function LoginPage() {
               계정이 없으신가요?{" "}
               <Link
                 href="/signup"
-                className="font-bold text-primary-dark hover:underline"
+                className="inline-flex min-h-11 items-center px-2 font-bold text-primary-dark hover:underline"
               >
                 회원가입
               </Link>

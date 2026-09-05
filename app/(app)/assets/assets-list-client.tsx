@@ -135,8 +135,8 @@ export default function AssetsListClient({ assets, members = [], currentUserId =
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full shrink-0">
-                              <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                            <Button variant="ghost" size="icon" aria-label={`${asset.name} 자산 메뉴`} className="size-11 rounded-full shrink-0">
+                              <MoreVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="rounded-xl">

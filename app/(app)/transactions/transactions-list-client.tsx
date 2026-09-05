@@ -132,9 +132,10 @@ export default function TransactionsListClient({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full hover:bg-black/5"
+                aria-label={`${tx.categories?.name || "미분류"} 거래 메뉴`}
+                className="size-11 rounded-full hover:bg-black/5"
               >
-                <MoreVertical className="h-4 w-4 text-text-secondary" />
+                <MoreVertical className="h-4 w-4 text-text-secondary" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent

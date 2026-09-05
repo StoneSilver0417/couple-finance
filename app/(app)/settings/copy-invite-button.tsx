@@ -11,11 +11,11 @@ export function CopyInviteButton({ inviteCode }: { inviteCode: string }) {
       size="sm"
       onClick={() => {
         navigator.clipboard.writeText(inviteCode)
-        toast.success('초대 코드가 복사되었습니다! 📋')
+        toast.success('초대 코드가 복사되었습니다')
       }}
       className="gap-2 rounded-xl"
     >
-      <Copy className="h-3 w-3" />
+      <Copy className="h-3 w-3" aria-hidden="true" />
       복사
     </Button>
   )

@@ -230,7 +230,7 @@ export default async function AnnualSummaryPage({
             aria-label="가계부로 돌아가기"
             className="group cursor-pointer rounded-full bg-white/60 shadow-soft hover:bg-white"
           >
-            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-0.5 transition-transform" />
+            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-0.5 transition-transform" aria-hidden="true" />
           </Button>
         </Link>
         <div>
@@ -255,7 +255,7 @@ export default async function AnnualSummaryPage({
               aria-label="이전 연도"
               className="cursor-pointer rounded-xl hover:bg-white/60"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
           </Link>
           <span className="font-black text-text-main">{year}년</span>
@@ -266,7 +266,7 @@ export default async function AnnualSummaryPage({
               aria-label="다음 연도"
               className="cursor-pointer rounded-xl hover:bg-white/60"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </Button>
           </Link>
         </nav>

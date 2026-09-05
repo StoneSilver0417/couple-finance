@@ -23,9 +23,10 @@ export default async function AdminFeedbacksPage() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="설정으로 돌아가기"
             className="group rounded-full bg-white/60 hover:bg-white shadow-soft transition-all duration-300"
           >
-            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 text-text-main group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
           </Button>
         </Link>
         <div>
@@ -59,7 +60,7 @@ export default async function AdminFeedbacksPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               도착한 피드백이 없습니다
             </h3>
-            <p className="text-sm text-gray-500">깨끗한 상태네요! 👍</p>
+            <p className="text-sm text-gray-500">새 피드백이 도착하면 여기에 표시됩니다.</p>
           </div>
         ) : (
           <FeedbackAdminList initialFeedbacks={feedbacks} />

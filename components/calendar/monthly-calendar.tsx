@@ -109,9 +109,10 @@ export default function MonthlyCalendar({
           variant="ghost"
           size="icon"
           onClick={handlePrevMonth}
-          className="h-10 w-10 rounded-xl hover:bg-white/60"
+          aria-label="이전 달"
+          className="size-11 rounded-xl hover:bg-white/60"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
         <h3 className="text-xl font-black text-text-main">
           {year}년 {month}월
@@ -120,9 +121,10 @@ export default function MonthlyCalendar({
           variant="ghost"
           size="icon"
           onClick={handleNextMonth}
-          className="h-10 w-10 rounded-xl hover:bg-white/60"
+          aria-label="다음 달"
+          className="size-11 rounded-xl hover:bg-white/60"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-5 w-5" aria-hidden="true" />
         </Button>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import ActivityLogSheet from "./activity-log-sheet";
+import { Heart } from "lucide-react";
 
 interface Member {
   id: string;
@@ -42,7 +43,7 @@ export default function DashboardHeader({
             )}
           </div>
           <div className="absolute -bottom-1 -right-1 bg-primary text-white h-6 w-6 flex items-center justify-center rounded-full ring-2 ring-white shadow-sm text-[10px] animate-bounce-subtle">
-            ❤️
+            <Heart className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
           </div>
         </div>
         <div>

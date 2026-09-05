@@ -5,7 +5,7 @@ import { updateMonthlyBudget } from "@/lib/monthly-budget-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Save, Target } from "lucide-react";
+import { Info, Loader2, Save, Target } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 // 숫자를 천단위 콤마 포맷으로 변환
@@ -76,7 +76,7 @@ export function BudgetClient({
     if (result?.error) {
       toast.error(result.error);
     } else {
-      toast.success("예산이 저장되었습니다 ✨");
+      toast.success("예산이 저장되었습니다");
     }
   }
 
@@ -150,7 +150,7 @@ export function BudgetClient({
       <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm">
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-1">
-            <span className="text-xl">💡</span>
+            <Info className="h-5 w-5 text-indigo-600" aria-hidden="true" />
           </div>
           <div className="space-y-2">
             <p className="font-bold text-text-main">예산 활용 팁</p>

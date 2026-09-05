@@ -149,9 +149,10 @@ function CategoriesClientInner({
                 <Button
                   onClick={() => openCreateDialog("income")}
                   size="icon"
+                  aria-label="수입 카테고리 추가"
                   className="rounded-full h-12 w-12 bg-white hover:bg-white/80 text-primary-dark shadow-soft border border-white/60 transition-all hover:rotate-90"
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-6 w-6" aria-hidden="true" />
                 </Button>
               </div>
               <div className="grid gap-4">
@@ -179,9 +180,10 @@ function CategoriesClientInner({
                 <Button
                   onClick={() => openCreateDialog("expense", "fixed")}
                   size="icon"
+                  aria-label="고정지출 카테고리 추가"
                   className="rounded-full h-12 w-12 bg-white hover:bg-white/80 text-blue-600 shadow-soft border border-white/60 transition-all hover:rotate-90"
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-6 w-6" aria-hidden="true" />
                 </Button>
               </div>
               <div className="grid gap-4">
@@ -209,9 +211,10 @@ function CategoriesClientInner({
                 <Button
                   onClick={() => openCreateDialog("expense", "variable")}
                   size="icon"
+                  aria-label="변동지출 카테고리 추가"
                   className="rounded-full h-12 w-12 bg-white hover:bg-white/80 text-primary shadow-soft border border-white/60 transition-all hover:rotate-90"
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-6 w-6" aria-hidden="true" />
                 </Button>
               </div>
               <div className="grid gap-4">
@@ -239,9 +242,10 @@ function CategoriesClientInner({
                 <Button
                   onClick={() => openCreateDialog("expense", "irregular")}
                   size="icon"
+                  aria-label="비정기지출 카테고리 추가"
                   className="rounded-full h-12 w-12 bg-white hover:bg-white/80 text-orange-500 shadow-soft border border-white/60 transition-all hover:rotate-90"
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-6 w-6" aria-hidden="true" />
                 </Button>
               </div>
               <div className="grid gap-4">

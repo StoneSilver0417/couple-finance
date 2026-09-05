@@ -111,8 +111,8 @@ function CategoryForm({
     } else {
       toast.success(
         isEditing
-          ? "카테고리가 수정되었습니다 ✨"
-          : "카테고리가 추가되었습니다 ✨",
+          ? "카테고리가 수정되었습니다"
+          : "카테고리가 추가되었습니다",
       );
       onOpenChange(false);
     }

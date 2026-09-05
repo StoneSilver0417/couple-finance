@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { BarChart3, TrendingUp } from "lucide-react";
 import {
   XAxis,
   YAxis,
@@ -78,7 +79,7 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
     return (
       <div className="h-[200px] flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl">
         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-          <span className="text-2xl">📈</span>
+          <TrendingUp className="h-6 w-6 text-text-secondary" aria-hidden="true" />
         </div>
         <p className="text-sm font-medium text-text-secondary">
           기록이 없습니다
@@ -96,7 +97,7 @@ export default function AssetTrendChart({ data }: AssetTrendChartProps) {
     return (
       <div className="h-[200px] flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl">
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-          <span className="text-2xl">📊</span>
+          <BarChart3 className="h-6 w-6 text-primary-dark" aria-hidden="true" />
         </div>
         <p className="text-xs text-text-secondary mb-1">마지막 기록</p>
         <p className="text-2xl font-black text-text-main">

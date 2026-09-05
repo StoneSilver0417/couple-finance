@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
+import { CalendarDays, Plus, MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
@@ -178,7 +178,7 @@ export default function DayTransactionsModal({
         <div className="space-y-2">
           {dayTransactions.length === 0 ? (
             <div className="text-center py-10 bg-gray-100 rounded-2xl">
-              <p className="text-4xl mb-3">📅</p>
+              <CalendarDays className="mx-auto mb-3 h-10 w-10 text-gray-500" aria-hidden="true" />
               <p className="font-bold text-gray-600">이 날은 거래가 없어요</p>
               <p className="text-sm text-gray-500 mt-1">아래 버튼으로 추가해보세요</p>
             </div>
@@ -215,8 +215,8 @@ export default function DayTransactionsModal({
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-                      <MoreVertical className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" aria-label="거래 메뉴" className="size-11 shrink-0">
+                      <MoreVertical className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl">

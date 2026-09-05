@@ -64,7 +64,7 @@ export function PWAInstallButton() {
   if (isInstalled) {
     return (
       <div className="flex items-center gap-2 p-4 bg-green-500/20 rounded-2xl text-green-300">
-        <Check className="h-5 w-5" />
+        <Check className="h-5 w-5" aria-hidden="true" />
         <span className="font-bold">앱이 이미 설치되어 있습니다</span>
       </div>
     );
@@ -74,7 +74,7 @@ export function PWAInstallButton() {
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-3 p-4 bg-white/10 rounded-2xl">
-          <Smartphone className="h-6 w-6 text-blue-400" />
+          <Smartphone className="h-6 w-6 text-blue-400" aria-hidden="true" />
           <div>
             <p className="font-bold text-sm">iOS에서 설치하기</p>
             <p className="text-xs text-gray-400">Safari 브라우저에서만 가능</p>
@@ -95,7 +95,7 @@ export function PWAInstallButton() {
         onClick={handleInstall}
         className="w-full h-14 rounded-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
       >
-        <Download className="mr-2 h-5 w-5" />
+        <Download className="mr-2 h-5 w-5" aria-hidden="true" />
         앱 설치하기
       </Button>
     );

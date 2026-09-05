@@ -29,6 +29,9 @@ import {
   Bug,
   Lightbulb,
   MessageSquare,
+  CircleCheck,
+  Inbox,
+  MessageSquareText,
 } from "lucide-react";
 import {
   MyFeedbackList,
@@ -89,7 +92,7 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
       if (result.success) {
         toast.success("소중한 의견 감사합니다! 꼼꼼히 확인하겠습니다.", {
           duration: 3000,
-          icon: "💌",
+          icon: <CircleCheck className="h-4 w-4" aria-hidden="true" />,
         });
         setIsOpen(false);
       } else if (result.error) {
@@ -140,13 +143,15 @@ export function FeedbackDialog({ children }: { children: React.ReactNode }) {
                 value="inquiry"
                 className="rounded-lg font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                📝 문의하기
+                <MessageSquareText className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                문의하기
               </TabsTrigger>
               <TabsTrigger
                 value="history"
                 className="rounded-lg font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                📂 내 문의함
+                <Inbox className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                내 문의함
               </TabsTrigger>
             </TabsList>
           </div>
