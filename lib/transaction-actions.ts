@@ -7,6 +7,7 @@ import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
 import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { transactionSchema } from "@/lib/schemas";
 import {
   getTrimmedString,
   isExpenseType,
@@ -19,6 +20,20 @@ export async function createTransaction(formData: FormData) {
   const ctx = await getHouseholdContext();
   if (!ctx.ok) return { error: ctx.error };
   const { supabase, user, householdId } = ctx;
+
+  // Zod 스키마 사전 검증
+  const parsed = transactionSchema.safeParse({
+    type: formData.get("type"),
+    amount: Number(formData.get("amount")),
+    categoryId: formData.get("category_id"),
+    transactionDate: formData.get("transaction_date"),
+    memo: formData.get("memo") || undefined,
+    expenseType: formData.get("expense_type") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "입력값이 유효하지 않습니다." };
+  }
 
   // 외부 입력 검증: 금액(양수/상한), 거래 유형, 날짜 형식
   const type = formData.get("type");

@@ -4,8 +4,8 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 
 const WORKER_PATH = new URL('../public/sw.js', import.meta.url);
-const EXPECTED_CACHE_NAME = 'couple-finance-v3';
-const ASSETS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/favicon.ico'];
+const EXPECTED_CACHE_NAME = 'couple-finance-v4';
+const ASSETS = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/favicon.ico', '/offline'];
 
 function createWorkerHarness() {
   const listeners = new Map();
@@ -93,7 +93,7 @@ test('cache lifecycle uses v3 and removes old caches', async () => {
 
 test('fetch only intercepts explicit precached assets', async (t) => {
   const cases = [
-    ['navigation GET', request('https://couple-finance.test/', { mode: 'navigate' }), false],
+    ['navigation GET', request('https://couple-finance.test/', { mode: 'navigate' }), true],
     ['same-origin API GET', request('https://couple-finance.test/api/report'), false],
     ['Supabase REST GET', request('https://ieahmpxiaamesrnfgbng.supabase.co/rest/v1/transactions'), false],
     ['Supabase PATCH', request('https://ieahmpxiaamesrnfgbng.supabase.co/rest/v1/transactions/1', { method: 'PATCH' }), false],

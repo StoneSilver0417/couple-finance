@@ -7,6 +7,7 @@ import {
 } from "@/lib/supabase/household-context";
 import { logActivity } from "./activity-log";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { assetSchema } from "@/lib/schemas";
 import {
   getTrimmedString,
   isAssetOwnerType,
@@ -64,7 +65,17 @@ async function saveAssetSnapshot(
 
 // FormData에서 자산 입력값을 검증해 추출 (생성/수정 공통)
 function parseAssetForm(formData: FormData) {
-  const name = getTrimmedString(formData.get("name"), 100);
+  const parsed = assetSchema.safeParse({
+    name: formData.get("name"),
+    type: formData.get("type"),
+    currentAmount: Number(formData.get("current_amount")),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "입력값이 유효하지 않습니다." as const };
+  }
+
+  const name = getTrimmedString(formData.get("name"), 50);
   const type = getTrimmedString(formData.get("type"), 50);
   const currentAmount = parseNonNegativeAmount(formData.get("current_amount"));
   const isLiability = formData.get("is_liability") === "true";

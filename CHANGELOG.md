@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-09-05
+
+### refactor - 전체 디자인 시스템, PWA 오프라인, Zod 검증, 접근성 및 코드 리팩토링 (Phase 0~4)
+
+- **Phase 0 (즉시 구조 수정 및 레이아웃 격리)**:
+  - `BottomNav`를 라우트 그룹 `app/(app)/layout.tsx`로 이동하여 인증 화면(`/login`, `/signup`, `/reset-password`)에서 하단 내비게이션 및 FAB 버튼이 노출되는 레이아웃 인바운더리 문제를 해결.
+  - `app/layout.tsx`에서 `maximumScale: 1` 조항을 제거하여 시각 장애 및 저시력 사용자의 브라우저 확대를 허용.
+  - 모바일 하단 제출 버튼(CTA) 및 내비게이션 바 겹침 방지를 위해 하단 safe-area padding 조정 (`pb-[calc(9rem+env(safe-area-inset-bottom))]`).
+  - ESLint 오류를 유발하던 CommonJS `scripts/clear-reports.js`를 ES Module(`scripts/clear-reports.mjs`)로 전환.
+
+- **Phase 1 (디자인 토큰 표준화 & DESIGN.md 명세 구축)**:
+  - 프로젝트 루트에 `DESIGN.md` 명세서(색상 토큰, 8px 그리드, 타이포그래피, 브레이크포인트, 모드 규칙 등) 생성.
+  - Pretendard 한국어 가변 폰트 스택 도입 및 라틴 전용 폰트 수렴 문제 해결.
+  - 금액 수치 및 자릿수 정렬을 위한 `font-variant-numeric: tabular-nums` CSS 유틸리티 및 `prefers-reduced-motion` 모션 감소 미디어 쿼리 적용.
+
+- **Phase 2 (이모지 지양 & Lucide 표준 아이콘 전환 및 접근성 강화)**:
+  - UI 텍스트, 카드 알림, 비밀번호 재설정 페이지의 문맥 이모지(`💡`, `✅`, `✨` 등)를 `lucide-react` 아이콘(`Info`, `CircleCheck`, `Sparkles` 등)으로 완전 교체.
+  - icon-only 버튼에 `aria-label` 및 `aria-current="page"`를 적용하고, 장식용 아이콘에 `aria-hidden="true"` 명시.
+  - 터치 타깃 44px 미만 텍스트 링크에 `inline-flex min-h-11 items-center`를 부여하여 접근성 가이드라인 준수.
+
+- **Phase 3 (PWA 오프라인 Fallback 구축)**:
+  - `/offline` 오프라인 전용 앱 셸 안내 페이지 신설.
+  - Service Worker 캐시 버전을 `v4`로 올리고 정적 자산 캐싱 목록에 `/offline` 포함 및 내비게이션 네트워크 차단 시 오프라인 Fallback 응답 구현.
+  - `scripts/test-service-worker.mjs` 테스팅 스위트에 오프라인 캐싱 및 내비게이션 인터셉트 케이스(15/15) 검증 추가.
+
+- **Phase 4 (Zod 파싱 & Type Cast 정리)**:
+  - `zod` 패키지 도입 및 `lib/schemas.ts` 모듈 구축 (거래 및 자산 입력 검증용 Zod Schema 작성).
+  - `lib/transaction-actions.ts` 및 `lib/asset-actions.ts` 서버 액션에 Zod `safeParse` 검증 결합.
+  - `lib/report-actions.ts` 내 Unsafe `as TransactionRpcRow[]` 캐스팅을 `asTransactionRpcRows` 헬퍼 함수로 안전하게 변경.
+
 ## 2026-09-04
 
 ### refactor - 소스코드 전체 보안, 데이터 일관성, 성능 및 모듈 리팩토링

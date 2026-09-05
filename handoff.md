@@ -1,5 +1,29 @@
 # Handoff & Maintenance Guide
 
+## 2026-09-05 최신 전체 리팩토링 핸드오프 (Phase 0~4)
+
+### 1. 주요 변경 내역 요약
+- **Phase 0 (인증 레이아웃 격리 & 접근성/CTA 개선)**:
+  - `BottomNav`를 `app/(app)/layout.tsx`로 이동하여 로그인/회원가입 등 인증 화면에서 불필요한 하단 바 미노출.
+  - Viewport `maximumScale: 1` 제거로 확대 접근성 복구 및 safe-area 하단 padding을 넉넉히 주어 CTA 겹침 방지.
+  - ESLint 오류 유발하던 `scripts/clear-reports.js`를 ES Module(`clear-reports.mjs`)로 수정.
+- **Phase 1 (디자인 토큰 & Pretendard 폰트 & DESIGN.md 명세)**:
+  - 루트 `DESIGN.md` 작성 (8px 그리드, border-radius, 색상 토큰, 모션 축소 가이드라인).
+  - Pretendard 가변 폰트 적용 및 `tabular-nums`, `prefers-reduced-motion` 전역 유틸리티 반영.
+- **Phase 2 (이모지 지양 & Lucide 아이콘 표준화 & 접근성 강화)**:
+  - 전역 UI 이모지(`💡`, `✅`, `✨` 등)를 `lucide-react` 아이콘으로 전환하고 `aria-label`, `aria-hidden` 및 터치 타깃 44px 이상 확보.
+- **Phase 3 (PWA 오프라인 Fallback)**:
+  - `/offline` 정적 캐시 오프라인 전용 안내 페이지 신설 및 Service Worker (`public/sw.js` v4) 오프라인 응답 구현. `scripts/test-service-worker.mjs` 검증 통과 (15/15).
+- **Phase 4 (Zod 입력 검증 & Unsafe 타입 캐스팅 제거)**:
+  - `zod` 패키지 설치 및 `lib/schemas.ts` 생성 후 `lib/transaction-actions.ts`, `lib/asset-actions.ts`에 Zod safeParse 반영.
+  - `lib/report-actions.ts` 내 Unsafe `as` 캐스팅을 `asTransactionRpcRows` 헬퍼 함수로 치환.
+
+### 2. 검증 완료 사항
+- `npx tsc --noEmit` & `npm run lint` 100% 정상 통과.
+- `npm run build` 프로덕션 빌드 성공.
+- `node --test scripts/test-service-worker.mjs` 단위 테스트 15개 전체 통과.
+- Git 원격 저장소(`origin/master`) 커밋 및 푸시 완료.
+
 ## 2026-09-04 최신 작업 핸드오프
 
 ### 1. 주요 변경 내역 요약

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'couple-finance-v3';
+const CACHE_NAME = 'couple-finance-v4';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/offline'
 ];
 
 self.addEventListener('install', (event) => {
@@ -27,7 +28,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || event.request.mode === 'navigate') {
+  // Handle navigation requests when offline
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/offline');
+      })
+    );
+    return;
+  }
+
+  if (event.request.method !== 'GET') {
     return;
   }
 

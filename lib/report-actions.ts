@@ -134,6 +134,11 @@ function getMonthRange(year: number, month: number): {
   };
 }
 
+function asTransactionRpcRows(data: unknown): TransactionRpcRow[] {
+  if (!Array.isArray(data)) return [];
+  return data as TransactionRpcRow[];
+}
+
 function mapTransactions(rows: TransactionRpcRow[]): ReportTransaction[] {
   return rows.map((row) => ({
     type: row.type,
@@ -350,7 +355,7 @@ export async function generateMonthlyReport(
     if (queryError) throw queryError;
 
     const currentTransactions = mapTransactions(
-      (currentTransactionsResult.data ?? []) as TransactionRpcRow[],
+      asTransactionRpcRows(currentTransactionsResult.data),
     );
     if (currentTransactions.length === 0) {
       return {
@@ -359,7 +364,7 @@ export async function generateMonthlyReport(
     }
 
     const previousTransactions = mapTransactions(
-      (previousTransactionsResult.data ?? []) as TransactionRpcRow[],
+      asTransactionRpcRows(previousTransactionsResult.data),
     );
     const summary = calculateSummary(currentTransactions);
     const fixedExpense = sumExpenseType(currentTransactions, "fixed");
@@ -630,7 +635,7 @@ export async function generatePeriodicReport(
     if (queryError) throw queryError;
 
     const currentTransactions = mapTransactions(
-      (currentTransactionsResult.data ?? []) as TransactionRpcRow[],
+      asTransactionRpcRows(currentTransactionsResult.data),
     );
     if (currentTransactions.length === 0) {
       return {
@@ -639,7 +644,7 @@ export async function generatePeriodicReport(
     }
 
     const previousTransactions = mapTransactions(
-      (previousTransactionsResult.data ?? []) as TransactionRpcRow[],
+      asTransactionRpcRows(previousTransactionsResult.data),
     );
     const summary = calculateSummary(currentTransactions);
     const fixedExpense = sumExpenseType(currentTransactions, "fixed");
