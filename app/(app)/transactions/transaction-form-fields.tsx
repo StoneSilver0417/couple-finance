@@ -139,11 +139,11 @@ export function FormFields({
         <div className="space-y-4 pt-2">
           <label
             htmlFor="recurring_enabled"
-            className="flex min-h-11 cursor-pointer items-center justify-between gap-4 rounded-2xl px-1 focus-within:ring-2 focus-within:ring-primary/40"
+            className="flex min-h-11 min-w-0 cursor-pointer items-center justify-between gap-4 rounded-2xl px-1 focus-within:ring-2 focus-within:ring-primary/40"
           >
-            <div className="flex items-center gap-2">
-              <Repeat className="h-4 w-4 text-primary" aria-hidden="true" />
-              <span className="text-sm font-semibold text-text-main">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Repeat className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <span className="min-w-0 text-sm font-semibold text-text-main">
                 매월 반복
               </span>
             </div>
@@ -158,23 +158,23 @@ export function FormFields({
                 onChange={(e) => setIsRecurring(e.target.checked)}
                 aria-describedby="recurring-help"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              <span className="peer relative inline-flex h-6 w-11 shrink-0 overflow-hidden rounded-full bg-gray-200 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:content-[''] after:transition-transform peer-focus:ring-4 peer-focus:ring-primary/20 peer-checked:bg-primary peer-checked:after:translate-x-5 peer-checked:after:border-white" />
             </span>
           </label>
-          <p id="recurring-help" className="px-1 text-sm leading-6 text-text-secondary">
+          <p id="recurring-help" className="break-keep px-1 text-sm leading-6 text-text-secondary">
             선택한 거래일에 매월 기록되며, 29~31일이 없는 달에는 마지막 날로 조정됩니다.
           </p>
           
           {isRecurring && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center justify-between px-1">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1">
                 <Label
                   htmlFor="recurring_end_date"
-                  className="font-semibold text-text-main text-[13px]"
+                  className="shrink-0 font-semibold text-text-main text-[13px]"
                 >
                   종료일 (선택)
                 </Label>
-                <span className="text-[11px] text-text-secondary">
+                <span className="min-w-0 text-[11px] text-text-secondary">
                   지정하지 않으면 계속 반복됩니다
                 </span>
               </div>

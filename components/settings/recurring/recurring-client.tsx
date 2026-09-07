@@ -73,8 +73,8 @@ export function RecurringClient({ rules, categories, error }: RecurringClientPro
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between px-2">
-        <div>
+      <div className="flex min-w-0 items-center justify-between gap-4 px-2">
+        <div className="min-w-0 flex-1">
           <h3 className="text-2xl font-black text-text-main tracking-tighter flex items-center gap-2">
             반복 거래 목록
           </h3>
@@ -86,7 +86,7 @@ export function RecurringClient({ rules, categories, error }: RecurringClientPro
           onClick={openCreateDialog}
           size="icon"
           aria-label="반복 거래 추가"
-          className="h-12 w-12 rounded-full border border-white/60 bg-white text-primary shadow-soft transition-colors hover:bg-white/80"
+          className="h-12 w-12 shrink-0 rounded-full border border-white/60 bg-white text-primary shadow-soft transition-colors hover:bg-white/80"
         >
           <Plus className="h-6 w-6" aria-hidden="true" />
         </Button>

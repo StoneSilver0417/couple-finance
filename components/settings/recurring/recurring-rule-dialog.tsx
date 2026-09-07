@@ -28,8 +28,8 @@ export function RecurringRuleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col overflow-hidden rounded-3xl border border-white/60 !bg-white/95 p-0 shadow-glass backdrop-blur-md sm:max-w-[420px]">
-        <div className="shrink-0 px-5 pt-5">
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] min-h-0 min-w-0 flex-col overflow-hidden rounded-3xl border border-white/60 !bg-white/95 p-0 shadow-glass backdrop-blur-md sm:max-w-[420px]">
+        <div className="min-w-0 shrink-0 px-5 pt-5 pr-14">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Repeat className="h-4 w-4 text-primary" aria-hidden="true" />
             {isEditing ? "반복 거래 수정" : "새 반복 거래"}

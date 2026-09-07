@@ -71,19 +71,19 @@ export function RecurringRuleCard({ rule, onEdit }: RecurringRuleCardProps) {
 
   return (
     <div className={`glass-panel rounded-3xl p-5 ${!rule.is_active ? "border-dashed" : ""}`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="mb-3 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <div
-            className="h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-2xl shadow-sm"
             style={rule.categories?.color ? { backgroundColor: `${rule.categories.color}20` } : undefined}
           >
             {rule.categories?.icon || (
               <CircleDollarSign className="h-6 w-6 text-text-secondary" aria-hidden="true" />
             )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-bold text-sm text-text-main truncate">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm font-bold text-text-main">
                 {rule.categories?.name}
               </p>
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-bold shrink-0 whitespace-nowrap">
@@ -95,7 +95,7 @@ export function RecurringRuleCard({ rule, onEdit }: RecurringRuleCardProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center">
           <button
             role="switch"
             aria-checked={rule.is_active}
@@ -115,8 +115,8 @@ export function RecurringRuleCard({ rule, onEdit }: RecurringRuleCardProps) {
         </div>
       </div>
 
-      <div className="flex items-end justify-between mt-4">
-        <div className="flex flex-col gap-1 min-w-0">
+      <div className="mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
+        <div className="flex min-w-0 flex-col gap-1">
           <p className={`text-lg font-black tracking-tight truncate ${amountColor}`}>
             {amountPrefix}₩{formattedAmount}
           </p>

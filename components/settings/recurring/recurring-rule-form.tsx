@@ -75,7 +75,7 @@ export function RecurringRuleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} aria-busy={isLoading} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-5 pt-3">
+    <form onSubmit={handleSubmit} aria-busy={isLoading} className="min-h-0 min-w-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-5 pb-5 pt-3">
       <div className="space-y-1.5">
         <Label className="text-sm font-semibold">거래 유형</Label>
         <div className="flex gap-2">
@@ -205,13 +205,13 @@ export function RecurringRuleForm({
           max="31"
           className="h-11 text-sm"
         />
-        <p className="text-xs text-text-secondary">
+        <p className="break-keep text-xs text-text-secondary">
           29~31일을 선택하면, 해당 일이 없는 달(예: 2월)에는 그 달의 마지막 날에 기록됩니다.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor="startDate" className="text-sm font-semibold">시작일</Label>
           <Input
             id="startDate"
@@ -219,10 +219,10 @@ export function RecurringRuleForm({
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
-            className="h-11 text-sm"
+            className="h-11 min-w-0 text-sm"
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor="endDate" className="text-sm font-semibold">종료일 (선택)</Label>
           <Input
             id="endDate"
@@ -230,7 +230,7 @@ export function RecurringRuleForm({
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             min={startDate}
-            className="h-11 text-sm"
+            className="h-11 min-w-0 text-sm"
           />
         </div>
       </div>
