@@ -12,9 +12,11 @@ import { z } from "zod";
 const idSchema = z.string().uuid("유효하지 않은 ID입니다.");
 
 function parseFormData(formData: FormData) {
+  const type = formData.get("type");
+  const rawExpenseType = formData.get("expense_type");
   return recurringRuleSchema.safeParse({
-    type: formData.get("type"),
-    expense_type: formData.get("expense_type") || undefined,
+    type,
+    expense_type: type === "expense" ? (rawExpenseType || undefined) : null,
     amount: Number(formData.get("amount")),
     category_id: formData.get("category_id"),
     memo: formData.get("memo") || undefined,
@@ -90,7 +92,15 @@ export async function createRecurringRule(formData: FormData) {
     const { error } = await supabase.from("recurring_rules").insert({
       household_id: householdId,
       user_id: user.id,
-      ...data,
+      type: data.type,
+      expense_type: data.type === "expense" ? (data.expense_type ?? null) : null,
+      amount: data.amount,
+      category_id: data.category_id,
+      memo: data.memo || null,
+      target_day: data.target_day,
+      start_date: data.start_date,
+      end_date: data.end_date || null,
+      is_active: data.is_active,
     });
 
     if (error) throw error;
@@ -143,7 +153,18 @@ export async function updateRecurringRule(id: string, formData: FormData) {
 
     const { error } = await supabase
       .from("recurring_rules")
-      .update(data)
+      .update({
+        type: data.type,
+        expense_type: data.type === "expense" ? (data.expense_type ?? null) : null,
+        amount: data.amount,
+        category_id: data.category_id,
+        memo: data.memo || null,
+        target_day: data.target_day,
+        start_date: data.start_date,
+        end_date: data.end_date || null,
+        is_active: data.is_active,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id)
       .eq("household_id", householdId);
 

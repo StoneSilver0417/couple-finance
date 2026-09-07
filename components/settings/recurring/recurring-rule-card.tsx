@@ -84,8 +84,22 @@ export function RecurringRuleCard({ rule, onEdit }: RecurringRuleCardProps) {
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
               <p className="min-w-0 flex-1 truncate text-sm font-bold text-text-main">
-                {rule.categories?.name}
+                {rule.categories?.name || "미분류"}
               </p>
+              {rule.type === "expense" && rule.expense_type && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/80 border border-black/5 text-text-secondary font-bold uppercase tracking-wide shrink-0 whitespace-nowrap">
+                  {rule.expense_type === "fixed"
+                    ? "고정"
+                    : rule.expense_type === "variable"
+                      ? "변동"
+                      : "비정기"}
+                </span>
+              )}
+              {rule.type === "income" && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 font-bold shrink-0 whitespace-nowrap">
+                  수입
+                </span>
+              )}
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-bold shrink-0 whitespace-nowrap">
                 매월 {rule.target_day}일
               </span>

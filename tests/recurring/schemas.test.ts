@@ -83,4 +83,35 @@ describe("schemas: recurringRuleSchema", () => {
     });
     assert.equal(result.success, false);
   });
+
+  it("parses valid expense rules with expense_type: fixed, variable, irregular", () => {
+    for (const expType of ["fixed", "variable", "irregular"] as const) {
+      const result = recurringRuleSchema.safeParse({
+        type: "expense",
+        expense_type: expType,
+        amount: 25000,
+        category_id: "cat-2",
+        target_day: 15,
+        start_date: "2026-03-01",
+      });
+      assert.equal(result.success, true);
+      if (result.success) {
+        assert.equal(result.data.type, "expense");
+        assert.equal(result.data.expense_type, expType);
+        assert.equal(result.data.amount, 25000);
+      }
+    }
+  });
+
+  it("rejects invalid expense_type values", () => {
+    const result = recurringRuleSchema.safeParse({
+      type: "expense",
+      expense_type: "unknown_type",
+      amount: 10000,
+      category_id: "cat-1",
+      target_day: 10,
+      start_date: "2026-06-01",
+    });
+    assert.equal(result.success, false);
+  });
 });
