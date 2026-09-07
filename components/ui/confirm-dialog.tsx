@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useRef,
+  useEffect,
   createContext,
   useContext,
   ReactNode,
@@ -48,17 +49,28 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     setIsOpen(false);
     resolveRef.current?.(true);
     resolveRef.current = null;
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsOpen(false);
     resolveRef.current?.(false);
     resolveRef.current = null;
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCancel();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleCancel]);
 
   const variantStyles = {
     danger: {
@@ -81,17 +93,23 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       {isOpen && options && (
-        <div className="fixed inset-0 z-[100] flex animate-in items-center justify-center fade-in-0 p-4 duration-200 motion-reduce:animate-none">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[9999] flex animate-in items-center justify-center fade-in-0 p-4 duration-200 motion-reduce:animate-none pointer-events-auto"
+        >
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
             onClick={handleCancel}
           />
           <div
-            className="relative w-full max-w-sm animate-in rounded-3xl bg-white p-6 shadow-2xl fade-in-0 zoom-in-95 duration-200 ease-out motion-reduce:animate-none"
+            className="relative z-10 w-full max-w-sm animate-in rounded-3xl bg-white p-6 shadow-2xl fade-in-0 zoom-in-95 duration-200 ease-out motion-reduce:animate-none pointer-events-auto"
           >
             <button
+              type="button"
               onClick={handleCancel}
-              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="닫기"
+              className="absolute top-4 right-4 z-20 p-1.5 rounded-full hover:bg-gray-100 transition-colors pointer-events-auto cursor-pointer"
             >
               <X className="h-5 w-5 text-gray-400" />
             </button>
@@ -107,21 +125,23 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 {options.title || "확인"}
               </h3>
 
-              <p className="text-sm text-text-secondary mb-6">
+              <p className="text-sm text-text-secondary mb-6 whitespace-pre-line">
                 {options.message}
               </p>
 
-              <div className="flex gap-3 w-full">
+              <div className="relative z-10 flex gap-3 w-full pointer-events-auto">
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={handleCancel}
-                  className="flex-1 h-12 rounded-xl font-bold"
+                  className="relative z-10 flex-1 h-12 rounded-xl font-bold pointer-events-auto cursor-pointer"
                 >
                   {options.cancelText || "취소"}
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleConfirm}
-                  className={`flex-1 h-12 rounded-xl font-bold ${styles.button}`}
+                  className={`relative z-10 flex-1 h-12 rounded-xl font-bold ${styles.button} pointer-events-auto cursor-pointer`}
                 >
                   {options.confirmText || "확인"}
                 </Button>

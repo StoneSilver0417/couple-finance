@@ -45,15 +45,15 @@ export function CategoryTransactionsModal({
   const total = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-auto">
       {/* 배경 오버레이 */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
         onClick={onClose}
       />
 
       {/* 모달 컨텐츠 */}
-      <div className="relative w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up max-h-[80vh] min-h-[280px] flex flex-col">
+      <div className="relative z-10 w-full max-w-md bg-white rounded-t-[2rem] shadow-2xl animate-slide-up max-h-[80vh] min-h-[280px] flex flex-col pointer-events-auto">
         {/* 핸들 바 */}
         <div className="flex justify-center pt-3 pb-2 shrink-0">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
