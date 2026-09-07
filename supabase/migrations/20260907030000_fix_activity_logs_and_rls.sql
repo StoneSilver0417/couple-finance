@@ -72,6 +72,7 @@ CREATE POLICY "Users can manage household budgets" ON budgets
 -- 5. activity_logs RLS 정책 강화
 DROP POLICY IF EXISTS "Users can view their household activity logs" ON activity_logs;
 DROP POLICY IF EXISTS "Users can insert activity logs for their household" ON activity_logs;
+DROP POLICY IF EXISTS "Users can delete their household activity logs" ON activity_logs;
 
 CREATE POLICY "Users can view their household activity logs" ON activity_logs
   FOR SELECT
@@ -82,6 +83,55 @@ CREATE POLICY "Users can view their household activity logs" ON activity_logs
 
 CREATE POLICY "Users can insert activity logs for their household" ON activity_logs
   FOR INSERT
+  WITH CHECK (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  );
+
+CREATE POLICY "Users can delete their household activity logs" ON activity_logs
+  FOR DELETE
+  USING (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  );
+
+-- 6. categories RLS 정책 강화
+DROP POLICY IF EXISTS "Users can manage household categories" ON categories;
+
+CREATE POLICY "Users can manage household categories" ON categories
+  FOR ALL
+  USING (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  )
+  WITH CHECK (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  );
+
+-- 7. assets RLS 정책 강화
+DROP POLICY IF EXISTS "Users can manage household assets" ON assets;
+
+CREATE POLICY "Users can manage household assets" ON assets
+  FOR ALL
+  USING (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  )
+  WITH CHECK (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  );
+
+-- 8. payment_methods RLS 정책 강화
+DROP POLICY IF EXISTS "Users can manage household payment methods" ON payment_methods;
+
+CREATE POLICY "Users can manage household payment methods" ON payment_methods
+  FOR ALL
+  USING (
+    household_id = get_my_household_id()
+    OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())
+  )
   WITH CHECK (
     household_id = get_my_household_id()
     OR household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())

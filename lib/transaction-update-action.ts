@@ -196,7 +196,6 @@ export async function updateTransaction(
         transaction_date: transactionDate,
         memo,
         recurring_rule_id: nextRecurringRuleId,
-        last_modified_by: user.id,
         updated_at: new Date().toISOString(),
       })
       .eq("id", transactionId)

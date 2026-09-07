@@ -1,5 +1,5 @@
 -- 1. Create recurring_rules table
-CREATE TABLE recurring_rules (
+CREATE TABLE IF NOT EXISTS recurring_rules (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -17,7 +17,7 @@ CREATE TABLE recurring_rules (
 );
 
 -- 2. Create recurring_occurrences table
-CREATE TABLE recurring_occurrences (
+CREATE TABLE IF NOT EXISTS recurring_occurrences (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   rule_id UUID NOT NULL REFERENCES recurring_rules(id) ON DELETE CASCADE,
   transaction_id UUID NOT NULL, -- Will add FK after altering transactions
@@ -28,16 +28,20 @@ CREATE TABLE recurring_occurrences (
 );
 
 -- 3. Alter transactions table
-ALTER TABLE transactions ADD COLUMN recurring_rule_id UUID REFERENCES recurring_rules(id) ON DELETE SET NULL;
+DO $$ BEGIN
+  ALTER TABLE transactions ADD COLUMN IF NOT EXISTS recurring_rule_id UUID REFERENCES recurring_rules(id) ON DELETE SET NULL;
+EXCEPTION WHEN others THEN NULL; END $$;
 
 -- Add FK to recurring_occurrences
-ALTER TABLE recurring_occurrences ADD CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE recurring_occurrences ADD CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE;
+EXCEPTION WHEN others THEN NULL; END $$;
 
 -- 4. Indexes
-CREATE INDEX idx_recurring_rules_household ON recurring_rules(household_id);
-CREATE INDEX idx_recurring_rules_active ON recurring_rules(household_id) WHERE is_active = TRUE;
-CREATE INDEX idx_recurring_occurrences_rule ON recurring_occurrences(rule_id);
-CREATE INDEX idx_transactions_recurring_rule ON transactions(recurring_rule_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_rules_household ON recurring_rules(household_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_rules_active ON recurring_rules(household_id) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_recurring_occurrences_rule ON recurring_occurrences(rule_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_recurring_rule ON transactions(recurring_rule_id);
 
 -- 5. RLS Enablement
 ALTER TABLE recurring_rules ENABLE ROW LEVEL SECURITY;
@@ -45,12 +49,22 @@ ALTER TABLE recurring_occurrences ENABLE ROW LEVEL SECURITY;
 
 -- 6. RLS Policies
 -- recurring_rules
+DROP POLICY IF EXISTS "Users can view household recurring rules" ON recurring_rules;
+DROP POLICY IF EXISTS "Users can insert household recurring rules" ON recurring_rules;
+DROP POLICY IF EXISTS "Users can update household recurring rules" ON recurring_rules;
+DROP POLICY IF EXISTS "Users can delete household recurring rules" ON recurring_rules;
+
 CREATE POLICY "Users can view household recurring rules" ON recurring_rules FOR SELECT USING (household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid()));
 CREATE POLICY "Users can insert household recurring rules" ON recurring_rules FOR INSERT WITH CHECK (household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid()) AND user_id = auth.uid());
 CREATE POLICY "Users can update household recurring rules" ON recurring_rules FOR UPDATE USING (household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid()));
 CREATE POLICY "Users can delete household recurring rules" ON recurring_rules FOR DELETE USING (household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid()));
 
 -- recurring_occurrences
+DROP POLICY IF EXISTS "Users can view household recurring occurrences" ON recurring_occurrences;
+DROP POLICY IF EXISTS "Users can insert household recurring occurrences" ON recurring_occurrences;
+DROP POLICY IF EXISTS "Users can update household recurring occurrences" ON recurring_occurrences;
+DROP POLICY IF EXISTS "Users can delete household recurring occurrences" ON recurring_occurrences;
+
 CREATE POLICY "Users can view household recurring occurrences" ON recurring_occurrences FOR SELECT USING (rule_id IN (SELECT id FROM recurring_rules WHERE household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())));
 CREATE POLICY "Users can insert household recurring occurrences" ON recurring_occurrences FOR INSERT WITH CHECK (rule_id IN (SELECT id FROM recurring_rules WHERE household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())));
 CREATE POLICY "Users can update household recurring occurrences" ON recurring_occurrences FOR UPDATE USING (rule_id IN (SELECT id FROM recurring_rules WHERE household_id IN (SELECT household_id FROM profiles WHERE id = auth.uid())));

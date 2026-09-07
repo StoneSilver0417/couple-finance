@@ -1,7 +1,18 @@
 -- 1. Add constraints to recurring_rules
-ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_amount_check CHECK (amount > 0);
-ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_dates_check CHECK (end_date IS NULL OR end_date >= start_date);
-ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_income_expense_type_check CHECK ((type = 'income' AND expense_type IS NULL) OR (type = 'expense' AND expense_type IS NOT NULL));
+DO $$ BEGIN
+  ALTER TABLE recurring_rules DROP CONSTRAINT IF EXISTS recurring_rules_amount_check;
+  ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_amount_check CHECK (amount > 0);
+EXCEPTION WHEN others THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE recurring_rules DROP CONSTRAINT IF EXISTS recurring_rules_dates_check;
+  ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_dates_check CHECK (end_date IS NULL OR end_date >= start_date);
+EXCEPTION WHEN others THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE recurring_rules DROP CONSTRAINT IF EXISTS recurring_rules_income_expense_type_check;
+  ALTER TABLE recurring_rules ADD CONSTRAINT recurring_rules_income_expense_type_check CHECK ((type = 'income' AND expense_type IS NULL) OR (type = 'expense' AND expense_type IS NOT NULL));
+EXCEPTION WHEN others THEN NULL; END $$;
 
 -- 2. Create RPC for atomic transaction + recurring rule creation
 CREATE OR REPLACE FUNCTION create_transaction_with_recurring_rule(
@@ -116,12 +127,79 @@ BEGIN
 
   RETURN v_transaction_id;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 REVOKE EXECUTE ON FUNCTION create_transaction_with_recurring_rule(UUID, UUID, TEXT, DECIMAL, UUID, DATE, TEXT, TEXT, INTEGER, DATE) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION create_transaction_with_recurring_rule(UUID, UUID, TEXT, DECIMAL, UUID, DATE, TEXT, TEXT, INTEGER, DATE) TO authenticated;
 
--- 3. Update materialize_monthly_recurring_transactions to validate category consistency
+-- 3. Create RPC for standard single transaction creation
+CREATE OR REPLACE FUNCTION create_transaction(
+  p_household_id UUID,
+  p_user_id UUID,
+  p_type TEXT,
+  p_amount DECIMAL,
+  p_category_id UUID,
+  p_transaction_date DATE,
+  p_expense_type TEXT,
+  p_memo TEXT
+) RETURNS UUID AS $$
+DECLARE
+  v_transaction_id UUID;
+  v_category_valid BOOLEAN;
+BEGIN
+  -- Authenticate
+  IF auth.uid() IS NULL OR auth.uid() != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
+  -- Validate household
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE id = p_user_id AND household_id = p_household_id) THEN
+    RAISE EXCEPTION 'User does not belong to the specified household';
+  END IF;
+
+  -- Validate category
+  SELECT EXISTS (
+    SELECT 1 FROM categories 
+    WHERE id = p_category_id 
+      AND household_id = p_household_id 
+      AND type = p_type 
+      AND (p_type = 'income' OR expense_category = p_expense_type)
+  ) INTO v_category_valid;
+
+  IF NOT v_category_valid THEN
+    RAISE EXCEPTION 'Invalid category for the specified household and type';
+  END IF;
+
+  INSERT INTO transactions (
+    household_id,
+    user_id,
+    type,
+    expense_type,
+    amount,
+    category_id,
+    transaction_date,
+    memo,
+    is_recurring
+  ) VALUES (
+    p_household_id,
+    p_user_id,
+    p_type,
+    p_expense_type,
+    p_amount,
+    p_category_id,
+    p_transaction_date,
+    p_memo,
+    FALSE
+  ) RETURNING id INTO v_transaction_id;
+
+  RETURN v_transaction_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+REVOKE EXECUTE ON FUNCTION create_transaction(UUID, UUID, TEXT, DECIMAL, UUID, DATE, TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION create_transaction(UUID, UUID, TEXT, DECIMAL, UUID, DATE, TEXT, TEXT) TO authenticated;
+
+-- 4. Update materialize_monthly_recurring_transactions to validate category consistency
 CREATE OR REPLACE FUNCTION materialize_monthly_recurring_transactions(p_year INTEGER, p_month INTEGER)
 RETURNS JSON AS $$
 DECLARE
