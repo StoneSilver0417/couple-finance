@@ -103,11 +103,42 @@ export async function forceClearReportsForUser(userId: string) {
   if (!isUserAdmin) throw new Error("Unauthorized");
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("monthly_reports")
-    .delete()
-    .eq("user_id", userId);
 
-  if (error) throw error;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("household_id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profile?.household_id) {
+    const [monthlyRes, periodicRes] = await Promise.all([
+      supabase
+        .from("monthly_reports")
+        .delete()
+        .eq("household_id", profile.household_id),
+      supabase
+        .from("periodic_reports")
+        .delete()
+        .eq("household_id", profile.household_id),
+    ]);
+
+    if (monthlyRes.error) throw monthlyRes.error;
+    if (periodicRes.error) throw periodicRes.error;
+  } else {
+    const [monthlyRes, periodicRes] = await Promise.all([
+      supabase
+        .from("monthly_reports")
+        .delete()
+        .eq("generated_by", userId),
+      supabase
+        .from("periodic_reports")
+        .delete()
+        .eq("generated_by", userId),
+    ]);
+
+    if (monthlyRes.error) throw monthlyRes.error;
+    if (periodicRes.error) throw periodicRes.error;
+  }
+
   return { success: true };
 }

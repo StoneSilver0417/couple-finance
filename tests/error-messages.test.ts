@@ -55,6 +55,14 @@ test("getKoreanErrorMessage", async (t) => {
       "데이터베이스 스키마 오류: 'transactions' 테이블에 'last_modified_by' 컬럼이 존재하지 않습니다.",
     );
 
+    const schemaColMsg2 = getKoreanErrorMessage(
+      new Error("Could not find the 'user_id' column of 'monthly_reports' in the schema cache"),
+    );
+    assert.strictEqual(
+      schemaColMsg2,
+      "데이터베이스 스키마 오류: 'monthly_reports' 테이블에 'user_id' 컬럼이 존재하지 않습니다.",
+    );
+
     const colRelMsg = getKoreanErrorMessage(
       "column \"recurring_rule_id\" of relation \"transactions\" does not exist",
     );
