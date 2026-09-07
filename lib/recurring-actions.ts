@@ -58,9 +58,10 @@ export async function getRecurringRule(id: string) {
       .select(`*, categories (name, icon, color)`)
       .eq("id", id)
       .eq("household_id", householdId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) return { error: "반복 거래를 찾을 수 없거나 권한이 없습니다." };
     return { data };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
@@ -121,13 +122,14 @@ export async function updateRecurringRule(id: string, formData: FormData) {
   const data = parsed.data;
 
   try {
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
       .from("recurring_rules")
       .select("id")
       .eq("id", id)
       .eq("household_id", householdId)
-      .single();
+      .maybeSingle();
 
+    if (fetchError) throw fetchError;
     if (!existing) return { error: "반복 거래를 찾을 수 없거나 권한이 없습니다." };
 
     const compatibility = await validateCategoryCompatibility(
@@ -170,13 +172,14 @@ export async function toggleRecurringRule(id: string, isActive: boolean) {
   if (!idParsed.success) return { error: idParsed.error.issues[0]?.message };
 
   try {
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
       .from("recurring_rules")
       .select("id, memo")
       .eq("id", id)
       .eq("household_id", householdId)
-      .single();
+      .maybeSingle();
 
+    if (fetchError) throw fetchError;
     if (!existing) return { error: "반복 거래를 찾을 수 없거나 권한이 없습니다." };
 
     const { error } = await supabase
@@ -208,13 +211,14 @@ export async function deleteRecurringRule(id: string) {
   if (!idParsed.success) return { error: idParsed.error.issues[0]?.message };
 
   try {
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
       .from("recurring_rules")
       .select("id, memo")
       .eq("id", id)
       .eq("household_id", householdId)
-      .single();
+      .maybeSingle();
 
+    if (fetchError) throw fetchError;
     if (!existing) return { error: "반복 거래를 찾을 수 없거나 권한이 없습니다." };
 
     const { error } = await supabase

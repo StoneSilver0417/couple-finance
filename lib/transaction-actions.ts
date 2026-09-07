@@ -8,6 +8,7 @@ import { logActivity } from "./activity-log";
 import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
+import { z } from "zod";
 import {
   getTrimmedString,
   isExpenseType,
@@ -15,6 +16,8 @@ import {
   isValidDateString,
   parsePositiveAmount,
 } from "@/lib/validation";
+
+const transactionIdSchema = z.string().uuid("유효하지 않은 거래 ID입니다.");
 
 export async function createTransaction(formData: FormData) {
   const ctx = await getHouseholdContext();
@@ -132,19 +135,26 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function deleteTransaction(transactionId: string) {
+  const idParsed = transactionIdSchema.safeParse(transactionId);
+  if (!idParsed.success) {
+    return { error: idParsed.error.issues[0]?.message || "유효하지 않은 거래 ID입니다." };
+  }
+
   const ctx = await getHouseholdContext();
   if (!ctx.ok) return { error: ctx.error };
   const { supabase, user, householdId } = ctx;
 
   try {
-    // 삭제 전 거래 정보 조회 (잔액 동기화 및 소유권 확인용)
-    const { data: tx } = await supabase
+    const { data: tx, error: fetchError } = await supabase
       .from("transactions")
       .select("household_id, transaction_date, type, amount, memo")
       .eq("id", transactionId)
-      .single();
+      .maybeSingle();
 
-    // 소유권 확인 (IDOR 방지)
+    if (fetchError) {
+      return { error: getKoreanErrorMessage(fetchError) };
+    }
+
     if (!tx || tx.household_id !== householdId) {
       return { error: "거래를 찾을 수 없거나 삭제 권한이 없습니다." };
     }

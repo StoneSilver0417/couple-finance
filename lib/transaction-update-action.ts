@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
@@ -15,19 +16,30 @@ import {
   parsePositiveAmount,
 } from "@/lib/validation";
 
+const transactionIdSchema = z.string().uuid("유효하지 않은 거래 ID입니다.");
+
 export async function updateTransaction(
   transactionId: string,
   formData: FormData,
 ) {
+  const idParsed = transactionIdSchema.safeParse(transactionId);
+  if (!idParsed.success) {
+    return { error: idParsed.error.issues[0]?.message || "유효하지 않은 거래 ID입니다." };
+  }
+
   const ctx = await getHouseholdContext();
   if (!ctx.ok) return { error: ctx.error };
   const { supabase, user, householdId } = ctx;
 
-  const { data: oldTx } = await supabase
+  const { data: oldTx, error: fetchError } = await supabase
     .from("transactions")
-    .select("household_id, transaction_date, recurring_rule_id, is_recurring, type, amount, memo")
+    .select("household_id, transaction_date, recurring_rule_id, is_recurring, type, amount, memo, user_id")
     .eq("id", transactionId)
-    .single();
+    .maybeSingle();
+
+  if (fetchError) {
+    return { error: getKoreanErrorMessage(fetchError) };
+  }
 
   if (!oldTx || oldTx.household_id !== householdId) {
     return { error: "거래 정보를 찾을 수 없거나 수정 권한이 없습니다." };
@@ -184,6 +196,7 @@ export async function updateTransaction(
         transaction_date: transactionDate,
         memo,
         recurring_rule_id: nextRecurringRuleId,
+        last_modified_by: user.id,
         updated_at: new Date().toISOString(),
       })
       .eq("id", transactionId)
