@@ -150,3 +150,8 @@ export interface AdminUserOverviewRow {
   last_sign_in_at: string | null;
   last_activity_at: string | null;
 }
+
+export type {
+  RecurringRule,
+  RecurringOccurrence,
+} from "@/lib/recurring/types";

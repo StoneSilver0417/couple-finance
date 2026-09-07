@@ -17,6 +17,7 @@ import {
   CreditCard,
   Tag,
   RotateCcw,
+  Repeat,
 } from "lucide-react";
 import { getActivityLogs, clearActivityLogs } from "@/lib/activity-log-actions";
 import type { ActivityLog } from "@/lib/activity-log";
@@ -44,6 +45,7 @@ const TARGET_ICONS = {
   ASSET: <Wallet className="w-4 h-4" />,
   BUDGET: <Tag className="w-4 h-4" />,
   CATEGORY: <Tag className="w-4 h-4" />,
+  RECURRING_RULE: <Repeat className="w-4 h-4" />,
 };
 
 function formatTimeAgo(dateStr: string | null | undefined): string {

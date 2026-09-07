@@ -5,7 +5,7 @@
 import type { ServerSupabaseClient } from "@/lib/supabase/household-context";
 
 export type ActivityAction = "CREATE" | "UPDATE" | "DELETE";
-export type ActivityTarget = "TRANSACTION" | "ASSET" | "BUDGET" | "CATEGORY";
+export type ActivityTarget = "TRANSACTION" | "ASSET" | "BUDGET" | "CATEGORY" | "RECURRING_RULE";
 
 export interface ActivityLog {
   id: string;

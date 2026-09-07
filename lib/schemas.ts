@@ -14,6 +14,16 @@ export const transactionSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식(YYYY-MM-DD)이어야 합니다."),
   memo: z.string().max(500, "메모는 500자 이하이어야 합니다.").optional().nullable(),
   expense_type: z.enum(["fixed", "variable", "irregular"]).optional().nullable(),
+  recurring_enabled: z.boolean().optional().default(false),
+  recurring_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식(YYYY-MM-DD)이어야 합니다.").optional().nullable(),
+}).refine((data) => {
+  if (data.recurring_enabled && data.recurring_end_date) {
+    return data.recurring_end_date >= data.transaction_date;
+  }
+  return true;
+}, {
+  message: "종료일은 거래일 이후여야 합니다.",
+  path: ["recurring_end_date"],
 });
 
 export const assetSchema = z.object({
@@ -30,3 +40,9 @@ export const assetSchema = z.object({
   owner_type: z.enum(["JOINT", "INDIVIDUAL"]),
   owner_profile_id: z.string().max(64).optional().nullable(),
 });
+
+export {
+  dateStringSchema,
+  recurringRuleSchema,
+  type RecurringRuleInput,
+} from "./recurring/schemas";

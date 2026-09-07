@@ -11,6 +11,8 @@ export function BottomNav() {
   const isActive = (path: string) =>
     pathname === path || pathname?.startsWith(path + "/");
 
+  const hideFab = pathname === "/transactions/new" || pathname === "/settings/recurring-transactions";
+
   // Dynamic Plus Link Logic
   let plusHref = "/transactions/new";
   if (pathname?.startsWith("/assets")) {
@@ -25,16 +27,18 @@ export function BottomNav() {
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pt-7 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="max-w-md mx-auto relative h-20">
         {/* Floating Plus Button */}
-        <div className="absolute left-1/2 -top-7 -translate-x-1/2 z-20 pointer-events-auto">
-          <Link
-            href={plusHref}
-            aria-label="새 항목 추가"
-            className="group flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-primary-dark to-primary text-white rounded-full shadow-lg shadow-primary/40 border-[6px] border-[#FDFDFD] transition-all hover:scale-110 active:scale-95"
-            scroll={false}
-          >
-            <Plus className="w-8 h-8 font-bold" strokeWidth={3} aria-hidden="true" />
-          </Link>
-        </div>
+        {!hideFab && (
+          <div className="absolute left-1/2 -top-7 -translate-x-1/2 z-20 pointer-events-auto">
+            <Link
+              href={plusHref}
+              aria-label="새 항목 추가"
+              className="group flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-primary-dark to-primary text-white rounded-full shadow-lg shadow-primary/40 border-[6px] border-[#FDFDFD] transition-all hover:scale-110 active:scale-95"
+              scroll={false}
+            >
+              <Plus className="w-8 h-8 font-bold" strokeWidth={3} aria-hidden="true" />
+            </Link>
+          </div>
+        )}
 
         {/* Navigation Bar */}
         <nav aria-label="주요 메뉴" className="glass-panel pointer-events-auto relative z-10 flex h-full w-full items-center justify-between rounded-full border-white/80 px-6 shadow-2xl">
@@ -99,10 +103,10 @@ export function BottomNav() {
           <Link
             href="/settings"
             aria-label="설정"
-            aria-current={pathname === "/settings" ? "page" : undefined}
+            aria-current={isActive("/settings") ? "page" : undefined}
             className={cn(
               "flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all",
-              pathname === "/settings"
+              isActive("/settings")
                 ? "text-primary-dark"
                 : "text-text-secondary hover:text-primary-dark",
             )}
@@ -110,7 +114,7 @@ export function BottomNav() {
             <User
               className={cn(
                 "w-7 h-7",
-                pathname === "/settings" && "fill-current",
+                isActive("/settings") && "fill-current",
               )}
               aria-hidden="true"
             />

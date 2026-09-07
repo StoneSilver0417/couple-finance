@@ -15,13 +15,14 @@ import { Category } from "@/types";
 interface TransactionFormProps {
   categories: Category[];
   initialDate?: string;
+  initialData?: Partial<TransactionFormData>;
 }
 
 export default function TransactionForm({
   categories,
   initialDate,
   initialData,
-}: TransactionFormProps & { initialData?: TransactionFormData }) {
+}: TransactionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -67,15 +68,12 @@ export default function TransactionForm({
           <TransactionFormComponent
             categories={categories}
             initialData={
-              initialData || (initialDate
-                ? ({
-                    transaction_date: initialDate,
-                  } as Partial<TransactionFormData> as TransactionFormData)
-                : undefined)
+              initialData || (initialDate ? { transaction_date: initialDate } : undefined)
             }
             onSubmit={handleSubmit}
             isLoading={isLoading}
             submitLabel="추가하기"
+            isEdit={false}
           />
         </div>
       </div>

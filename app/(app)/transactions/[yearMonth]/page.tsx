@@ -7,6 +7,8 @@ import {
   PieChart,
 } from "lucide-react";
 import { calculateSummary } from "@/lib/calculations/finance";
+import { materializeMonthlyRecurringTransactions } from "@/lib/recurring-actions";
+import { z } from "zod";
 import CalendarViewClient from "./calendar-view-client";
 import MonthSummaryCards from "./month-summary-cards";
 import type { Category, Transaction, TransactionRpcRow } from "@/types";
@@ -39,13 +41,35 @@ export default async function MonthDetailPage({
   }
 
   // Parse year and month
-  const [year, month] = yearMonth.split("-").map(Number);
+  const parsedYearMonth = z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .transform((value) => {
+      const [year, month] = value.split("-").map(Number);
+      return { year, month };
+    })
+    .refine(
+      ({ year, month }) =>
+        Number.isInteger(year) &&
+        year >= 2000 &&
+        year <= 2100 &&
+        Number.isInteger(month) &&
+        month >= 1 &&
+        month <= 12,
+    )
+    .safeParse(yearMonth);
+  if (!parsedYearMonth.success) {
+    redirect("/transactions");
+  }
+  const { year, month } = parsedYearMonth.data;
 
   // Date range for the month (YYYY-MM-DD)
   const monthStr = String(month).padStart(2, "0");
   const lastDay = new Date(year, month, 0).getDate();
   const startOfMonth = `${year}-${monthStr}-01`;
   const endOfMonth = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
+
+  await materializeMonthlyRecurringTransactions(year, month);
 
   // 병렬 쿼리 실행 (성능 최적화)
   const [transactionsResult, categoriesResult] = await Promise.all([

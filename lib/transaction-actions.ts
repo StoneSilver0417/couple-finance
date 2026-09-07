@@ -29,6 +29,8 @@ export async function createTransaction(formData: FormData) {
     transaction_date: formData.get("transaction_date"),
     memo: formData.get("memo") || undefined,
     expense_type: formData.get("expense_type") || undefined,
+    recurring_enabled: formData.get("recurring_enabled") === "true",
+    recurring_end_date: formData.get("recurring_end_date") || undefined,
   });
 
   if (!parsed.success) {
@@ -70,22 +72,39 @@ export async function createTransaction(formData: FormData) {
       return { error: "카테고리 정보가 올바르지 않습니다." };
     }
 
-    // RPC 함수로 INSERT (RLS 우회)
-    const { error } = await supabase.rpc("create_transaction", {
-      p_household_id: householdId,
-      p_user_id: user.id,
-      p_type: type,
-      p_amount: amount,
-      p_category_id: categoryId,
-      p_transaction_date: transactionDate,
-      p_expense_type: expenseType,
-      p_memo: memo,
-    });
+    const date = new Date(transactionDate);
 
-    if (error) throw error;
+    if (parsed.data.recurring_enabled) {
+      const { error } = await supabase.rpc("create_transaction_with_recurring_rule", {
+        p_household_id: householdId,
+        p_user_id: user.id,
+        p_type: type,
+        p_amount: amount,
+        p_category_id: categoryId,
+        p_transaction_date: transactionDate,
+        p_expense_type: expenseType,
+        p_memo: memo,
+        p_target_day: date.getDate(),
+        p_end_date: parsed.data.recurring_end_date || null,
+      });
+
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.rpc("create_transaction", {
+        p_household_id: householdId,
+        p_user_id: user.id,
+        p_type: type,
+        p_amount: amount,
+        p_category_id: categoryId,
+        p_transaction_date: transactionDate,
+        p_expense_type: expenseType,
+        p_memo: memo,
+      });
+
+      if (error) throw error;
+    }
 
     // 월별 잔액 동기화
-    const date = new Date(transactionDate);
     await syncMonthlyBalance(
       supabase,
       householdId,

@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Heart,
   Bot,
+  Repeat,
 } from "lucide-react";
 import { CopyInviteButton } from "./copy-invite-button";
 import { PWAInstallButton } from "@/components/pwa-install-button";
@@ -216,6 +217,14 @@ export default async function SettingsPage() {
         {/* Menu Grid */}
         <div className="grid grid-cols-1 gap-4">
           {[
+            {
+              href: "/settings/recurring-transactions",
+              title: "반복 거래",
+              desc: "자동 등록 관리",
+              icon: Repeat,
+              color: "text-blue-500",
+              bg: "bg-blue-50",
+            },
             {
               href: "/settings/budgets",
               title: "예산 설정",

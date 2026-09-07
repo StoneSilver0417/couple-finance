@@ -256,6 +256,7 @@ export default function TransactionsListClient({
               onSubmit={handleUpdate}
               isLoading={isLoading}
               submitLabel="수정 완료"
+              isEdit={true}
             />
           )}
         </DialogContent>
