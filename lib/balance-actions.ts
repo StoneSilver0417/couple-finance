@@ -46,7 +46,7 @@ export async function syncMonthlyBalance(
     .eq("household_id", householdId)
     .eq("year", prevYear)
     .eq("month", prevMonth)
-    .single();
+    .maybeSingle();
 
   const carryOverAmount = prevBalance?.current_balance || 0;
   const currentBalance = carryOverAmount + incomeTotal - expenseTotal;
@@ -64,7 +64,7 @@ export async function syncMonthlyBalance(
       updated_at: new Date().toISOString(),
     },
     {
-      onConflict: "household_id, year, month",
+      onConflict: "household_id,year,month",
     },
   );
 
@@ -81,7 +81,7 @@ export async function syncMonthlyBalance(
     .eq("household_id", householdId)
     .eq("year", nextYear)
     .eq("month", nextMonth)
-    .single();
+    .maybeSingle();
 
   if (nextExists) {
     await syncMonthlyBalance(supabase, householdId, nextYear, nextMonth);

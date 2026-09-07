@@ -113,12 +113,15 @@ export async function deleteCategory(categoryId: string) {
   const { supabase, user, householdId } = ctx;
 
   try {
-    // 삭제 전 이름 조회 및 소유권 확인 (IDOR 방지)
-    const { data: cat } = await supabase
+    const { data: cat, error: fetchError } = await supabase
       .from("categories")
       .select("name, household_id")
       .eq("id", categoryId)
-      .single();
+      .maybeSingle();
+
+    if (fetchError) {
+      return { error: getKoreanErrorMessage(fetchError) };
+    }
 
     if (!cat || cat.household_id !== householdId) {
       return { error: "카테고리를 찾을 수 없거나 삭제 권한이 없습니다." };
@@ -156,11 +159,15 @@ export async function restoreCategory(categoryId: string) {
   const { supabase, user, householdId } = ctx;
 
   try {
-    const { data: cat } = await supabase
+    const { data: cat, error: fetchError } = await supabase
       .from("categories")
       .select("name, household_id")
       .eq("id", categoryId)
-      .single();
+      .maybeSingle();
+
+    if (fetchError) {
+      return { error: getKoreanErrorMessage(fetchError) };
+    }
 
     if (!cat || cat.household_id !== householdId) {
       return { error: "카테고리 복원 권한이 없습니다." };

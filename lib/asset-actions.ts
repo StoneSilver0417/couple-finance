@@ -235,11 +235,15 @@ export async function deleteAsset(assetId: string) {
 
   try {
     // 삭제 전 자산 정보 조회 + 소유권 확인 (IDOR 방지)
-    const { data: asset } = await supabase
+    const { data: asset, error: fetchError } = await supabase
       .from("assets")
       .select("name, current_amount, is_liability, household_id")
       .eq("id", assetId)
-      .single();
+      .maybeSingle();
+
+    if (fetchError) {
+      return { error: getKoreanErrorMessage(fetchError) };
+    }
 
     if (!asset || asset.household_id !== householdId) {
       return { error: "자산 정보를 찾을 수 없거나 삭제 권한이 없습니다." };

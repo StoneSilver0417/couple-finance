@@ -32,7 +32,7 @@ export async function updateMonthlyBudget(
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: "household_id, year, month",
+        onConflict: "household_id,year,month",
       },
     );
 

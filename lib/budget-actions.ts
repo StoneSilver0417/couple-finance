@@ -35,7 +35,7 @@ export async function updateBudget(
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: "household_id, category_id, year, month",
+        onConflict: "household_id,category_id,year,month",
       },
     );
 
