@@ -44,6 +44,29 @@ export async function listRecurringRules() {
   }
 }
 
+export async function getRecurringRule(id: string) {
+  const ctx = await getHouseholdContext();
+  if (!ctx.ok) return { error: ctx.error };
+  const { supabase, householdId } = ctx;
+
+  const idParsed = idSchema.safeParse(id);
+  if (!idParsed.success) return { error: idParsed.error.issues[0]?.message };
+
+  try {
+    const { data, error } = await supabase
+      .from("recurring_rules")
+      .select(`*, categories (name, icon, color)`)
+      .eq("id", id)
+      .eq("household_id", householdId)
+      .single();
+
+    if (error) throw error;
+    return { data };
+  } catch (error: unknown) {
+    return { error: getKoreanErrorMessage(error) };
+  }
+}
+
 export async function createRecurringRule(formData: FormData) {
   const ctx = await getHouseholdContext();
   if (!ctx.ok) return { error: ctx.error };

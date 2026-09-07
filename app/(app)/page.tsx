@@ -106,6 +106,8 @@ export default async function DashboardPage() {
     transaction_date: typeof t.transaction_date === 'string'
       ? t.transaction_date
       : new Date(t.transaction_date).toISOString().split('T')[0],
+    is_recurring: t.is_recurring,
+    recurring_rule_id: t.recurring_rule_id,
     categories: t.category_id ? {
       name: t.category_name,
       icon: t.category_icon,

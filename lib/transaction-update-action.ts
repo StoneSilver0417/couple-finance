@@ -6,6 +6,7 @@ import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
 import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
+import { transactionSchema } from "@/lib/schemas";
 import {
   getTrimmedString,
   isExpenseType,
@@ -22,10 +23,9 @@ export async function updateTransaction(
   if (!ctx.ok) return { error: ctx.error };
   const { supabase, user, householdId } = ctx;
 
-  // 1. 소유권 확인 + 잔액 동기화용 기존 데이터 조회 (IDOR 방지)
   const { data: oldTx } = await supabase
     .from("transactions")
-    .select("household_id, transaction_date")
+    .select("household_id, transaction_date, recurring_rule_id, is_recurring, type, amount, memo")
     .eq("id", transactionId)
     .single();
 
@@ -33,7 +33,22 @@ export async function updateTransaction(
     return { error: "거래 정보를 찾을 수 없거나 수정 권한이 없습니다." };
   }
 
-  // 2. 외부 입력 검증
+  const parsed = transactionSchema.safeParse({
+    type: formData.get("type"),
+    amount: Number(formData.get("amount")),
+    category_id: formData.get("category_id"),
+    transaction_date: formData.get("transaction_date"),
+    memo: formData.get("memo") || undefined,
+    expense_type: formData.get("expense_type") || undefined,
+    recurring_enabled: formData.get("recurring_enabled") === "true",
+    recurring_end_date: formData.get("recurring_end_date") || undefined,
+    update_recurring_rule: formData.get("update_recurring_rule") !== "false",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "입력값이 유효하지 않습니다." };
+  }
+
   const type = formData.get("type");
   const amount = parsePositiveAmount(formData.get("amount"));
   const categoryId = getTrimmedString(formData.get("category_id"), 64);
@@ -68,8 +83,98 @@ export async function updateTransaction(
       return { error: "카테고리 정보가 올바르지 않습니다." };
     }
 
-    // 3. 거래 수정
-    const { error } = await supabase
+    let nextRecurringRuleId: string | null = oldTx.recurring_rule_id;
+    let recurringLogNote = "";
+    const txDate = new Date(transactionDate);
+    const targetDay = txDate.getDate();
+
+    if (parsed.data.recurring_enabled) {
+      if (!oldTx.recurring_rule_id) {
+        const { data: newRule, error: newRuleError } = await supabase
+          .from("recurring_rules")
+          .insert({
+            household_id: householdId,
+            user_id: user.id,
+            type,
+            expense_type: expenseType,
+            amount,
+            category_id: categoryId,
+            memo,
+            target_day: targetDay,
+            start_date: transactionDate,
+            end_date: parsed.data.recurring_end_date || null,
+            is_active: true,
+          })
+          .select("id")
+          .single();
+
+        if (newRuleError || !newRule) {
+          throw newRuleError || new Error("반복 규칙 생성에 실패했습니다.");
+        }
+
+        nextRecurringRuleId = newRule.id;
+
+        await supabase.from("recurring_occurrences").upsert(
+          {
+            rule_id: newRule.id,
+            transaction_id: transactionId,
+            target_year: txDate.getFullYear(),
+            target_month: txDate.getMonth() + 1,
+          },
+          { onConflict: "rule_id,target_year,target_month" },
+        );
+
+        recurringLogNote = " (반복 거래 연동 등록)";
+      } else if (parsed.data.update_recurring_rule) {
+        const { error: ruleUpdateError } = await supabase
+          .from("recurring_rules")
+          .update({
+            type,
+            expense_type: expenseType,
+            amount,
+            category_id: categoryId,
+            memo,
+            target_day: targetDay,
+            end_date: parsed.data.recurring_end_date || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", oldTx.recurring_rule_id)
+          .eq("household_id", householdId);
+
+        if (ruleUpdateError) throw ruleUpdateError;
+
+        const oldDateObj = new Date(oldTx.transaction_date);
+        if (
+          oldDateObj.getFullYear() !== txDate.getFullYear() ||
+          oldDateObj.getMonth() !== txDate.getMonth()
+        ) {
+          await supabase
+            .from("recurring_occurrences")
+            .update({
+              target_year: txDate.getFullYear(),
+              target_month: txDate.getMonth() + 1,
+            })
+            .eq("rule_id", oldTx.recurring_rule_id)
+            .eq("transaction_id", transactionId);
+        }
+
+        recurringLogNote = " (반복 규칙 동기화)";
+      }
+    } else {
+      if (oldTx.recurring_rule_id) {
+        nextRecurringRuleId = null;
+
+        await supabase
+          .from("recurring_occurrences")
+          .delete()
+          .eq("rule_id", oldTx.recurring_rule_id)
+          .eq("transaction_id", transactionId);
+
+        recurringLogNote = " (반복 거래 연동 해제)";
+      }
+    }
+
+    const { error: txUpdateError } = await supabase
       .from("transactions")
       .update({
         type,
@@ -78,14 +183,14 @@ export async function updateTransaction(
         category_id: categoryId,
         transaction_date: transactionDate,
         memo,
+        recurring_rule_id: nextRecurringRuleId,
         updated_at: new Date().toISOString(),
       })
       .eq("id", transactionId)
-      .eq("household_id", householdId); // 이중 안전장치
+      .eq("household_id", householdId);
 
-    if (error) throw error;
+    if (txUpdateError) throw txUpdateError;
 
-    // 4. 잔액 동기화 (날짜가 바뀌었으면 기존 월도 함께)
     if (oldTx.transaction_date !== transactionDate) {
       const oldDate = new Date(oldTx.transaction_date);
       await syncMonthlyBalance(
@@ -96,15 +201,13 @@ export async function updateTransaction(
       );
     }
 
-    const newDate = new Date(transactionDate);
     await syncMonthlyBalance(
       supabase,
       householdId,
-      newDate.getFullYear(),
-      newDate.getMonth() + 1,
+      txDate.getFullYear(),
+      txDate.getMonth() + 1,
     );
 
-    // 활동 기록
     const typeLabel = type === "income" ? "수입" : "지출";
     const amountStr = Math.round(amount).toLocaleString("ko-KR");
     await logActivity(
@@ -113,10 +216,12 @@ export async function updateTransaction(
       user.id,
       "UPDATE",
       "TRANSACTION",
-      `${typeLabel} ₩${amountStr} 수정${memo ? ` - ${memo}` : ""}`,
+      `${typeLabel} ₩${amountStr} 수정${memo ? ` - ${memo}` : ""}${recurringLogNote}`,
     );
 
     revalidatePath("/transactions");
+    revalidatePath("/settings/recurring-transactions");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };

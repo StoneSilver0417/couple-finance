@@ -16,6 +16,7 @@ export const transactionSchema = z.object({
   expense_type: z.enum(["fixed", "variable", "irregular"]).optional().nullable(),
   recurring_enabled: z.boolean().optional().default(false),
   recurring_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식(YYYY-MM-DD)이어야 합니다.").optional().nullable(),
+  update_recurring_rule: z.boolean().optional().default(true),
 }).refine((data) => {
   if (data.recurring_enabled && data.recurring_end_date) {
     return data.recurring_end_date >= data.transaction_date;

@@ -1,3 +1,5 @@
+import type { RecurringRule } from "@/lib/recurring/types";
+
 export type TransactionType = "income" | "expense";
 export type ExpenseCategory = "fixed" | "variable" | "irregular";
 export type ProfileRole = "OWNER" | "MEMBER";
@@ -44,6 +46,9 @@ export interface Transaction {
   memo: string | null;
   created_at: string;
   last_modified_by: string | null;
+  is_recurring?: boolean;
+  recurring_rule_id?: string | null;
+  recurring_rules?: RecurringRule | null;
   categories?: {
     // Join result
     name: string;
@@ -73,6 +78,8 @@ export interface TransactionRpcRow {
   category_name: string | null;
   category_icon: string | null;
   category_color: string | null;
+  is_recurring?: boolean;
+  recurring_rule_id?: string | null;
 }
 
 export interface Budget {

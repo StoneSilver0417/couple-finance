@@ -13,6 +13,11 @@ export interface TransactionFormData {
   category_id: string;
   transaction_date: string;
   memo: string | null;
+  recurring_enabled?: boolean;
+  recurring_end_date?: string | null;
+  recurring_rule_id?: string | null;
+  is_recurring?: boolean;
+  update_recurring_rule?: boolean;
 }
 
 interface TransactionFormProps {

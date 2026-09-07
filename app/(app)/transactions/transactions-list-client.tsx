@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
+import { MoreVertical, Edit2, Trash2, Copy, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
@@ -112,6 +112,12 @@ export default function TransactionsListClient({
                   : tx.expense_type === "variable"
                     ? "변동"
                     : "비정기"}
+              </span>
+            )}
+            {(tx.recurring_rule_id || tx.is_recurring) && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold flex items-center gap-0.5">
+                <Repeat className="h-2.5 w-2.5" />
+                반복
               </span>
             )}
           </div>
@@ -252,6 +258,8 @@ export default function TransactionsListClient({
                 category_id: editingTx.category_id,
                 transaction_date: editingTx.transaction_date,
                 memo: editingTx.memo,
+                recurring_rule_id: editingTx.recurring_rule_id,
+                is_recurring: editingTx.is_recurring,
               }}
               onSubmit={handleUpdate}
               isLoading={isLoading}

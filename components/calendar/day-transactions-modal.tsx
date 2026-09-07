@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CalendarDays, Plus, MoreVertical, Edit2, Trash2, Copy } from "lucide-react";
+import { CalendarDays, Plus, MoreVertical, Edit2, Trash2, Copy, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/transaction-actions";
 import { updateTransaction } from "@/lib/transaction-update-action";
@@ -126,6 +126,8 @@ export default function DayTransactionsModal({
               category_id: editingTx.category_id,
               transaction_date: editingTx.transaction_date,
               memo: editingTx.memo,
+              recurring_rule_id: editingTx.recurring_rule_id,
+              is_recurring: editingTx.is_recurring,
             }}
             onSubmit={handleUpdate}
             isLoading={isLoading}
@@ -199,9 +201,17 @@ export default function DayTransactionsModal({
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden">
                   <div className="flex items-baseline justify-between gap-1">
-                    <p className="font-bold text-sm text-text-main truncate">
-                      {tx.categories?.name || "미분류"}
-                    </p>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <p className="font-bold text-sm text-text-main truncate">
+                        {tx.categories?.name || "미분류"}
+                      </p>
+                      {(tx.recurring_rule_id || tx.is_recurring) && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-primary/10 text-primary font-bold inline-flex items-center gap-0.5 shrink-0">
+                          <Repeat className="h-2.5 w-2.5" />
+                          반복
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={`shrink-0 font-black text-xs ${tx.type === "income" ? "text-blue-600" : "text-text-main"}`}
                     >
