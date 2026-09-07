@@ -278,23 +278,97 @@ export async function materializeMonthlyRecurringTransactions(year: number, mont
       p_month: month,
     });
 
-    if (error) throw error;
+    if (!error && data) {
+      const rpcResultSchema = z.object({
+        success: z.boolean(),
+        processed_count: z.number(),
+        year: z.number(),
+        month: z.number(),
+      });
+      const parsed = rpcResultSchema.safeParse(data);
+      if (parsed.success && parsed.data.processed_count > 0) {
+        await syncMonthlyBalance(supabase, householdId, year, month);
+        revalidatePath("/");
+        revalidatePath("/transactions");
+      }
+      return { success: true, processed_count: parsed.success ? parsed.data.processed_count : 0 };
+    }
 
-    const rpcResultSchema = z.object({
-      success: z.boolean(),
-      processed_count: z.number(),
-      year: z.number(),
-      month: z.number(),
-    });
-    const result = rpcResultSchema.parse(data);
+    // RPC 실패 시 JS Fallback 실행
+    const monthStr = String(month).padStart(2, "0");
+    const occurrenceMonthStr = `${year}-${monthStr}`;
+    const startOfMonth = `${year}-${monthStr}-01`;
+    const lastDayOfMonth = new Date(year, month, 0).getDate();
+    const endOfMonth = `${year}-${monthStr}-${String(lastDayOfMonth).padStart(2, "0")}`;
 
-    if (result.processed_count > 0) {
+    // 1. 활성화된 반복 규칙 조회
+    const { data: rules } = await supabase
+      .from("recurring_rules")
+      .select("*")
+      .eq("household_id", householdId)
+      .eq("is_active", true)
+      .lte("start_date", endOfMonth);
+
+    if (!rules || rules.length === 0) return { success: true, processed_count: 0 };
+
+    // 2. 이미 생성된 이력 조회
+    const { data: occurrences } = await supabase
+      .from("recurring_occurrences")
+      .select("recurring_rule_id")
+      .eq("household_id", householdId)
+      .eq("occurrence_month", occurrenceMonthStr);
+
+    const existingRuleIds = new Set((occurrences || []).map((o) => o.recurring_rule_id));
+
+    let processedCount = 0;
+
+    for (const rule of rules) {
+      if (rule.end_date && rule.end_date < startOfMonth) continue;
+      if (existingRuleIds.has(rule.id)) continue;
+
+      const targetDay = Math.min(rule.target_day, lastDayOfMonth);
+      const targetDate = `${year}-${monthStr}-${String(targetDay).padStart(2, "0")}`;
+
+      if (targetDate < rule.start_date) continue;
+      if (rule.end_date && targetDate > rule.end_date) continue;
+
+      // 거래 생성
+      const { data: tx, error: txErr } = await supabase
+        .from("transactions")
+        .insert({
+          household_id: householdId,
+          user_id: rule.user_id || ctx.user.id,
+          type: rule.type,
+          expense_type: rule.expense_type,
+          amount: rule.amount,
+          category_id: rule.category_id,
+          memo: rule.memo,
+          transaction_date: targetDate,
+          recurring_rule_id: rule.id,
+        })
+        .select("id")
+        .single();
+
+      if (txErr || !tx) continue;
+
+      // 이력 추가
+      await supabase.from("recurring_occurrences").insert({
+        household_id: householdId,
+        recurring_rule_id: rule.id,
+        occurrence_month: occurrenceMonthStr,
+        transaction_id: tx.id,
+      });
+
+      processedCount++;
+    }
+
+    if (processedCount > 0) {
       await syncMonthlyBalance(supabase, householdId, year, month);
       revalidatePath("/");
       revalidatePath("/transactions");
     }
 
-    return { success: true, processed_count: result.processed_count };
+    return { success: true, processed_count: processedCount };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
   }

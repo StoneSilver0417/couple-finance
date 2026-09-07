@@ -19,6 +19,8 @@ import { groupByCategory } from "@/lib/calculations/finance";
 
 export const dynamic = "force-dynamic";
 
+import { materializeMonthlyRecurringTransactions } from "@/lib/recurring-actions";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -39,6 +41,9 @@ export default async function DashboardPage() {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
+
+  // 당월 반복 거래 자동 materialized 처리
+  await materializeMonthlyRecurringTransactions(year, month);
   const startOfMonth = `${year}-${String(month).padStart(2, "0")}-01`;
   const lastDate = new Date(year, month, 0).getDate();
   const endOfMonth = `${year}-${String(month).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
