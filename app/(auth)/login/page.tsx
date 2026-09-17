@@ -26,7 +26,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#FFF0F3] via-[#F0F4FF] to-[#FFF8E1] px-4 py-12 relative overflow-hidden">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-[#FFF0F3] via-[#F0F4FF] to-[#FFF8E1] px-4 py-12 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-60 animate-float"></div>
       <div
@@ -118,6 +118,15 @@ export default function LoginPage() {
               </Link>
             </div>
           </form>
+
+          <div className="mt-4 border-t border-white/60 pt-4 text-center">
+            <Link
+              href="/privacy"
+              className="inline-flex min-h-11 items-center px-3 text-sm font-semibold text-text-secondary transition-colors hover:text-primary-dark hover:underline focus-visible:rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              개인정보 처리방침
+            </Link>
+          </div>
         </div>
       </div>
     </div>

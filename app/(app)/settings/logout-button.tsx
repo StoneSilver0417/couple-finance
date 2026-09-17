@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -44,6 +45,14 @@ export function LogoutButton() {
         </svg>
         로그아웃
       </button>
+      <div className="mt-4 border-t border-red-100 pt-3 text-center">
+        <Link
+          href="/privacy"
+          className="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-bold text-text-secondary underline-offset-4 transition-colors hover:text-primary-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          개인정보 처리방침
+        </Link>
+      </div>
     </div>
   );
 }
