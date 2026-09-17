@@ -44,5 +44,5 @@ test("privacy policy publishes the privacy contact", () => {
   // When: a user looks for a rights-request channel
   // Then: the published service email is available
   assert.ok(contactSection);
-  assert.strictEqual(contactSection.email, "stonesilver0417@gmail.com");
+  assert.strictEqual(contactSection.email, "waterdrop11@naver.com");
 });

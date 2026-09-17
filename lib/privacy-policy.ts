@@ -87,6 +87,6 @@ export const privacyPolicySections: readonly PrivacyPolicySection[] = [
     paragraphs: [
       "개인정보 처리와 관련한 문의, 불만 처리, 피해 구제 또는 개인정보 열람·정정·삭제 요청은 아래 연락처로 문의해 주세요. 접수된 문의는 관련 법령에 따라 신속하게 확인하고 답변하겠습니다.",
     ],
-    email: "stonesilver0417@gmail.com",
+    email: "waterdrop11@naver.com",
   },
 ];
