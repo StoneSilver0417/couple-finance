@@ -10,11 +10,6 @@ const historicalMigration = readFileSync(
   "utf8",
 );
 
-const recurringActions = readFileSync(
-  new URL("../../lib/recurring-materialization-action.ts", import.meta.url),
-  "utf8",
-);
-
 const atomicityMigration = readFileSync(
   new URL(
     "../../supabase/migrations/20260928000000_fix_recurring_transaction_atomicity.sql",
@@ -43,22 +38,20 @@ describe("recurring transaction database contracts", () => {
     assert.match(definition, /END;\s*\$\$ LANGUAGE plpgsql$/);
   });
 
-  it("defines an atomic RPC for enabling recurrence on an existing transaction", () => {
+  it("defines an atomic RPC for every recurring-state update", () => {
     const definition = getFunctionDefinition(
       atomicityMigration,
-      "enable_transaction_recurring_rule",
+      "update_transaction_recurring_state",
     );
     assert.match(definition, /auth\.uid\(\) <> p_user_id/);
     assert.match(definition, /FOR UPDATE/);
     assert.match(definition, /INSERT INTO recurring_rules/);
     assert.match(definition, /UPDATE transactions/);
     assert.match(definition, /INSERT INTO recurring_occurrences/);
-    assert.match(atomicityMigration, /REVOKE EXECUTE ON FUNCTION enable_transaction_recurring_rule[\s\S]*?FROM PUBLIC/);
-    assert.match(atomicityMigration, /GRANT EXECUTE ON FUNCTION enable_transaction_recurring_rule[\s\S]*?TO authenticated/);
+    assert.match(definition, /is_recurring = v_was_generated/);
+    assert.doesNotMatch(definition, /DELETE FROM recurring_occurrences/);
+    assert.match(atomicityMigration, /REVOKE EXECUTE ON FUNCTION update_transaction_recurring_state[\s\S]*?FROM PUBLIC/);
+    assert.match(atomicityMigration, /GRANT EXECUTE ON FUNCTION update_transaction_recurring_state[\s\S]*?TO authenticated/);
   });
 
-  it("does not fall back to non-atomic client-side materialization", () => {
-    assert.doesNotMatch(recurringActions, /\.from\("transactions"\)/);
-    assert.doesNotMatch(recurringActions, /\.from\("recurring_occurrences"\)/);
-  });
 });

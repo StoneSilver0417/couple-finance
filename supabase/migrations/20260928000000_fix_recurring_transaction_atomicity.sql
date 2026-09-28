@@ -75,7 +75,7 @@ GRANT EXECUTE ON FUNCTION create_transaction_with_recurring_rule(
   UUID, UUID, TEXT, NUMERIC, UUID, DATE, TEXT, TEXT, INTEGER, DATE
 ) TO authenticated;
 
-CREATE OR REPLACE FUNCTION enable_transaction_recurring_rule(
+CREATE OR REPLACE FUNCTION update_transaction_recurring_state(
   p_transaction_id UUID,
   p_household_id UUID,
   p_user_id UUID,
@@ -86,11 +86,13 @@ CREATE OR REPLACE FUNCTION enable_transaction_recurring_rule(
   p_expense_type TEXT,
   p_memo TEXT,
   p_target_day INTEGER,
-  p_end_date DATE
+  p_end_date DATE,
+  p_recurring_enabled BOOLEAN,
+  p_update_recurring_rule BOOLEAN
 ) RETURNS UUID AS $$
 DECLARE
   v_rule_id UUID;
-  v_existing_rule_id UUID;
+  v_was_generated BOOLEAN;
 BEGIN
   IF auth.uid() IS NULL OR auth.uid() <> p_user_id THEN
     RAISE EXCEPTION 'Unauthorized';
@@ -103,8 +105,8 @@ BEGIN
     RAISE EXCEPTION 'User does not belong to the specified household';
   END IF;
 
-  SELECT recurring_rule_id
-  INTO v_existing_rule_id
+  SELECT recurring_rule_id, is_recurring
+  INTO v_rule_id, v_was_generated
   FROM transactions
   WHERE id = p_transaction_id
     AND household_id = p_household_id
@@ -112,10 +114,6 @@ BEGIN
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Transaction not found';
-  END IF;
-
-  IF v_existing_rule_id IS NOT NULL THEN
-    RAISE EXCEPTION 'Transaction already has a recurring rule';
   END IF;
 
   IF NOT EXISTS (
@@ -128,13 +126,60 @@ BEGIN
     RAISE EXCEPTION 'Invalid category for the specified household and type';
   END IF;
 
-  INSERT INTO recurring_rules (
-    household_id, user_id, type, expense_type, amount, category_id, memo,
-    target_day, start_date, end_date, is_active
-  ) VALUES (
-    p_household_id, p_user_id, p_type, p_expense_type, p_amount,
-    p_category_id, p_memo, p_target_day, p_transaction_date, p_end_date, TRUE
-  ) RETURNING id INTO v_rule_id;
+  IF p_recurring_enabled AND v_rule_id IS NULL THEN
+    INSERT INTO recurring_rules (
+      household_id, user_id, type, expense_type, amount, category_id, memo,
+      target_day, start_date, end_date, is_active
+    ) VALUES (
+      p_household_id, p_user_id, p_type, p_expense_type, p_amount,
+      p_category_id, p_memo, p_target_day, p_transaction_date, p_end_date, TRUE
+    ) RETURNING id INTO v_rule_id;
+
+    INSERT INTO recurring_occurrences (
+      rule_id, transaction_id, target_year, target_month
+    ) VALUES (
+      v_rule_id,
+      p_transaction_id,
+      EXTRACT(YEAR FROM p_transaction_date)::INTEGER,
+      EXTRACT(MONTH FROM p_transaction_date)::INTEGER
+    );
+  ELSIF p_recurring_enabled AND p_update_recurring_rule THEN
+    UPDATE recurring_rules
+    SET type = p_type,
+        expense_type = p_expense_type,
+        amount = p_amount,
+        category_id = p_category_id,
+        memo = p_memo,
+        target_day = p_target_day,
+        end_date = p_end_date,
+        updated_at = NOW()
+    WHERE id = v_rule_id
+      AND household_id = p_household_id;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Recurring rule not found';
+    END IF;
+
+    UPDATE recurring_occurrences
+    SET target_year = EXTRACT(YEAR FROM p_transaction_date)::INTEGER,
+        target_month = EXTRACT(MONTH FROM p_transaction_date)::INTEGER
+    WHERE rule_id = v_rule_id
+      AND transaction_id = p_transaction_id;
+
+    IF NOT FOUND THEN
+      INSERT INTO recurring_occurrences (
+        rule_id, transaction_id, target_year, target_month
+      ) VALUES (
+        v_rule_id,
+        p_transaction_id,
+        EXTRACT(YEAR FROM p_transaction_date)::INTEGER,
+        EXTRACT(MONTH FROM p_transaction_date)::INTEGER
+      );
+    END IF;
+  ELSIF NOT p_recurring_enabled THEN
+    v_rule_id := NULL;
+    v_was_generated := FALSE;
+  END IF;
 
   UPDATE transactions
   SET type = p_type,
@@ -144,29 +189,20 @@ BEGIN
       transaction_date = p_transaction_date,
       memo = p_memo,
       recurring_rule_id = v_rule_id,
-      is_recurring = FALSE,
+      is_recurring = v_was_generated,
       updated_at = NOW()
   WHERE id = p_transaction_id
     AND household_id = p_household_id;
-
-  INSERT INTO recurring_occurrences (
-    rule_id, transaction_id, target_year, target_month
-  ) VALUES (
-    v_rule_id,
-    p_transaction_id,
-    EXTRACT(YEAR FROM p_transaction_date)::INTEGER,
-    EXTRACT(MONTH FROM p_transaction_date)::INTEGER
-  );
 
   RETURN v_rule_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
-REVOKE EXECUTE ON FUNCTION enable_transaction_recurring_rule(
-  UUID, UUID, UUID, TEXT, NUMERIC, UUID, DATE, TEXT, TEXT, INTEGER, DATE
+REVOKE EXECUTE ON FUNCTION update_transaction_recurring_state(
+  UUID, UUID, UUID, TEXT, NUMERIC, UUID, DATE, TEXT, TEXT, INTEGER, DATE, BOOLEAN, BOOLEAN
 ) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION enable_transaction_recurring_rule(
-  UUID, UUID, UUID, TEXT, NUMERIC, UUID, DATE, TEXT, TEXT, INTEGER, DATE
+GRANT EXECUTE ON FUNCTION update_transaction_recurring_state(
+  UUID, UUID, UUID, TEXT, NUMERIC, UUID, DATE, TEXT, TEXT, INTEGER, DATE, BOOLEAN, BOOLEAN
 ) TO authenticated;
 
 INSERT INTO recurring_occurrences (rule_id, transaction_id, target_year, target_month)
