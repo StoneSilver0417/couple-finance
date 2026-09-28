@@ -31,12 +31,16 @@ export function createRecurringTransactionRpcArgs(
   };
 }
 
-export function enableRecurringTransactionRpcArgs(
+export function updateRecurringTransactionRpcArgs(
   transactionId: string,
   input: RecurringTransactionRpcInput,
+  recurringEnabled: boolean,
+  updateRecurringRule: boolean,
 ) {
   return {
     p_transaction_id: transactionId,
     ...createRecurringTransactionRpcArgs(input),
+    p_recurring_enabled: recurringEnabled,
+    p_update_recurring_rule: updateRecurringRule,
   };
 }

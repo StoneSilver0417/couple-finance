@@ -9,7 +9,7 @@ import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
 import { parseTransactionDate } from "@/lib/transaction-date";
-import { enableRecurringTransactionRpcArgs } from "@/lib/recurring/transaction-rpc";
+import { updateRecurringTransactionRpcArgs } from "@/lib/recurring/transaction-rpc";
 import {
   getTrimmedString,
   isExpenseType,
@@ -56,7 +56,7 @@ export async function updateTransaction(
     expense_type: formData.get("expense_type") || undefined,
     recurring_enabled: formData.get("recurring_enabled") === "true",
     recurring_end_date: formData.get("recurring_end_date") || undefined,
-    update_recurring_rule: formData.get("update_recurring_rule") !== "false",
+    update_recurring_rule: formData.get("update_recurring_rule") === "true",
   });
 
   if (!parsed.success) {
@@ -97,102 +97,40 @@ export async function updateTransaction(
       return { error: "카테고리 정보가 올바르지 않습니다." };
     }
 
-    let nextRecurringRuleId: string | null = oldTx.recurring_rule_id;
-    let transactionUpdatedAtomically = false;
-    let recurringLogNote = "";
     const txDate = parseTransactionDate(transactionDate);
     const targetDay = txDate.day;
-
-    if (parsed.data.recurring_enabled) {
-      if (!oldTx.recurring_rule_id) {
-        const { error: enableError } = await supabase.rpc(
-          "enable_transaction_recurring_rule",
-          enableRecurringTransactionRpcArgs(transactionId, {
-            householdId,
-            userId: user.id,
-            type,
-            amount,
-            categoryId,
-            transactionDate,
-            expenseType,
-            memo,
-            targetDay,
-            endDate: parsed.data.recurring_end_date ?? null,
-          }),
-        );
-
-        if (enableError) throw enableError;
-
-        transactionUpdatedAtomically = true;
-
-        recurringLogNote = " (반복 거래 연동 등록)";
-      } else if (parsed.data.update_recurring_rule) {
-        const { error: ruleUpdateError } = await supabase
-          .from("recurring_rules")
-          .update({
-            type,
-            expense_type: expenseType,
-            amount,
-            category_id: categoryId,
-            memo,
-            target_day: targetDay,
-            end_date: parsed.data.recurring_end_date || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", oldTx.recurring_rule_id)
-          .eq("household_id", householdId);
-
-        if (ruleUpdateError) throw ruleUpdateError;
-
-        const oldDateObj = parseTransactionDate(oldTx.transaction_date);
-        if (
-          oldDateObj.year !== txDate.year ||
-          oldDateObj.month !== txDate.month
-        ) {
-          await supabase
-            .from("recurring_occurrences")
-            .update({
-              target_year: txDate.year,
-              target_month: txDate.month,
-            })
-            .eq("rule_id", oldTx.recurring_rule_id)
-            .eq("transaction_id", transactionId);
-        }
-
-        recurringLogNote = " (반복 규칙 동기화)";
-      }
-    } else {
-      if (oldTx.recurring_rule_id) {
-        nextRecurringRuleId = null;
-
-        await supabase
-          .from("recurring_occurrences")
-          .delete()
-          .eq("rule_id", oldTx.recurring_rule_id)
-          .eq("transaction_id", transactionId);
-
-        recurringLogNote = " (반복 거래 연동 해제)";
-      }
-    }
-
-    if (!transactionUpdatedAtomically) {
-      const { error: txUpdateError } = await supabase
-        .from("transactions")
-        .update({
+    const { error: updateError } = await supabase.rpc(
+      "update_transaction_recurring_state",
+      updateRecurringTransactionRpcArgs(
+        transactionId,
+        {
+          householdId,
+          userId: user.id,
           type,
-          expense_type: expenseType,
           amount,
-          category_id: categoryId,
-          transaction_date: transactionDate,
+          categoryId,
+          transactionDate,
+          expenseType,
           memo,
-          recurring_rule_id: nextRecurringRuleId,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", transactionId)
-        .eq("household_id", householdId);
+          targetDay,
+          endDate: parsed.data.recurring_end_date ?? null,
+        },
+        parsed.data.recurring_enabled,
+        parsed.data.update_recurring_rule,
+      ),
+    );
 
-      if (txUpdateError) throw txUpdateError;
-    }
+    if (updateError) throw updateError;
+
+    const recurringLogNote = parsed.data.recurring_enabled
+      ? oldTx.recurring_rule_id
+        ? parsed.data.update_recurring_rule
+          ? " (반복 규칙 동기화)"
+          : ""
+        : " (반복 거래 연동 등록)"
+      : oldTx.recurring_rule_id
+        ? " (반복 거래 연동 해제)"
+        : "";
 
     if (oldTx.transaction_date !== transactionDate) {
       const oldDate = parseTransactionDate(oldTx.transaction_date);

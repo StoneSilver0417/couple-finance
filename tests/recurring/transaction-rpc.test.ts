@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   createRecurringTransactionRpcArgs,
-  enableRecurringTransactionRpcArgs,
+  updateRecurringTransactionRpcArgs,
 } from "../../lib/recurring/transaction-rpc.ts";
 
 const input = {
@@ -17,6 +18,11 @@ const input = {
   targetDay: 28,
   endDate: null,
 };
+
+const transactionUpdateAction = readFileSync(
+  new URL("../../lib/transaction-update-action.ts", import.meta.url),
+  "utf8",
+);
 
 describe("recurring transaction RPC arguments", () => {
   it("maps create arguments to the exact PostgreSQL parameter names", () => {
@@ -34,8 +40,8 @@ describe("recurring transaction RPC arguments", () => {
     });
   });
 
-  it("adds the existing transaction id when enabling recurrence", () => {
-    assert.deepEqual(enableRecurringTransactionRpcArgs("transaction-1", input), {
+  it("adds recurring-state controls when updating a transaction", () => {
+    assert.deepEqual(updateRecurringTransactionRpcArgs("transaction-1", input, true, false), {
       p_transaction_id: "transaction-1",
       p_household_id: "household-1",
       p_user_id: "user-1",
@@ -47,6 +53,19 @@ describe("recurring transaction RPC arguments", () => {
       p_memo: null,
       p_target_day: 28,
       p_end_date: null,
+      p_recurring_enabled: true,
+      p_update_recurring_rule: false,
     });
+  });
+
+  it("treats an omitted recurring-rule checkbox as unchecked", () => {
+    assert.match(
+      transactionUpdateAction,
+      /formData\.get\("update_recurring_rule"\) === "true"/,
+    );
+    assert.doesNotMatch(
+      transactionUpdateAction,
+      /formData\.get\("update_recurring_rule"\) !== "false"/,
+    );
   });
 });
