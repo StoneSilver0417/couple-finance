@@ -8,6 +8,7 @@ import { logActivity } from "./activity-log";
 import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
+import { parseTransactionDate } from "@/lib/transaction-date";
 import { z } from "zod";
 import {
   getTrimmedString,
@@ -75,7 +76,7 @@ export async function createTransaction(formData: FormData) {
       return { error: "카테고리 정보가 올바르지 않습니다." };
     }
 
-    const date = new Date(transactionDate);
+    const date = parseTransactionDate(transactionDate);
 
     if (parsed.data.recurring_enabled) {
       const { error } = await supabase.rpc("create_transaction_with_recurring_rule", {
@@ -87,7 +88,7 @@ export async function createTransaction(formData: FormData) {
         p_transaction_date: transactionDate,
         p_expense_type: expenseType,
         p_memo: memo,
-        p_target_day: date.getDate(),
+        p_target_day: date.day,
         p_end_date: parsed.data.recurring_end_date || null,
       });
 
@@ -111,8 +112,8 @@ export async function createTransaction(formData: FormData) {
     await syncMonthlyBalance(
       supabase,
       householdId,
-      date.getFullYear(),
-      date.getMonth() + 1,
+      date.year,
+      date.month,
     );
 
     // 활동 기록
@@ -167,12 +168,12 @@ export async function deleteTransaction(transactionId: string) {
 
     if (error) throw error;
 
-    const date = new Date(tx.transaction_date);
+    const date = parseTransactionDate(tx.transaction_date);
     await syncMonthlyBalance(
       supabase,
       householdId,
-      date.getFullYear(),
-      date.getMonth() + 1,
+      date.year,
+      date.month,
     );
     const typeLabel = tx.type === "income" ? "수입" : "지출";
     const amountStr = Math.round(Number(tx.amount)).toLocaleString("ko-KR");

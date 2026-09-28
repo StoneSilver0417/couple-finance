@@ -8,6 +8,7 @@ import { logActivity } from "./activity-log";
 import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
+import { parseTransactionDate } from "@/lib/transaction-date";
 import {
   getTrimmedString,
   isExpenseType,
@@ -97,8 +98,8 @@ export async function updateTransaction(
 
     let nextRecurringRuleId: string | null = oldTx.recurring_rule_id;
     let recurringLogNote = "";
-    const txDate = new Date(transactionDate);
-    const targetDay = txDate.getDate();
+    const txDate = parseTransactionDate(transactionDate);
+    const targetDay = txDate.day;
 
     if (parsed.data.recurring_enabled) {
       if (!oldTx.recurring_rule_id) {
@@ -130,8 +131,8 @@ export async function updateTransaction(
           {
             rule_id: newRule.id,
             transaction_id: transactionId,
-            target_year: txDate.getFullYear(),
-            target_month: txDate.getMonth() + 1,
+            target_year: txDate.year,
+            target_month: txDate.month,
           },
           { onConflict: "rule_id,target_year,target_month" },
         );
@@ -155,16 +156,16 @@ export async function updateTransaction(
 
         if (ruleUpdateError) throw ruleUpdateError;
 
-        const oldDateObj = new Date(oldTx.transaction_date);
+        const oldDateObj = parseTransactionDate(oldTx.transaction_date);
         if (
-          oldDateObj.getFullYear() !== txDate.getFullYear() ||
-          oldDateObj.getMonth() !== txDate.getMonth()
+          oldDateObj.year !== txDate.year ||
+          oldDateObj.month !== txDate.month
         ) {
           await supabase
             .from("recurring_occurrences")
             .update({
-              target_year: txDate.getFullYear(),
-              target_month: txDate.getMonth() + 1,
+              target_year: txDate.year,
+              target_month: txDate.month,
             })
             .eq("rule_id", oldTx.recurring_rule_id)
             .eq("transaction_id", transactionId);
@@ -204,20 +205,20 @@ export async function updateTransaction(
     if (txUpdateError) throw txUpdateError;
 
     if (oldTx.transaction_date !== transactionDate) {
-      const oldDate = new Date(oldTx.transaction_date);
+      const oldDate = parseTransactionDate(oldTx.transaction_date);
       await syncMonthlyBalance(
         supabase,
         householdId,
-        oldDate.getFullYear(),
-        oldDate.getMonth() + 1,
+        oldDate.year,
+        oldDate.month,
       );
     }
 
     await syncMonthlyBalance(
       supabase,
       householdId,
-      txDate.getFullYear(),
-      txDate.getMonth() + 1,
+      txDate.year,
+      txDate.month,
     );
 
     const typeLabel = type === "income" ? "수입" : "지출";
