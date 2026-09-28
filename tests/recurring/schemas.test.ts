@@ -4,6 +4,7 @@ import {
   dateStringSchema,
   recurringRuleSchema,
 } from "../../lib/recurring/schemas.ts";
+import { transactionSchema } from "../../lib/schemas.ts";
 
 describe("schemas: dateStringSchema", () => {
   it("accepts valid ISO date strings (YYYY-MM-DD)", () => {
@@ -112,6 +113,33 @@ describe("schemas: recurringRuleSchema", () => {
       target_day: 10,
       start_date: "2026-06-01",
     });
+    assert.equal(result.success, false);
+  });
+});
+
+describe("schemas: transactionSchema", () => {
+  it("accepts a monthly recurring transaction without an end date", () => {
+    const result = transactionSchema.safeParse({
+      type: "expense",
+      expense_type: "fixed",
+      amount: 10000,
+      category_id: "cat-1",
+      transaction_date: "2026-09-28",
+      recurring_enabled: true,
+    });
+
+    assert.equal(result.success, true);
+  });
+
+  it("rejects a nonexistent transaction date", () => {
+    const result = transactionSchema.safeParse({
+      type: "income",
+      amount: 10000,
+      category_id: "cat-1",
+      transaction_date: "2026-02-30",
+      recurring_enabled: true,
+    });
+
     assert.equal(result.success, false);
   });
 });

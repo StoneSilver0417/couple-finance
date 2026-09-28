@@ -9,6 +9,7 @@ import { categoryBelongsToHousehold } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
 import { parseTransactionDate } from "@/lib/transaction-date";
+import { createRecurringTransactionRpcArgs } from "@/lib/recurring/transaction-rpc";
 import { z } from "zod";
 import {
   getTrimmedString,
@@ -79,18 +80,21 @@ export async function createTransaction(formData: FormData) {
     const date = parseTransactionDate(transactionDate);
 
     if (parsed.data.recurring_enabled) {
-      const { error } = await supabase.rpc("create_transaction_with_recurring_rule", {
-        p_household_id: householdId,
-        p_user_id: user.id,
-        p_type: type,
-        p_amount: amount,
-        p_category_id: categoryId,
-        p_transaction_date: transactionDate,
-        p_expense_type: expenseType,
-        p_memo: memo,
-        p_target_day: date.day,
-        p_end_date: parsed.data.recurring_end_date || null,
-      });
+      const { error } = await supabase.rpc(
+        "create_transaction_with_recurring_rule",
+        createRecurringTransactionRpcArgs({
+          householdId,
+          userId: user.id,
+          type,
+          amount,
+          categoryId,
+          transactionDate,
+          expenseType,
+          memo,
+          targetDay: date.day,
+          endDate: parsed.data.recurring_end_date ?? null,
+        }),
+      );
 
       if (error) throw error;
     } else {

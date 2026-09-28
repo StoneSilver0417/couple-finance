@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dateStringSchema } from "./recurring/schemas.ts";
 
 export const transactionSchema = z.object({
   type: z.enum(["income", "expense"], {
@@ -9,13 +10,11 @@ export const transactionSchema = z.object({
     .positive("금액은 0보다 큰 양수이어야 합니다.")
     .max(100_000_000_000, "금액이 너무 큽니다."),
   category_id: z.string().min(1, "카테고리를 선택해 주세요.").max(64),
-  transaction_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식(YYYY-MM-DD)이어야 합니다."),
+  transaction_date: dateStringSchema,
   memo: z.string().max(500, "메모는 500자 이하이어야 합니다.").optional().nullable(),
   expense_type: z.enum(["fixed", "variable", "irregular"]).optional().nullable(),
   recurring_enabled: z.boolean().optional().default(false),
-  recurring_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "올바른 날짜 형식(YYYY-MM-DD)이어야 합니다.").optional().nullable(),
+  recurring_end_date: dateStringSchema.optional().nullable(),
   update_recurring_rule: z.boolean().optional().default(true),
 }).refine((data) => {
   if (data.recurring_enabled && data.recurring_end_date) {
@@ -46,4 +45,4 @@ export {
   dateStringSchema,
   recurringRuleSchema,
   type RecurringRuleInput,
-} from "./recurring/schemas";
+} from "./recurring/schemas.ts";
