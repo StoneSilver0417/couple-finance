@@ -38,6 +38,19 @@ export function FormFields({
     initialData?.recurring_end_date || "",
   );
   const [fetchedRule, setFetchedRule] = useState<RecurringRule | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(initialData?.category_id || "");
+
+  useEffect(() => {
+    if (initialData?.category_id) {
+      setSelectedCategoryId(initialData.category_id);
+    }
+  }, [initialData?.category_id]);
+
+  useEffect(() => {
+    if (categories.length > 0 && (!selectedCategoryId || !categories.some(c => c.id === selectedCategoryId))) {
+      setSelectedCategoryId(categories[0].id);
+    }
+  }, [categories, selectedCategoryId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -96,8 +109,9 @@ export function FormFields({
           <select
             id="category_id"
             name="category_id"
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
             required
-            defaultValue={initialData?.category_id}
             className="flex h-12 w-full appearance-none rounded-2xl border border-white/70 bg-white/70 px-4 py-2 text-sm font-semibold text-text-main shadow-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
             style={{ backgroundImage: "none" }}
           >
