@@ -26,7 +26,6 @@ interface CategoryDialogProps {
   type: "income" | "expense";
   expenseCategory?: ExpenseCategory;
   category?: Category | null;
-  onSaved?: (type: "income" | "expense", expenseCategory?: ExpenseCategory) => void;
 }
 
 export function CategoryDialog({
@@ -35,7 +34,6 @@ export function CategoryDialog({
   type,
   expenseCategory,
   category,
-  onSaved,
 }: CategoryDialogProps) {
   const isEditing = !!category;
 
@@ -62,7 +60,6 @@ export function CategoryDialog({
           expenseCategory={expenseCategory}
           category={category}
           onOpenChange={onOpenChange}
-          onSaved={onSaved}
         />
       </DialogContent>
     </Dialog>
@@ -74,13 +71,11 @@ function CategoryForm({
   expenseCategory,
   category,
   onOpenChange,
-  onSaved,
 }: {
   type: "income" | "expense";
   expenseCategory?: ExpenseCategory;
   category?: Category | null;
   onOpenChange: (open: boolean) => void;
-  onSaved?: (type: "income" | "expense", expenseCategory?: ExpenseCategory) => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(category?.name ?? "");
@@ -89,10 +84,6 @@ function CategoryForm({
   );
   const [selectedColor, setSelectedColor] = useState(
     category?.color || CATEGORY_COLORS[0].value,
-  );
-
-  const [selectedExpenseCategory, setLocalExpenseCategory] = useState<ExpenseCategory | undefined>(
-    category?.expense_category || expenseCategory
   );
 
   const isEditing = !!category;
@@ -104,8 +95,8 @@ function CategoryForm({
     const formData = new FormData();
     formData.set("name", name);
     formData.set("type", type);
-    if (selectedExpenseCategory) {
-      formData.set("expense_category", selectedExpenseCategory);
+    if (expenseCategory) {
+      formData.set("expense_category", expenseCategory);
     }
     formData.set("icon", selectedIcon);
     formData.set("color", selectedColor);
@@ -124,9 +115,6 @@ function CategoryForm({
           : "카테고리가 추가되었습니다",
       );
       onOpenChange(false);
-      if (onSaved) {
-        onSaved(type, selectedExpenseCategory);
-      }
     }
   }
 
@@ -145,37 +133,6 @@ function CategoryForm({
           className="h-10 text-sm"
         />
       </div>
-
-      {type === "expense" && (
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold">지출 유형</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {(
-              [
-                { value: "fixed", label: "고정 지출" },
-                { value: "variable", label: "변동 지출" },
-                { value: "irregular", label: "비정기 지출" },
-              ] as const
-            ).map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setLocalExpenseCategory(opt.value)}
-                className={`
-                  h-10 rounded-lg text-xs font-medium transition-all duration-150
-                  ${
-                    selectedExpenseCategory === opt.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/50 hover:bg-muted text-muted-foreground"
-                  }
-                `}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="space-y-2">
         <Label className="text-xs font-semibold">아이콘 선택</Label>

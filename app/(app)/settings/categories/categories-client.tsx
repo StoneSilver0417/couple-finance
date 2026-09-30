@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { CategoryCard } from "./category-card";
 import { CategoryDialog } from "./category-dialog";
 import { DeletedCategoryList } from "./deleted-category-list";
@@ -39,26 +39,13 @@ function CategoriesClientInner({
     "fixed" | "variable" | "irregular"
   >("variable");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [activeTab, setActiveTab] = useState("income");
   const [showDeleted, setShowDeleted] = useState(false);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const pathname = usePathname();
   const mode = searchParams.get("mode");
-  const initialTab = searchParams.get("tab");
-
-  const [activeTab, setActiveTab] = useState(() => {
-    if (initialTab === "income" || initialTab === "fixed" || initialTab === "variable" || initialTab === "irregular") {
-      return initialTab;
-    }
-    return "income";
-  });
-
-  const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value);
-    const newParams = new URLSearchParams(window.location.search);
-    newParams.set("tab", value);
-    window.history.replaceState(null, "", `${pathname}?${newParams.toString()}`);
-  }, [pathname]);
 
   const openCreateDialog = useCallback(
     (type: "income" | "expense", expenseCategory?: ExpenseCategory) => {
@@ -90,17 +77,13 @@ function CategoriesClientInner({
     }
   }
 
+  // URL 정리는 부수효과이므로 effect에서 수행.
+  // history.replaceState는 Next 라우터의 searchParams를 갱신하지 않으므로 router.replace 사용
   useEffect(() => {
     if (mode === "add") {
-      const newParams = new URLSearchParams(window.location.search);
-      newParams.delete("mode");
-      if (!newParams.has("tab")) {
-        newParams.set("tab", activeTab);
-      }
-      const search = newParams.toString();
-      window.history.replaceState(null, "", search ? `${pathname}?${search}` : pathname);
+      router.replace(pathname, { scroll: false });
     }
-  }, [mode, pathname, activeTab]);
+  }, [mode, router, pathname]);
 
   function openEditDialog(category: Category) {
     setDialogType(category.type);
@@ -117,7 +100,7 @@ function CategoriesClientInner({
         <Tabs
           defaultValue="income"
           value={activeTab}
-          onValueChange={handleTabChange}
+          onValueChange={setActiveTab}
           className="w-full"
         >
           <TabsList className="grid grid-cols-4 w-full p-1 bg-white/40 backdrop-blur-md rounded-[2.5rem] gap-1 border border-white/60 shadow-glass !h-auto">
@@ -311,13 +294,6 @@ function CategoriesClientInner({
         type={dialogType}
         expenseCategory={dialogExpenseCategory}
         category={editingCategory}
-        onSaved={(type, expenseCategory) => {
-          if (type === "income") {
-            handleTabChange("income");
-          } else if (expenseCategory) {
-            handleTabChange(expenseCategory);
-          }
-        }}
       />
     </div>
   );
