@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { Category } from "@/types";
+import type { Category } from "@/types";
+import { isExpenseType, isTransactionType } from "@/lib/validation";
 import { FormFields } from "./transaction-form-fields";
 
 export interface TransactionFormData {
@@ -21,12 +22,12 @@ export interface TransactionFormData {
 }
 
 interface TransactionFormProps {
-  categories: Category[];
-  initialData?: Partial<TransactionFormData>;
-  onSubmit: (formData: FormData) => Promise<void>;
-  isLoading: boolean;
-  submitLabel?: string;
-  isEdit?: boolean;
+  readonly categories: readonly Category[];
+  readonly initialData?: Partial<TransactionFormData>;
+  readonly onSubmit: (formData: FormData) => Promise<void>;
+  readonly isLoading: boolean;
+  readonly submitLabel?: string;
+  readonly isEdit?: boolean;
 }
 
 export default function TransactionFormComponent({
@@ -43,6 +44,21 @@ export default function TransactionFormComponent({
   const [expenseType, setExpenseType] = useState<
     "fixed" | "variable" | "irregular"
   >(initialData?.expense_type || "variable");
+  const [categoryId, setCategoryId] = useState<string>(
+    initialData?.category_id ?? "",
+  );
+
+  function handleTransactionTypeChange(v: string) {
+    if (!isTransactionType(v)) return;
+    setTransactionType(v);
+    setCategoryId("");
+  }
+
+  function handleExpenseTypeChange(v: string) {
+    if (!isExpenseType(v)) return;
+    setExpenseType(v);
+    setCategoryId("");
+  }
 
   const filteredCategories = categories.filter((cat) => {
     if (transactionType === "income") {
@@ -65,19 +81,19 @@ export default function TransactionFormComponent({
   return (
     <Tabs
       value={transactionType}
-      onValueChange={(v) => setTransactionType(v as "income" | "expense")}
+      onValueChange={handleTransactionTypeChange}
     >
-      <TabsList className="grid w-full grid-cols-2 mb-6 h-11 rounded-2xl bg-white/30 border border-white/60 shadow-soft backdrop-blur-md">
+      <TabsList className="mb-6 grid h-11 w-full grid-cols-2 rounded-2xl border border-white/60 bg-white/30 p-0 shadow-soft backdrop-blur-md">
         <TabsTrigger
           value="expense"
-          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-pink-600 text-text-secondary"
+          className="h-11 gap-2 rounded-xl text-sm font-bold tracking-wide text-text-secondary data-[state=active]:bg-white data-[state=active]:text-text-main data-[state=active]:shadow-soft"
         >
           <TrendingDown className="h-4 w-4" />
           지출
         </TabsTrigger>
         <TabsTrigger
           value="income"
-          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-indigo-600 text-text-secondary"
+          className="h-11 gap-2 rounded-xl text-sm font-bold tracking-wide text-text-secondary data-[state=active]:bg-white data-[state=active]:text-text-main data-[state=active]:shadow-soft"
         >
           <TrendingUp className="h-4 w-4" />
           수입
@@ -87,26 +103,24 @@ export default function TransactionFormComponent({
       <TabsContent value="expense" className="space-y-6">
         <Tabs
           value={expenseType}
-          onValueChange={(v) =>
-            setExpenseType(v as "fixed" | "variable" | "irregular")
-          }
+          onValueChange={handleExpenseTypeChange}
         >
-          <TabsList className="grid w-full grid-cols-3 bg-white/30 border border-white/60 h-10 rounded-xl shadow-soft backdrop-blur-md">
+          <TabsList className="grid h-11 w-full grid-cols-3 rounded-xl border border-white/60 bg-white/30 p-0 shadow-soft backdrop-blur-md">
             <TabsTrigger
               value="fixed"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
+              className="h-11 rounded-lg text-sm font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:text-text-main data-[state=active]:shadow-soft"
             >
               고정 지출
             </TabsTrigger>
             <TabsTrigger
               value="variable"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
+              className="h-11 rounded-lg text-sm font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:text-text-main data-[state=active]:shadow-soft"
             >
               변동 지출
             </TabsTrigger>
             <TabsTrigger
               value="irregular"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
+              className="h-11 rounded-lg text-sm font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:text-text-main data-[state=active]:shadow-soft"
             >
               비정기 지출
             </TabsTrigger>
@@ -121,6 +135,8 @@ export default function TransactionFormComponent({
               isLoading={isLoading}
               submitLabel={submitLabel}
               isEdit={isEdit}
+              categoryId={categoryId}
+              onCategoryChange={setCategoryId}
             />
           </form>
         </div>
@@ -135,6 +151,8 @@ export default function TransactionFormComponent({
               isLoading={isLoading}
               submitLabel={submitLabel}
               isEdit={isEdit}
+              categoryId={categoryId}
+              onCategoryChange={setCategoryId}
             />
           </form>
         </div>
