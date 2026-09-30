@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { syncMonthlyBalance } from "./balance-actions";
 import { logActivity } from "./activity-log";
-import { categoryBelongsToHousehold } from "./transaction-validation";
+import { validateCategoryCompatibility } from "./transaction-validation";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { transactionSchema } from "@/lib/schemas";
 import { parseTransactionDate } from "@/lib/transaction-date";
@@ -68,13 +68,15 @@ export async function createTransaction(formData: FormData) {
   }
 
   try {
-    const categoryIsValid = await categoryBelongsToHousehold(
+    const categoryValidation = await validateCategoryCompatibility(
       supabase,
       householdId,
       categoryId,
+      type,
+      expenseType ?? undefined,
     );
-    if (!categoryIsValid) {
-      return { error: "카테고리 정보가 올바르지 않습니다." };
+    if (!categoryValidation.valid) {
+      return { error: categoryValidation.error };
     }
 
     const date = parseTransactionDate(transactionDate);
@@ -136,7 +138,7 @@ export async function createTransaction(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/transactions");
+  redirect(`/transactions/${transactionDate.slice(0, 7)}`);
 }
 
 export async function deleteTransaction(transactionId: string) {
