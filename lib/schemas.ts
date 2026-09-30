@@ -26,6 +26,31 @@ export const transactionSchema = z.object({
   path: ["recurring_end_date"],
 });
 
+export const updateCategorySchema = z.object({
+  id: z.string().uuid("유효하지 않은 카테고리 ID입니다."),
+  name: z
+    .string({ message: "카테고리 이름을 입력해 주세요." })
+    .trim()
+    .min(1, "카테고리 이름을 입력해 주세요.")
+    .max(50, "카테고리 이름은 50자 이하이어야 합니다."),
+  icon: z
+    .string({ message: "아이콘을 선택해 주세요." })
+    .trim()
+    .min(1, "아이콘을 선택해 주세요.")
+    .max(16, "아이콘이 너무 깁니다."),
+  color: z
+    .string({ message: "색상을 선택해 주세요." })
+    .trim()
+    .min(1, "색상을 선택해 주세요.")
+    .max(16, "색상이 너무 깁니다."),
+  expense_category: z
+    .enum(["fixed", "variable", "irregular"], {
+      message: "지출 유형이 올바르지 않습니다.",
+    })
+    .optional()
+    .nullable(),
+});
+
 export const assetSchema = z.object({
   name: z
     .string()

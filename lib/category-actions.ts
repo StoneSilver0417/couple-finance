@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getHouseholdContext } from "@/lib/supabase/household-context";
 import { getKoreanErrorMessage } from "@/lib/error-messages";
 import { logActivity } from "./activity-log";
+import { updateCategorySchema } from "@/lib/schemas";
 import {
   getTrimmedString,
   isExpenseType,
@@ -70,24 +71,29 @@ export async function updateCategory(categoryId: string, formData: FormData) {
   if (!ctx.ok) return { error: ctx.error };
   const { supabase, user, householdId } = ctx;
 
-  const name = getTrimmedString(formData.get("name"), 50);
-  const icon = getTrimmedString(formData.get("icon"), 16);
-  const color = getTrimmedString(formData.get("color"), 16);
+  const parsed = updateCategorySchema.safeParse({
+    id: categoryId,
+    name: formData.get("name"),
+    icon: formData.get("icon"),
+    color: formData.get("color"),
+    expense_category: formData.get("expense_category") || null,
+  });
 
-  if (!name || !icon || !color) {
-    return { error: "모든 항목을 입력해주세요." };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "입력값이 유효하지 않습니다." };
   }
 
+  const { id, name, icon, color, expense_category } = parsed.data;
+
   try {
-    const { error } = await supabase
-      .from("categories")
-      .update({
-        name,
-        icon,
-        color,
-      })
-      .eq("id", categoryId)
-      .eq("household_id", householdId);
+    const { error } = await supabase.rpc("update_category_with_cascade", {
+      p_category_id: id,
+      p_household_id: householdId,
+      p_name: name,
+      p_icon: icon,
+      p_color: color,
+      p_expense_category: expense_category ?? null,
+    });
 
     if (error) throw error;
 
@@ -101,6 +107,9 @@ export async function updateCategory(categoryId: string, formData: FormData) {
     );
 
     revalidatePath("/settings/categories");
+    revalidatePath("/transactions");
+    revalidatePath("/settings/recurring-transactions");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error: unknown) {
     return { error: getKoreanErrorMessage(error) };
