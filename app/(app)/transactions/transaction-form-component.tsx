@@ -21,6 +21,8 @@ export interface TransactionFormData {
   update_recurring_rule?: boolean;
 }
 
+type Classification = "income" | "fixed" | "variable" | "irregular";
+
 interface TransactionFormProps {
   readonly categories: readonly Category[];
   readonly initialData?: Partial<TransactionFormData>;
@@ -28,6 +30,13 @@ interface TransactionFormProps {
   readonly isLoading: boolean;
   readonly submitLabel?: string;
   readonly isEdit?: boolean;
+}
+
+function initialClassification(
+  initialData?: Partial<TransactionFormData>,
+): Classification {
+  if (initialData?.type === "income") return "income";
+  return initialData?.expense_type ?? "variable";
 }
 
 export default function TransactionFormComponent({
@@ -44,20 +53,36 @@ export default function TransactionFormComponent({
   const [expenseType, setExpenseType] = useState<
     "fixed" | "variable" | "irregular"
   >(initialData?.expense_type || "variable");
-  const [categoryId, setCategoryId] = useState<string>(
-    initialData?.category_id ?? "",
-  );
+
+  // categoryIds: per-classification category memory so switching back restores
+  // the prior selection rather than losing it.
+  const initClass = initialClassification(initialData);
+  const [categoryIds, setCategoryIds] = useState<
+    Record<Classification, string>
+  >({
+    income: initClass === "income" ? (initialData?.category_id ?? "") : "",
+    fixed: initClass === "fixed" ? (initialData?.category_id ?? "") : "",
+    variable:
+      initClass === "variable" ? (initialData?.category_id ?? "") : "",
+    irregular:
+      initClass === "irregular" ? (initialData?.category_id ?? "") : "",
+  });
+
+  const activeClassification: Classification =
+    transactionType === "income" ? "income" : expenseType;
 
   function handleTransactionTypeChange(v: string) {
     if (!isTransactionType(v)) return;
     setTransactionType(v);
-    setCategoryId("");
   }
 
   function handleExpenseTypeChange(v: string) {
     if (!isExpenseType(v)) return;
     setExpenseType(v);
-    setCategoryId("");
+  }
+
+  function handleCategoryChange(id: string) {
+    setCategoryIds((prev) => ({ ...prev, [activeClassification]: id }));
   }
 
   const filteredCategories = categories.filter((cat) => {
@@ -75,6 +100,9 @@ export default function TransactionFormComponent({
     if (transactionType === "expense") {
       formData.set("expense_type", expenseType);
     }
+    // Set category_id explicitly because controlled <select> may not serialise
+    // via FormData when the field is outside the active TabsContent.
+    formData.set("category_id", categoryIds[activeClassification]);
     await onSubmit(formData);
   }
 
@@ -100,6 +128,7 @@ export default function TransactionFormComponent({
         </TabsTrigger>
       </TabsList>
 
+      {/* Expense sub-type tabs */}
       <TabsContent value="expense" className="space-y-6">
         <Tabs
           value={expenseType}
@@ -126,37 +155,25 @@ export default function TransactionFormComponent({
             </TabsTrigger>
           </TabsList>
         </Tabs>
-
-        <div className="bg-transparent">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <FormFields
-              categories={filteredCategories}
-              initialData={initialData}
-              isLoading={isLoading}
-              submitLabel={submitLabel}
-              isEdit={isEdit}
-              categoryId={categoryId}
-              onCategoryChange={setCategoryId}
-            />
-          </form>
-        </div>
       </TabsContent>
 
-      <TabsContent value="income">
-        <div className="bg-transparent">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <FormFields
-              categories={filteredCategories}
-              initialData={initialData}
-              isLoading={isLoading}
-              submitLabel={submitLabel}
-              isEdit={isEdit}
-              categoryId={categoryId}
-              onCategoryChange={setCategoryId}
-            />
-          </form>
-        </div>
-      </TabsContent>
+      {/*
+       * Form outside TabsContent so it stays mounted across tab switches,
+       * preserving amount, memo, date, and RecurringControls state.
+       */}
+      <div className="bg-transparent">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <FormFields
+            categories={filteredCategories}
+            initialData={initialData}
+            isLoading={isLoading}
+            submitLabel={submitLabel}
+            isEdit={isEdit}
+            categoryId={categoryIds[activeClassification]}
+            onCategoryChange={handleCategoryChange}
+          />
+        </form>
+      </div>
     </Tabs>
   );
 }
