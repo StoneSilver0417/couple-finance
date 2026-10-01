@@ -1,6 +1,6 @@
 "use client";
 
-import { FormFields } from "@/app/(app)/transactions/transaction-form-fields";
+import TransactionFormComponent from "@/app/(app)/transactions/transaction-form-component";
 import { RecurringClient } from "@/components/settings/recurring/recurring-client";
 import type { Category } from "@/types";
 
@@ -16,14 +16,64 @@ const categories: Category[] = [
     is_hidden: false,
     display_order: 1,
   },
+  {
+    id: "category-2",
+    name: "두 번째 변동 지출 카테고리",
+    type: "expense",
+    expense_category: "variable",
+    icon: "🛒",
+    color: "#ffc2d1",
+    is_custom: true,
+    is_hidden: false,
+    display_order: 2,
+  },
+  {
+    id: "category-fixed",
+    name: "고정 지출 카테고리",
+    type: "expense",
+    expense_category: "fixed",
+    icon: "🏦",
+    color: "#ffc2d1",
+    is_custom: true,
+    is_hidden: false,
+    display_order: 1,
+  },
+  {
+    id: "category-irregular",
+    name: "비정기 지출 카테고리",
+    type: "expense",
+    expense_category: "irregular",
+    icon: "📦",
+    color: "#e0c3fc",
+    is_custom: true,
+    is_hidden: false,
+    display_order: 1,
+  },
+  {
+    id: "category-income",
+    name: "수입 카테고리",
+    type: "income",
+    expense_category: null,
+    icon: "💰",
+    color: "#ff8fab",
+    is_custom: true,
+    is_hidden: false,
+    display_order: 1,
+  },
 ];
 
 export default function UiQaPage() {
   return (
     <main className="min-h-dvh space-y-8 bg-mesh p-4 sm:p-8">
       <section data-qa-surface="transaction-form" className="mx-auto w-full max-w-md overflow-hidden rounded-3xl bg-white/80 p-6">
-        <FormFields
+        <TransactionFormComponent
           categories={categories}
+          initialData={{
+            type: "expense",
+            expense_type: "variable",
+            category_id: "",
+          }}
+          onSubmit={async () => undefined}
           isLoading={false}
           submitLabel="추가하기"
         />

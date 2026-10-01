@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { Category } from "@/types";
+import type { Category } from "@/types";
+import { isExpenseType, isTransactionType } from "@/lib/validation";
+import {
+  initialCategoryId,
+  initialTransactionClassification,
+  type TransactionClassification,
+} from "@/lib/transaction-category-state";
 import { FormFields } from "./transaction-form-fields";
 
 export interface TransactionFormData {
@@ -21,12 +26,12 @@ export interface TransactionFormData {
 }
 
 interface TransactionFormProps {
-  categories: Category[];
-  initialData?: Partial<TransactionFormData>;
-  onSubmit: (formData: FormData) => Promise<void>;
-  isLoading: boolean;
-  submitLabel?: string;
-  isEdit?: boolean;
+  readonly categories: readonly Category[];
+  readonly initialData?: Partial<TransactionFormData>;
+  readonly onSubmit: (formData: FormData) => Promise<void>;
+  readonly isLoading: boolean;
+  readonly submitLabel?: string;
+  readonly isEdit?: boolean;
 }
 
 export default function TransactionFormComponent({
@@ -44,12 +49,55 @@ export default function TransactionFormComponent({
     "fixed" | "variable" | "irregular"
   >(initialData?.expense_type || "variable");
 
+  const initClass = initialTransactionClassification(initialData);
+  const [categoryIds, setCategoryIds] = useState<
+    Record<TransactionClassification, string>
+  >({
+    income: initialCategoryId(
+      categories,
+      "income",
+      initClass === "income" ? initialData?.category_id : undefined,
+    ),
+    fixed: initialCategoryId(
+      categories,
+      "fixed",
+      initClass === "fixed" ? initialData?.category_id : undefined,
+    ),
+    variable: initialCategoryId(
+      categories,
+      "variable",
+      initClass === "variable" ? initialData?.category_id : undefined,
+    ),
+    irregular: initialCategoryId(
+      categories,
+      "irregular",
+      initClass === "irregular" ? initialData?.category_id : undefined,
+    ),
+  });
+
+  const activeClassification: TransactionClassification =
+    transactionType === "income" ? "income" : expenseType;
+
+  function handleTransactionTypeChange(value: string) {
+    if (isTransactionType(value)) setTransactionType(value);
+  }
+
+  function handleExpenseTypeChange(value: string) {
+    if (isExpenseType(value)) setExpenseType(value);
+  }
+
+  function handleCategoryChange(categoryId: string) {
+    setCategoryIds((current) => ({
+      ...current,
+      [activeClassification]: categoryId,
+    }));
+  }
+
   const filteredCategories = categories.filter((cat) => {
     if (transactionType === "income") {
       return cat.type === "income";
-    } else {
-      return cat.type === "expense" && cat.expense_category === expenseType;
     }
+    return cat.type === "expense" && cat.expense_category === expenseType;
   });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -58,87 +106,77 @@ export default function TransactionFormComponent({
     formData.set("type", transactionType);
     if (transactionType === "expense") {
       formData.set("expense_type", expenseType);
+    } else {
+      formData.delete("expense_type");
     }
+    formData.set("category_id", categoryIds[activeClassification]);
     await onSubmit(formData);
   }
 
   return (
-    <Tabs
-      value={transactionType}
-      onValueChange={(v) => setTransactionType(v as "income" | "expense")}
-    >
-      <TabsList className="grid w-full grid-cols-2 mb-6 h-11 rounded-2xl bg-white/30 border border-white/60 shadow-soft backdrop-blur-md">
-        <TabsTrigger
-          value="expense"
-          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-pink-600 text-text-secondary"
+    <div>
+      <div
+        className="grid w-full grid-cols-2 mb-6 h-11 rounded-2xl bg-white/30 border border-white/60 shadow-soft backdrop-blur-md"
+        role="group"
+        aria-label="거래 유형"
+      >
+        <button
+          type="button"
+          aria-pressed={transactionType === "expense"}
+          onClick={() => handleTransactionTypeChange("expense")}
+          className={`inline-flex items-center justify-center gap-2 rounded-xl font-bold text-xs tracking-wide text-text-secondary transition-all ${transactionType === "expense" ? "bg-white text-pink-600 shadow-soft" : ""}`}
         >
-          <TrendingDown className="h-4 w-4" />
+          <TrendingDown className="h-4 w-4" aria-hidden="true" />
           지출
-        </TabsTrigger>
-        <TabsTrigger
-          value="income"
-          className="gap-2 rounded-xl font-bold text-xs tracking-wide data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-indigo-600 text-text-secondary"
+        </button>
+        <button
+          type="button"
+          aria-pressed={transactionType === "income"}
+          onClick={() => handleTransactionTypeChange("income")}
+          className={`inline-flex items-center justify-center gap-2 rounded-xl font-bold text-xs tracking-wide text-text-secondary transition-all ${transactionType === "income" ? "bg-white text-indigo-600 shadow-soft" : ""}`}
         >
-          <TrendingUp className="h-4 w-4" />
+          <TrendingUp className="h-4 w-4" aria-hidden="true" />
           수입
-        </TabsTrigger>
-      </TabsList>
+        </button>
+      </div>
 
-      <TabsContent value="expense" className="space-y-6">
-        <Tabs
-          value={expenseType}
-          onValueChange={(v) =>
-            setExpenseType(v as "fixed" | "variable" | "irregular")
-          }
+      {transactionType === "expense" && (
+        <div
+          className="grid w-full grid-cols-3 bg-white/30 border border-white/60 h-10 rounded-xl shadow-soft backdrop-blur-md"
+          role="group"
+          aria-label="지출 유형"
         >
-          <TabsList className="grid w-full grid-cols-3 bg-white/30 border border-white/60 h-10 rounded-xl shadow-soft backdrop-blur-md">
-            <TabsTrigger
-              value="fixed"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
+          {(["fixed", "variable", "irregular"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={expenseType === value}
+              onClick={() => handleExpenseTypeChange(value)}
+              className={`rounded-lg text-[11px] font-bold text-text-secondary transition-all ${expenseType === value ? "bg-white text-primary-dark shadow-soft" : ""}`}
             >
-              고정 지출
-            </TabsTrigger>
-            <TabsTrigger
-              value="variable"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
-            >
-              변동 지출
-            </TabsTrigger>
-            <TabsTrigger
-              value="irregular"
-              className="rounded-lg text-[11px] font-bold text-text-secondary data-[state=active]:bg-white data-[state=active]:shadow-soft data-[state=active]:text-primary-dark"
-            >
-              비정기 지출
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <div className="bg-transparent">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <FormFields
-              categories={filteredCategories}
-              initialData={initialData}
-              isLoading={isLoading}
-              submitLabel={submitLabel}
-              isEdit={isEdit}
-            />
-          </form>
+              {value === "fixed"
+                ? "고정 지출"
+                : value === "variable"
+                  ? "변동 지출"
+                  : "비정기 지출"}
+            </button>
+          ))}
         </div>
-      </TabsContent>
+      )}
 
-      <TabsContent value="income">
-        <div className="bg-transparent">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <FormFields
-              categories={filteredCategories}
-              initialData={initialData}
-              isLoading={isLoading}
-              submitLabel={submitLabel}
-              isEdit={isEdit}
-            />
-          </form>
-        </div>
-      </TabsContent>
-    </Tabs>
+      <div className="mt-6 bg-transparent">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <FormFields
+            categories={filteredCategories}
+            initialData={initialData}
+            isLoading={isLoading}
+            submitLabel={submitLabel}
+            isEdit={isEdit}
+            categoryId={categoryIds[activeClassification]}
+            onCategoryChange={handleCategoryChange}
+          />
+        </form>
+      </div>
+    </div>
   );
 }
