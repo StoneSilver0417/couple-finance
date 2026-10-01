@@ -164,6 +164,6 @@ export function getKoreanErrorMessage(error: string | Error | unknown): string {
     }
   }
 
-  console.error("Unhandled error message:", message);
-  return "오류가 발생했습니다. 잠시 후 다시 시도해주세요";
+  console.error("Unhandled error message:", error);
+  return `오류가 발생했습니다 (${message || "원인 불명"}). 잠시 후 다시 시도해주세요`;
 }
