@@ -1,4 +1,4 @@
-const CACHE_NAME = 'couple-finance-v4';
+const CACHE_NAME = 'couple-finance-v5-rpc-fallback';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/icon-192.png',
