@@ -132,6 +132,11 @@ function extractErrorMessage(error: unknown): string {
     if (typeof obj.hint === "string" && obj.hint.trim().length > 0) {
       return obj.hint.trim();
     }
+    try {
+      return JSON.stringify(obj);
+    } catch {
+      // ignore
+    }
   }
 
   try {
