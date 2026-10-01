@@ -122,7 +122,23 @@ export async function updateTransaction(
       ),
     );
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.warn("RPC update_transaction_recurring_state failed, attempting fallback update:", updateError.message);
+      const { error: directUpdateError } = await supabase
+        .from("transactions")
+        .update({
+          type,
+          amount,
+          category_id: categoryId,
+          transaction_date: transactionDate,
+          expense_type: expenseType,
+          memo,
+        })
+        .eq("id", transactionId)
+        .eq("household_id", householdId);
+
+      if (directUpdateError) throw updateError;
+    }
 
     const recurringLogNote = parsed.data.recurring_enabled
       ? oldTx.recurring_rule_id
